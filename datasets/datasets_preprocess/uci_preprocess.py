@@ -104,7 +104,7 @@ for data_type in ["Train", "Valid", "Test"]:
     uci_data_12_hours = uci_data_12_hours[uci_data_12_hours.index % 48 == 47]  # just keep 12-hours data
     uci_data_12_hours.to_csv(f"{UCI_DATASET_PATH}/{data_type}/12_hours.csv", index=False)
     # Compute the 1-day data, 96-`15 minutes` group
-    uci_data_1_day = uci_data_15_min.groupby(uci_data_15_min.index // 48).transform("sum")
+    uci_data_1_day = uci_data_15_min.groupby(uci_data_15_min.index // 96).transform("sum")
     uci_data_1_day["Time"] = uci_data_15_min["Time"]  # change time column
     uci_data_1_day = uci_data_1_day[uci_data_1_day.index % 96 == 95]  # just keep 1-day data
     uci_data_1_day.to_csv(f"{UCI_DATASET_PATH}/{data_type}/1_day.csv", index=False)
@@ -123,7 +123,7 @@ for data_type in ["Train", "Valid", "Test"]:
     assert len(uci_data_4_hours) == DAYS * 6, f"{data_type} 4 hours error !!"
     assert len(uci_data_1_hour) == DAYS * 24, f"{data_type} 1 hour error !!"
     assert len(uci_data_15_min) == DAYS * 96, f"{data_type} 15 minutes error !!"
-    assert len(uci_data_1_day) == DAYS - 1, f"{data_type} labels error !!"
+    assert len(uci_label_1_day) == DAYS, f"{data_type} labels error !!"
     print(f"{data_type} FINISH !!")
 
 print("************************** FINISH UCI DATASET PREPROCESSING **************************")
