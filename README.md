@@ -9,7 +9,8 @@ MgRL-CE/
     ├── datasets_preprocess
         ├── uci_preprocess.py # The pre-process code of UCI electricity dataset (download from web).
     ├── uci_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
-    ├── images # All used images of this repo.
+├── images # All used images of this repo.
+├── model # The MgRL-CE model.
 └── 
 ```
 
