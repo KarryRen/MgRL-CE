@@ -30,6 +30,7 @@ During the preprocessing, we wil do the following things:
         - Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
         - Test (6 months, 31+31+30+31+30+31=184 days, and 17664 rows of data)
     3. Compute other frequency (1-hour, 4-hours, 12-hours and 1-day) uci data.
+    4. Compute the daily label.
 
 All in all, after downloading the file from the web, you need:
     1. Change the `UCI_DOWNLOAD_FILE_PATH` and `UCI_PROCESS_FILE_PATH` based on your situation.
@@ -107,6 +108,9 @@ for data_type in ["Train", "Valid", "Test"]:
     uci_data_1_day["Time"] = uci_data_15_min["Time"]  # change time column
     uci_data_1_day = uci_data_1_day[uci_data_1_day.index % 96 == 95]  # just keep 1-day data
     uci_data_1_day.to_csv(f"{UCI_DATASET_PATH}/{data_type}/1_day.csv", index=False)
+    # Get the label
+    uci_label_1_day = uci_data_1_day.shift(-1)
+    uci_label_1_day.to_csv(f"{UCI_DATASET_PATH}/{data_type}/label.csv", index=False)
     # Assert for detection
     if data_type == "Train":
         DAYS = TRAIN_DAYS
@@ -119,6 +123,7 @@ for data_type in ["Train", "Valid", "Test"]:
     assert len(uci_data_4_hours) == DAYS * 6, f"{data_type} 4 hours error !!"
     assert len(uci_data_1_hour) == DAYS * 24, f"{data_type} 1 hour error !!"
     assert len(uci_data_15_min) == DAYS * 96, f"{data_type} 15 minutes error !!"
+    assert len(uci_data_1_day) == DAYS - 1, f"{data_type} labels error !!"
     print(f"{data_type} FINISH !!")
 
 print("************************** FINISH UCI DATASET PREPROCESSING **************************")
