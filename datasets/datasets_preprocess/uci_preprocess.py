@@ -13,7 +13,7 @@ In this `.txt` file, you can get the data from 2011 to 2014:
 
 Because we want to make the code clear and beautiful, so we need you to do some directory creation !!!
     you need to create the following directory structure `BY HAND`:
-        UCI_PROCESS_FILE_PATH/
+        UCI_DATASET_PATH/
             ├── Train
                ├── 15_minutes.csv
                ├── 1_hour.csv
@@ -48,8 +48,8 @@ UCI_DOWNLOAD_FILE_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
                           "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/LD2011_2014.txt")
 UCI_DOWNLOAD_FIX_FILE_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
                               "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/LD2011_2014(Fix).txt")
-UCI_PROCESS_FILE_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
-                         "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
+UCI_DATASET_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
+                    "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
 print("************************** BEGIN UCI DATASET PREPROCESSING **************************")
 
 # ---- Step 2. Change all `,` in .txt file to `.` ---- #
@@ -75,38 +75,38 @@ print("************************** FINISH RAW FILE READING **********************
 
 # ---- Step 4. Split to Train & Valid & Test, and save the 15_minutes.csv ---- #
 train_uci_data = uci_data[:105216]  # Train (36 months, 365+366+365=1096 days, and 105216 rows of data)
-train_uci_data.to_csv(f"{UCI_PROCESS_FILE_PATH}/Train/15_minutes.csv", index=False)
+train_uci_data.to_csv(f"{UCI_DATASET_PATH}/Train/15_minutes.csv", index=False)
 valid_uci_data = uci_data[105216:122592]  # Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
-valid_uci_data.to_csv(f"{UCI_PROCESS_FILE_PATH}/Valid/15_minutes.csv", index=False)
+valid_uci_data.to_csv(f"{UCI_DATASET_PATH}/Valid/15_minutes.csv", index=False)
 test_uci_data = uci_data[122592:]  # Test (6 months, 31+31+30+31+30+31=184 days, and 17664 rows of data)
-test_uci_data.to_csv(f"{UCI_PROCESS_FILE_PATH}/Test/15_minutes.csv", index=False)
+test_uci_data.to_csv(f"{UCI_DATASET_PATH}/Test/15_minutes.csv", index=False)
 print("************************** FINISH 15 MINUTES SPLITTING **************************")
 
 # ---- Step 5. Compute other frequency (1-hour, 4-hours, 12-hours and 1-day) uci data ---- #
 for data_type in ["Train", "Valid", "Test"]:
     print(data_type)
     # Read the 15 minutes data, from the saved `.csv` file
-    uci_data_15_min = pd.read_csv(f"{UCI_PROCESS_FILE_PATH}/{data_type}/15_minutes.csv")
+    uci_data_15_min = pd.read_csv(f"{UCI_DATASET_PATH}/{data_type}/15_minutes.csv")
     # Compute the 1-hour data, 4-`15 minutes` group
     uci_data_1_hour = uci_data_15_min.groupby(uci_data_15_min.index // 4).transform("sum")
     uci_data_1_hour["Time"] = uci_data_15_min["Time"]  # change time column
     uci_data_1_hour = uci_data_1_hour[uci_data_1_hour.index % 4 == 3]  # just keep 1-hour data
-    uci_data_1_hour.to_csv(f"{UCI_PROCESS_FILE_PATH}/{data_type}/1_hour.csv", index=False)
+    uci_data_1_hour.to_csv(f"{UCI_DATASET_PATH}/{data_type}/1_hour.csv", index=False)
     # Compute the 4-hours data, 16-`15 minutes` group
     uci_data_4_hours = uci_data_15_min.groupby(uci_data_15_min.index // 16).transform("sum")
     uci_data_4_hours["Time"] = uci_data_15_min["Time"]  # change time column
     uci_data_4_hours = uci_data_4_hours[uci_data_4_hours.index % 16 == 15]  # just keep 4-hours data
-    uci_data_4_hours.to_csv(f"{UCI_PROCESS_FILE_PATH}/{data_type}/4_hours.csv", index=False)
+    uci_data_4_hours.to_csv(f"{UCI_DATASET_PATH}/{data_type}/4_hours.csv", index=False)
     # Compute the 12-hours data, 48-`15 minutes` group
     uci_data_12_hours = uci_data_15_min.groupby(uci_data_15_min.index // 48).transform("sum")
     uci_data_12_hours["Time"] = uci_data_15_min["Time"]  # change time column
     uci_data_12_hours = uci_data_12_hours[uci_data_12_hours.index % 48 == 47]  # just keep 12-hours data
-    uci_data_12_hours.to_csv(f"{UCI_PROCESS_FILE_PATH}/{data_type}/12_hours.csv", index=False)
+    uci_data_12_hours.to_csv(f"{UCI_DATASET_PATH}/{data_type}/12_hours.csv", index=False)
     # Compute the 1-day data, 96-`15 minutes` group
     uci_data_1_day = uci_data_15_min.groupby(uci_data_15_min.index // 48).transform("sum")
     uci_data_1_day["Time"] = uci_data_15_min["Time"]  # change time column
     uci_data_1_day = uci_data_1_day[uci_data_1_day.index % 96 == 95]  # just keep 1-day data
-    uci_data_1_day.to_csv(f"{UCI_PROCESS_FILE_PATH}/{data_type}/1_day.csv", index=False)
+    uci_data_1_day.to_csv(f"{UCI_DATASET_PATH}/{data_type}/1_day.csv", index=False)
     # Assert for detection
     if data_type == "Train":
         DAYS = TRAIN_DAYS
