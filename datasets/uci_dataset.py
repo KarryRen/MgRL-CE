@@ -17,129 +17,137 @@ After the preprocessing raw UCI electricity dataset (download from web) by
             └── Test
 
 In this dataset:
-    - during `__init__()`, we will LOAD all images and masks file path.
-    - during `__getitem__()`, we will READ 1 image and mask and label to memory.
+    - during `__init__()`, we will READ all `.csv` files of multi-granularity data to memory.
+    - during `__getitem__()`, we will READ 1 item with multi-granularity data and lag it by day.
 
 """
 
-import torch.utils.data
-import os
+from torch.utils import data
+import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 
-class JointIspyDataset(torch.utils.data.Dataset):
-    """ The Joint I-SPY1 Dataset. """
+class UCIDataset(data.Dataset):
+    """ The torch.Dataset of UCI electricity dataset. """
 
-    def __init__(self, root_path: str, data_type: str = "Train"):
-        """ The init function of JointIspyDataset. Will load all image and mask file path.
+    def __init__(self, root_path: str, data_type: str = "Train", time_steps: int = 2):
+        """ The init function of UCIDataset. Will READ all `.csv` files of multi-granularity data to memory.
+        For this dataset, the task is predicting the daily consumption of each client, so let the daily data be core !!
 
-        :param root_path: the root path of I-SPY1 Dataset
-        :param data_type: the data type, you have only 3 choices:
-            - "Train" for train data
-            - "Valid" for valid data
-            - "Test" for test data
+        :param root_path: the root path of UCI electricity dataset.
+        :param data_type: the data_type of dataset, you have 3 choices now:
+            - "Train" for train dataset
+            - "Valid" for valid dataset
+            - "Test" for test dataset
+        :param time_steps: the time steps (lag steps)
 
         """
 
-        # ---- Step 1. Define the images and masks file path list ---- #
-        self.images_file_path_list = []
-        self.masks_file_path_list = []
+        # ---- Step 0. Set the params and load all data to memory ---- #
+        self.S = time_steps
+        feature_1_day = pd.read_csv(f"{root_path}/{data_type}/1_day.csv", index_col=0)
+        feature_12_hours = pd.read_csv(f"{root_path}/{data_type}/12_hours.csv", index_col=0)
+        feature_4_hours = pd.read_csv(f"{root_path}/{data_type}/4_hours.csv", index_col=0)
+        feature_1_hour = pd.read_csv(f"{root_path}/{data_type}/1_hour.csv", index_col=0)
+        feature_15_minutes = pd.read_csv(f"{root_path}/{data_type}/15_minutes.csv", index_col=0)
+        label = pd.read_csv(f"{root_path}/{data_type}/label.csv", index_col=0)
 
-        # ---- Step 2. Get all cases ---- #
-        # construct the images and masks directory path
-        images_directory_path = f"{root_path}/{data_type}/images"
-        masks_directory_path = f"{root_path}/{data_type}/masks"
-        # get the case id in directory
-        images_case_id_list = sorted(os.listdir(images_directory_path))
-        masks_case_id_list = sorted(os.listdir(masks_directory_path))
-        assert images_case_id_list == masks_case_id_list, "images cases are not == masks cases !!!"
-        case_id_list = images_case_id_list  # set the images_cases_list to cases_list
+        # ---- Step 1. Read some params from 1-day feature ---- #
+        client_list = feature_1_day.columns  # each column represents a client
+        self.total_day_nums = len(feature_1_day)  # the total number of days
+        self.total_client_nums = len(client_list)  # the total number of clients
 
-        # ---- Step 3. Read all images and masks file path ---- #
-        for case_id in case_id_list:
-            # get the cased images and masks directory
-            images_case_id_directory_path = f"{images_directory_path}/{case_id}"
-            masks_case_id_directory_path = f"{masks_directory_path}/{case_id}"
-            # get all images and masks file path
-            images_case_id_path_list = sorted(os.listdir(images_case_id_directory_path))
-            masks_case_id_path_list = sorted(os.listdir(masks_case_id_directory_path))
-            assert len(images_case_id_path_list) == len(masks_case_id_path_list), "Image Mask num not equal !!!"
-            # append all path to list
-            for images_case_id_path in images_case_id_path_list:
-                self.images_file_path_list.append(f"{images_case_id_directory_path}/{images_case_id_path}")
-            for masks_case_id_path in masks_case_id_path_list:
-                self.masks_file_path_list.append(f"{masks_case_id_directory_path}/{masks_case_id_path}")
-
-        # ---- Step 4. Check Data Len ---- #
-        assert len(self.images_file_path_list) == len(self.masks_file_path_list), "Image Mask num not total equal !!!"
+        # ---- Step 3. Read all `.csv` files of multi-granularity data to memory. ---- #
+        self.label_list = []  # label list, each item is a daily label array (T, 1) for one client
+        self.mg_features_list_dict = {
+            "feature_1_day": [],
+            "feature_12_hours": [],
+            "feature_4_hours": [],
+            "feature_1_hour": [],
+            "feature_15_minutes": []
+        }  # features key-value pair, each item of dict is a list of features
+        for client in client_list:  # for-loop to append label and feature
+            self.label_list.append(label[client].values)
+            self.mg_features_list_dict["feature_1_day"].append(feature_1_day[client].values)
+            self.mg_features_list_dict["feature_12_hours"].append(feature_12_hours[client].values)
+            self.mg_features_list_dict["feature_4_hours"].append(feature_4_hours[client].values)
+            self.mg_features_list_dict["feature_1_hour"].append(feature_1_hour[client].values)
+            self.mg_features_list_dict["feature_15_minutes"].append(feature_15_minutes[client].values)
 
     def __len__(self):
         """ Get the length of dataset. """
 
-        return len(self.images_file_path_list)
+        return self.total_client_nums * self.total_day_nums
 
     def __getitem__(self, idx: int):
-        """ Get the item.
+        """ Get the item based on idx, and lag the item.
 
-        :param idx: the item idx
+        return: item_data (one day of one client)
+            - `mg_features`: the multi-granularity features of UCI electricity dataset, the format is
+            - `label`: the return label, shape=(1)
+            - `weight`: the weight, shape=(1)
 
-        return: a dict with the format:
-            {
-                "image": the image array, shape=(3, 128, 128)
-                "cls_label": the label for classification, shape=(1,)
-                "seg_gt": the ground truth for segmentation, shape=(1, 128, 128)
-                    only have 0 and 1, 0-gd and 1-tumor
-                "item_name": a str
-            }
         """
 
-        # ---- Check image and mask right ---- #
-        image_name = self.images_file_path_list[idx].split("/")[-1]
-        image_case_id = image_name.split("_")[1]
-        image_slice_num = image_name.split("_")[3]
-        mask_name = self.masks_file_path_list[idx].split("/")[-1]
-        mask_case_id = mask_name.split("_")[1]
-        mask_slice_num = mask_name.split("_")[3]
-        assert image_case_id == mask_case_id and image_slice_num == mask_slice_num, "Image Mask not Right !!!"
+        # ---- Compute the index pair [client_idx, day_idx] to locate data ---- #
+        client_idx = idx // self.total_day_nums  # get the client index to locate the client of data
+        day_idx = idx % self.total_day_nums  # get the day index to locate the day of daily data
+        hour_12_idx = (day_idx + 1) * 2 - 1  # get the 12 hours index
+        hour_4_idx = (day_idx + 1) * 6 - 1  # get the 4 hours index
+        hour_1_idx = (day_idx + 1) * 24 - 1  # get the 1 hour idx
+        minute_15_idx = (day_idx + 1) * 96 - 1  # get thr
 
-        # ---- Read the image, label and mask ---- #
-        # - image
-        image = plt.imread(self.images_file_path_list[idx])  # shape=(h, w, 3)
-        image = (image / 255).transpose(2, 0, 1)  # scale to [0, 1], and transpose to (3, h, w)
-        assert (0.0 <= image).all() and (image <= 1.0).all(), "image value ERROR !!!"
-        # - label for classification task
-        cls_label = np.array([int(image_name.split("_")[2])])  # shape=(1,)
-        # - gt for segmentation task, and make it 0-gd, 1-tumor
-        seg_gt = plt.imread(self.masks_file_path_list[idx])[:, :, 0]  # shape=(h, w)
-        seg_gt = (seg_gt >= 50).astype(np.int8)  # avoid not 0 or 1
-        # - the item name, just be the image name
-        item_name = image_name
+        # ---- Get the multi-granularity features, label and weight ---- #
+        mg_features_dict = {
+            "feature_1_day": [],
+            "feature_12_hours": [],
+            "feature_4_hours": [],
+            "feature_1_hour": [],
+            "feature_15_minutes": []
+        }  # feature dict, each item shape=(time_steps, feature_shape)
+        # meaningless data, features are made to all zeros, erasing the front and tail data
+        if day_idx < self.S - 1 or day_idx >= self.total_day_nums - 1:
+            # set features, all zeros, shape is different from granularity to granularity
+            mg_features_dict["feature_1_day"] = np.zeros((self.S, 1, 1))
+            mg_features_dict["feature_12_hours"] = np.zeros((self.S, 2, 1))
+            mg_features_dict["feature_4_hours"] = np.zeros((self.S, 6, 1))
+            mg_features_dict["feature_1_hour"] = np.zeros((self.S, 24, 1))
+            mg_features_dict["feature_15_minutes"] = np.zeros((self.S, 96, 1))
+            # `label = 0.0` for loss computation, shape=(1)
+            label = np.zeros(1)
+            # `weight = 0.0` means data is meaningless, shape=(1)
+            weight = np.zeros(1)
+        # meaningful data, load the true feature and label
+        else:
+            # load features, shape is based on granularity
+            mg_features_dict["feature_1_day"] = self.mg_features_list_dict["feature_1_day"][client_idx][
+                                                day_idx - self.S + 1:day_idx + 1].reshape(self.S, 1, 1)
+            mg_features_dict["feature_12_hours"] = self.mg_features_list_dict["feature_12_hours"][client_idx][
+                                                   hour_12_idx - self.S * 2 + 1:hour_12_idx + 1].reshape(self.S, 2, 1)
+            mg_features_dict["feature_4_hours"] = self.mg_features_list_dict["feature_4_hours"][client_idx][
+                                                  hour_4_idx - self.S * 6 + 1:hour_4_idx + 1].reshape(self.S, 6, 1)
+            mg_features_dict["feature_1_hour"] = self.mg_features_list_dict["feature_1_hour"][client_idx][
+                                                 hour_1_idx - self.S * 24 + 1:hour_1_idx + 1].reshape(self.S, 24, 1)
+            mg_features_dict["feature_15_minutes"] = self.mg_features_list_dict["feature_15_minutes"][client_idx][
+                                                     minute_15_idx - self.S * 96 + 1:minute_15_idx + 1].reshape(self.S, 96, 1)
+            # get the label, shape=(1)
+            label = self.label_list[client_idx][day_idx].reshape(1)
+            # set `the weight = 1`, shape=(1)
+            weight = np.ones(1)
 
-        # ---- Construct the item ---- #
-        item = {
-            "image": image,
-            "cls_label": cls_label,
-            "seg_gt": seg_gt,
-            "item_name": item_name
+        # ---- Construct item data ---- #
+        item_data = {
+            "mg_features": mg_features_dict,
+            "label": label,
+            "weight": weight
         }
 
-        return item
+        return item_data
 
 
-if __name__ == "__main__":  # a demo using JointIspyDataset
-    ISPY_DATASET_PATH = "/Users/karry/KarryRen/Scientific-Projects/2023-UML/Code/Data/I-SPY1/ISPY_Dataset"
+if __name__ == "__main__":  # a demo using UCIDataset
+    UCI_DATASET_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
+                        "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
 
-    ispy_dataset = JointIspyDataset(root_path=ISPY_DATASET_PATH, data_type="Test")
-
-    # show the image
-    print(ispy_dataset[1]["item_name"])
-    plt.subplot(1, 2, 1)
-    plt.imshow(ispy_dataset[1]["image"].transpose(1, 2, 0))
-    plt.subplot(1, 2, 2)
-    plt.imshow(ispy_dataset[1]["seg_gt"])
-    plt.show()
-
-    # for i in range(len(ispy_dataset)):
-    #     print(ispy_dataset[i]["image"].max(), ispy_dataset[i]["image"].min())
-    #     print(ispy_dataset[i]["seg_gt"].sum())
+    data_set = UCIDataset(UCI_DATASET_PATH, data_type="Test", time_steps=3)
+    print(data_set[2])
