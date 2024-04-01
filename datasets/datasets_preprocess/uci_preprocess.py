@@ -16,6 +16,10 @@ Because we want to make the code clear and beautiful, so we need you to do some 
         UCI_PROCESS_FILE_PATH/
             ├── Train
                ├── 15_minutes.csv
+               ├── 1_hour.csv
+               ├── 4_hours.csv
+               ├── 12_hours.csv
+               └── 1_day.csv
             ├── Valid
             └── Test
 

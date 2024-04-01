@@ -6,6 +6,9 @@
 ```python
 MgRL-CE/
 ├── datasets
+    ├── datasets_preprocess
+        ├── uci_preprocess.py # The pre-process code of UCI electricity dataset (download from web).
+    ├── uci_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
 └── 
 ```
 
@@ -21,7 +24,7 @@ This study extensively performs experiments on 2 real-world Datasets to verify t
 
 - **UCI electricity dataset**. Could be downloaded from [**HERE**](https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014) ! 
 
-  > The UCI electricity dataset collects the electricity consumption (kWh) every 15 minutes of 321 clients from 2012 to 2014. This study aims to **predict the daily consumption of each client**. This work splits train, val, test datasets with 24, 6, 6 months separatly. The granularity of input features is 1 day, 12 hours, 4 hours, 1 hour, and 15 minutes.
+  > The UCI electricity dataset collects the electricity consumption (kWh) every 15 minutes of 370 clients from 2011 to 2014. This study aims to **predict the daily consumption of each client**. I split Train, Valid and Test datasets with 36, 6 and 6 months separatly. The granularity of input features is 1 day, 12 hours, 4 hours, 1 hour, and 15 minutes.
 
 - **CSI300 stock dataset**. Updating 🔥.
 
@@ -29,10 +32,10 @@ This study extensively performs experiments on 2 real-world Datasets to verify t
 
 ## Data Pre-Process and `torch.Dataset`
 
-After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. We have released Pre-Process code for datasets, please read them carefully and follow the guidelines in the comment ! Also we released `torch.Dataset` code for datasets.
+After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. I have released Pre-Process code for datasets, please read them carefully and **follow the guidelines in the comment rather than running the shell command directly !!!** I also released `torch.Dataset` code for datasets.
 
 - **UCI electricity dataset**. 
-  - The Pre-Process code is in `ispy_preprocess.py`, [**HERE**](https://github.com/KarryRen/UML/blob/main/dataset/dataset_preprocess/ispy_preprocess.py) ! You can **RUN** it using `python3 ispy_preprocess.py`
-  - The  `torch.Dataset` code is in `uci_dataset.py`, [**HERE**](https://github.com/KarryRen/UML/blob/main/dataset/ispy_dataset.py) ! 
+  - The Pre-Process code is in `uci_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/uci_preprocess.py) ! You can **RUN** it by `python3 uci_preprocess.py`
+  - The  `torch.Dataset` code is in `uci_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/uci_dataset.py) ! 
 - **CSI300 stock dataset**. 
   - Updating 🔥.
