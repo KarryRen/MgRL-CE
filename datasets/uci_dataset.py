@@ -83,7 +83,14 @@ class UCIDataset(data.Dataset):
         """ Get the item based on idx, and lag the item.
 
         return: item_data (one day of one client)
-            - `mg_features`: the multi-granularity features of UCI electricity dataset, the format is
+            - `mg_features`: the multi-granularity features of UCI electricity dataset, the format is:
+                {
+                    "feature_1_day": , shape=(time_steps, 1, 1)
+                    "feature_12_hours": , shape=(time_steps, 2, 1)
+                    "feature_4_hours": , shape=(time_steps, 6, 1)
+                    "feature_1_hour": , shape=(time_steps, 24, 1)
+                    "feature_15_minutes": , shape=(time_steps, 96, 1)
+                }
             - `label`: the return label, shape=(1)
             - `weight`: the weight, shape=(1)
 
@@ -149,5 +156,11 @@ if __name__ == "__main__":  # a demo using UCIDataset
     UCI_DATASET_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
                         "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
 
-    data_set = UCIDataset(UCI_DATASET_PATH, data_type="Test", time_steps=3)
-    print(data_set[2])
+    data_set = UCIDataset(UCI_DATASET_PATH, data_type="Valid", time_steps=2)
+    # weight_1_sum = 0
+    # for i in range(len(data_set)):
+    #     uci_data = data_set[i]
+    #     if uci_data["weight"] != [0]:
+    #         weight_1_sum += 1
+    # print(weight_1_sum)
+    print(data_set[182])
