@@ -17,20 +17,22 @@ MgRL-CE/
 
 ## Dataset Acquisition
 
-We use **3 Datasets** to test our UML network. You can **DOWNLOAD** the raw dataset from the following links. 
+This study extensively performs experiments on 2 real-world Datasets to verify the feasibility of the proposed MgRL-CE. You can **DOWNLOAD** the raw dataset from the following links. 
 
-- **I-SPY1 Trail Dataset**. Could be downloaded from [**HERE**](https://www.kaggle.com/datasets/saarthakkapse/ispy1-trail-dataset) ! 
-- **Refuge Glaucoma**. Could be downloaded from [**HERE**](https://pan.baidu.com/s/1DE8a3UgwGJY85bsr4U7tdw?pwd=2023) ! 
+- **UCI electricity dataset**. Could be downloaded from [**HERE**](https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014) ! 
+
+  > The UCI electricity dataset collects the electricity consumption (kWh) every 15 minutes of 321 clients from 2012 to 2014. This study aims to **predict the daily consumption of each client**. This work splits train, val, test datasets with 24, 6, 6 months separatly. The granularity of input features is 1 day, 12 hours, 4 hours, 1 hour, and 15 minutes.
+
+- **CSI300 stock dataset**. Updating 🔥.
 
 
 
 ## Data Pre-Process and `torch.Dataset`
 
-After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed which is to reformat the directory structure  of datasets. We have released Pre-Process code for datasets, please read them carefully and follow the guidelines in the comment ! Also we released `torch.Dataset` code for datasets,
+After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. We have released Pre-Process code for datasets, please read them carefully and follow the guidelines in the comment ! Also we released `torch.Dataset` code for datasets.
 
-- **I-SPY1 Trail Dataset**. 
+- **UCI electricity dataset**. 
   - The Pre-Process code is in `ispy_preprocess.py`, [**HERE**](https://github.com/KarryRen/UML/blob/main/dataset/dataset_preprocess/ispy_preprocess.py) ! You can **RUN** it using `python3 ispy_preprocess.py`
-  - The  `torch.Dataset` code is in `ispy_dataset.py`, [**HERE**](https://github.com/KarryRen/UML/blob/main/dataset/ispy_dataset.py) ! 
-- **Refuge Glaucoma**. 
-  - The Pre-Process code is in `refuge_preprocess.py`, [**HERE**](https://github.com/KarryRen/UML/blob/main/dataset/dataset_preprocess/refuge_preprocess.py) ! You can **RUN** it using `python3 refuge_preprocess.py`
-  - The  `torch.Dataset` code is in `refuge_dataset.py`, [**HERE**](https://github.com/KarryRen/UML/blob/main/dataset/refuge_dataset.py) !
+  - The  `torch.Dataset` code is in `uci_dataset.py`, [**HERE**](https://github.com/KarryRen/UML/blob/main/dataset/ispy_dataset.py) ! 
+- **CSI300 stock dataset**. 
+  - Updating 🔥.
