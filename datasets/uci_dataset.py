@@ -44,12 +44,12 @@ class UCIDataset(data.Dataset):
         """
 
         # ---- Step 0. Set the params and load all data to memory ---- #
-        self.S = time_steps
-        feature_1_day = pd.read_csv(f"{root_path}/{data_type}/1_day.csv", index_col=0)
-        feature_12_hours = pd.read_csv(f"{root_path}/{data_type}/12_hours.csv", index_col=0)
-        feature_4_hours = pd.read_csv(f"{root_path}/{data_type}/4_hours.csv", index_col=0)
-        feature_1_hour = pd.read_csv(f"{root_path}/{data_type}/1_hour.csv", index_col=0)
-        feature_15_minutes = pd.read_csv(f"{root_path}/{data_type}/15_minutes.csv", index_col=0)
+        self.T = time_steps
+        feature_1_day = pd.read_csv(f"{root_path}/{data_type}/1_day.csv", index_col=0)  # g1
+        feature_12_hours = pd.read_csv(f"{root_path}/{data_type}/12_hours.csv", index_col=0)  # g2
+        feature_4_hours = pd.read_csv(f"{root_path}/{data_type}/4_hours.csv", index_col=0)  # g3
+        feature_1_hour = pd.read_csv(f"{root_path}/{data_type}/1_hour.csv", index_col=0)  # g4
+        feature_15_minutes = pd.read_csv(f"{root_path}/{data_type}/15_minutes.csv", index_col=0)  # g5
         label = pd.read_csv(f"{root_path}/{data_type}/label.csv", index_col=0)
 
         # ---- Step 1. Read some params from 1-day feature ---- #
@@ -83,14 +83,14 @@ class UCIDataset(data.Dataset):
         """ Get the item based on idx, and lag the item.
 
         return: item_data (one day of one client)
-            - `mg_features`: the multi-granularity features of UCI electricity dataset, the format is:
+            - `mg_features`: the multi-granularity (5 kinds of granularity) features of UCI electricity dataset, the format is:
                 {
-                    "feature_1_day": , shape=(time_steps, 1, 1)
-                    "feature_12_hours": , shape=(time_steps, 2, 1)
-                    "feature_4_hours": , shape=(time_steps, 6, 1)
-                    "feature_1_hour": , shape=(time_steps, 24, 1)
+                    "feature_1_day": , shape=(time_steps, 1, 1),
+                    "feature_12_hours": , shape=(time_steps, 2, 1),
+                    "feature_4_hours": , shape=(time_steps, 6, 1),
+                    "feature_1_hour": , shape=(time_steps, 24, 1),
                     "feature_15_minutes": , shape=(time_steps, 96, 1)
-                }
+                } shape is (T, K^g, D)
             - `label`: the return label, shape=(1)
             - `weight`: the weight, shape=(1)
 
@@ -113,30 +113,30 @@ class UCIDataset(data.Dataset):
             "feature_15_minutes": []
         }  # feature dict, each item shape=(time_steps, feature_shape)
         # meaningless data, features are made to all zeros, erasing the front and tail data
-        if day_idx < self.S - 1 or day_idx >= self.total_day_nums - 1:
+        if day_idx < self.T - 1 or day_idx >= self.total_day_nums - 1:
             # set features, all zeros, shape is different from granularity to granularity
-            mg_features_dict["feature_1_day"] = np.zeros((self.S, 1, 1))
-            mg_features_dict["feature_12_hours"] = np.zeros((self.S, 2, 1))
-            mg_features_dict["feature_4_hours"] = np.zeros((self.S, 6, 1))
-            mg_features_dict["feature_1_hour"] = np.zeros((self.S, 24, 1))
-            mg_features_dict["feature_15_minutes"] = np.zeros((self.S, 96, 1))
+            mg_features_dict["feature_1_day"] = np.zeros((self.T, 1, 1))
+            mg_features_dict["feature_12_hours"] = np.zeros((self.T, 2, 1))
+            mg_features_dict["feature_4_hours"] = np.zeros((self.T, 6, 1))
+            mg_features_dict["feature_1_hour"] = np.zeros((self.T, 24, 1))
+            mg_features_dict["feature_15_minutes"] = np.zeros((self.T, 96, 1))
             # `label = 0.0` for loss computation, shape=(1)
             label = np.zeros(1)
             # `weight = 0.0` means data is meaningless, shape=(1)
             weight = np.zeros(1)
         # meaningful data, load the true feature and label
         else:
-            # load features, shape is based on granularity
+            # load features, shape is based on granularity, (T, K^g, D)
             mg_features_dict["feature_1_day"] = self.mg_features_list_dict["feature_1_day"][client_idx][
-                                                day_idx - self.S + 1:day_idx + 1].reshape(self.S, 1, 1)
+                                                day_idx - self.T + 1:day_idx + 1].reshape(self.T, 1, 1)
             mg_features_dict["feature_12_hours"] = self.mg_features_list_dict["feature_12_hours"][client_idx][
-                                                   hour_12_idx - self.S * 2 + 1:hour_12_idx + 1].reshape(self.S, 2, 1)
+                                                   hour_12_idx - self.T * 2 + 1:hour_12_idx + 1].reshape(self.T, 2, 1)
             mg_features_dict["feature_4_hours"] = self.mg_features_list_dict["feature_4_hours"][client_idx][
-                                                  hour_4_idx - self.S * 6 + 1:hour_4_idx + 1].reshape(self.S, 6, 1)
+                                                  hour_4_idx - self.T * 6 + 1:hour_4_idx + 1].reshape(self.T, 6, 1)
             mg_features_dict["feature_1_hour"] = self.mg_features_list_dict["feature_1_hour"][client_idx][
-                                                 hour_1_idx - self.S * 24 + 1:hour_1_idx + 1].reshape(self.S, 24, 1)
+                                                 hour_1_idx - self.T * 24 + 1:hour_1_idx + 1].reshape(self.T, 24, 1)
             mg_features_dict["feature_15_minutes"] = self.mg_features_list_dict["feature_15_minutes"][client_idx][
-                                                     minute_15_idx - self.S * 96 + 1:minute_15_idx + 1].reshape(self.S, 96, 1)
+                                                     minute_15_idx - self.T * 96 + 1:minute_15_idx + 1].reshape(self.T, 96, 1)
             # get the label, shape=(1)
             label = self.label_list[client_idx][day_idx].reshape(1)
             # set `the weight = 1`, shape=(1)
@@ -156,11 +156,11 @@ if __name__ == "__main__":  # a demo using UCIDataset
     UCI_DATASET_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
                         "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
 
-    data_set = UCIDataset(UCI_DATASET_PATH, data_type="Valid", time_steps=2)
+    data_set = UCIDataset(UCI_DATASET_PATH, data_type="Valid", time_steps=1)
     # weight_1_sum = 0
     # for i in range(len(data_set)):
     #     uci_data = data_set[i]
     #     if uci_data["weight"] != [0]:
     #         weight_1_sum += 1
     # print(weight_1_sum)
-    print(data_set[182])
+    print(data_set[0])
