@@ -6,7 +6,7 @@
 
 After the preprocessing raw UCI electricity dataset (download from web) by
     run `python uci_preprocess.py` you will get the following I-SPY1 dataset directory:
-        UCI_DATASET_PATH/
+        UCI_ELECT_DATASET_PATH/
             ├── Train
                ├── 15_minutes.csv
                ├── 1_hour.csv
@@ -27,7 +27,7 @@ import pandas as pd
 import numpy as np
 
 
-class UCIDataset(data.Dataset):
+class ELECTDataset(data.Dataset):
     """ The torch.Dataset of UCI electricity dataset. """
 
     def __init__(self, root_path: str, data_type: str = "Train", time_steps: int = 2):
@@ -153,10 +153,10 @@ class UCIDataset(data.Dataset):
 
 
 if __name__ == "__main__":  # a demo using UCIDataset
-    UCI_DATASET_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
-                        "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
+    UCI_ELECT_DATASET_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
+                              "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
 
-    data_set = UCIDataset(UCI_DATASET_PATH, data_type="Valid", time_steps=1)
+    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=1)
     # weight_1_sum = 0
     # for i in range(len(data_set)):
     #     uci_data = data_set[i]

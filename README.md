@@ -7,8 +7,8 @@
 MgRL-CE/
 ├── datasets
     ├── datasets_preprocess
-        ├── uci_preprocess.py # The pre-process code of UCI electricity dataset (download from web).
-    ├── uci_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
+        ├── elect_preprocess.py # The pre-process code of UCI electricity dataset (download from web).
+    ├── elect_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
 ├── images # All used images of this repo.
 ├── model # The MgRL-CE models.
     ├── MgRL.py # The basic Multi-Granularity Residual Learning Framework.
@@ -41,8 +41,8 @@ This study extensively performs experiments on 3 real-world Datasets to verify t
 After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. I have released Pre-Process code for datasets, please read them carefully and **follow the guidelines in the comment rather than running the shell command directly !!!** I also released `torch.Dataset` code for datasets.
 
 - **UCI electricity dataset**. 
-  - The Pre-Process code is in `uci_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/uci_preprocess.py) ! You can **RUN** it by `python3 uci_preprocess.py`
-  - The  `torch.Dataset` code is in `uci_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/uci_dataset.py) ! 
+  - The Pre-Process code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by `python3 elect_preprocess.py`
+  - The  `torch.Dataset` code is in `elect_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/elect_dataset.py) ! 
 - **IF_M0 future dataset**. 
   - Updating 🔥.
 - **CSI300 stock dataset**. 
