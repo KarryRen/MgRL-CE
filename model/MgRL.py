@@ -61,10 +61,12 @@ class MgRLNet(nn.Module):
         ).to(device=device)
         self.feature_encoder_dict["g1"]["Pred"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
         ).to(device=device)
         self.feature_encoder_dict["g1"]["Rec"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
         ).to(device=device)
         # Granularity 2
@@ -74,10 +76,12 @@ class MgRLNet(nn.Module):
         ).to(device=device)
         self.feature_encoder_dict["g2"]["Pred"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
         ).to(device=device)
         self.feature_encoder_dict["g2"]["Rec"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
         ).to(device=device)
         # Granularity 3
@@ -87,10 +91,12 @@ class MgRLNet(nn.Module):
         ).to(device=device)
         self.feature_encoder_dict["g3"]["Pred"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
         ).to(device=device)
         self.feature_encoder_dict["g3"]["Rec"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
         ).to(device=device)
         # Granularity 4
@@ -100,10 +106,12 @@ class MgRLNet(nn.Module):
         ).to(device=device)
         self.feature_encoder_dict["g4"]["Pred"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
         ).to(device=device)
         self.feature_encoder_dict["g4"]["Rec"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
         ).to(device=device)
         # Granularity 5 (finest)
@@ -113,10 +121,12 @@ class MgRLNet(nn.Module):
         ).to(device=device)
         self.feature_encoder_dict["g5"]["Pred"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
         ).to(device=device)
         self.feature_encoder_dict["g5"]["Rec"] = nn.Sequential(
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
+            nn.GELU(),
             nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
         ).to(device=device)
 
