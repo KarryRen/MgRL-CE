@@ -15,12 +15,24 @@ class MgRL_Loss:
     """
 
     def __init__(self, reduction: str = "sum", lambda_1: float = 1.0):
+        """ Init function of the MgRL Loss.
+
+        :param reduction: the reduction of this loss, you have only 2 choices now:
+            - `sum` for sum reduction
+            - `mean` for mean reduction
+        :param lambda_1: the hyper-param lambda_1 of MgRL Loss
+
+        NOTE: You might have question about the weight decay and where is the lambda_theta of the loss.
+            All settings about the weight_decay are in optimizer !
+
+        """
+
         assert reduction in ["sum", "mean"], f"Reduction in MgRL_Loss ERROR !! `{reduction}` is not allowed !!"
         self.reduction = reduction  # the reduction
         self.lambda_1 = lambda_1  # the lambda weight of Reconstruction Loss
 
     def __call__(self, y_true: torch.Tensor, y_pred: torch.Tensor, rec_residuals: tuple, weight: torch.Tensor):
-        """ Compute the MgRL Loss.
+        """ Call function of  the MgRL Loss.
 
         :param y_true: the true label of time series prediction, shape=(bs, 1)
         :param y_pred: the prediction of MgRL Net, shape=(bs, 1)
