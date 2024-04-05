@@ -150,8 +150,7 @@ class ELECTDataset(data.Dataset):
 
 
 if __name__ == "__main__":  # a demo using UCIDataset
-    UCI_ELECT_DATASET_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
-                              "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
+    UCI_ELECT_DATASET_PATH = "../../Data/UCI_electricity_dataset/dataset"
 
     data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=2)
     # weight_1_sum = 0
