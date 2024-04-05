@@ -67,7 +67,7 @@ class ELECTDataset(data.Dataset):
             "feature_4_hours": [],
             "feature_1_hour": [],
             "feature_15_minutes": []
-        }  # features key-value pair, each item of dict is a list of features
+        }  # features key-value pair, each item of dict is a list of features for one client
         for client in client_list:  # for-loop to append label and feature
             self.label_list.append(label[client].values)
             self.mg_features_list_dict["feature_1_day"].append(feature_1_day[client].values)
