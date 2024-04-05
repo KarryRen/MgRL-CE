@@ -16,7 +16,7 @@ MgRL-CE/
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
     ├── metric.py # The metrics of y_ture and y_pred.
     ├── modules.py # The modules of model.
-├── data_visualization
+├── data_visualization # some data visulization functions
 ├── configs # The train&prediction code of 3 datasets.
     ├── elect_config.py # Config file of UCI electricity dataset.
 ├── train_pred_MgRL.py # Training and Prediction code of `MgRLNet` for 3 datasets.
@@ -47,19 +47,21 @@ This study extensively performs experiments on 3 real-world Datasets to verify t
 
 ## Data Pre-Process and `torch.Dataset`
 
-After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. I have released Pre-Process code for datasets, please read them carefully and **follow the guidelines in the top comment rather than running the shell command directly !!!** I also released `torch.Dataset` code for datasets.
+After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. I have released Pre-Process code for datasets, please read them carefully and **follow the guidelines in the top comment rather than running the shell command directly !** I have also released `torch.Dataset` code for datasets.
 
 - **UCI electricity dataset**. 
   
-  > In order to minimize the interference caused by missing data, this study intercepts the sample data from the original dataset for the three-year period from **2012 to 2014**, and excludes the samples with more than 10 days of missing data in the interval, and finally retains the electricity consumption data of **370 clients**. The target task of this paper is to **predict the daily electricity consumption of each clients**, and the dataset is divided into training set, validation set and test set according to the time sequence, which covers 24 months, 6 months and 6 months, respectively. The input network is characterized by **five granularity**: 1 day, 12 hours, 4 hours, 1 hour and 15 minutes.
+  > In order to minimize the interference caused by missing data, this study intercepts the sample data from the original dataset for the three-year period from **2012 to 2014**, and excludes the samples with more than 10 days of missing data in the interval, and finally retains the electricity consumption data of **370 clients**. The target task of this paper is to **predict the daily electricity consumption of each clients**, and the dataset is divided into training set, validation set and test set according to the time sequence, which covers 24 months, 6 months and 6 months, respectively. The input network is characterized by **five granularity**: 1 day (coarsest), 12 hours, 4 hours, 1 hour and 15 minutes (finest). During the pre-process i have also **change the unit of data from kW*15min to kWh**.
   
   - The Pre-Process code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by `python3 elect_preprocess.py`
   - The  `torch.Dataset` code is in `elect_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/elect_dataset.py) ! 
   
 - **IF_M0 future dataset**. 
+  
   - Updating 🔥.
   
-- **CSI300 stock dataset**. 
+- **CSI300 stock dataset**.
+  
   - Updating 🔥.
 
 
@@ -71,6 +73,10 @@ There are many **differences** between the different datasets **during Training 
 - **UCI electricity dataset**. 
   - You should set the config file firstly in `elect_config.py` , **HERE** !
   
-  - The Training and Prediction code of `MgRLNet` is in ` train_pred_MgRL.py `, **HERE** ! 
+  - The Training and Prediction code of `MgRLNet` is in ` train_pred_MgRL.py `, **HERE** !  You can **RUN** it by:
   
-    You can **RUN** it by `python3.8 train_pred_MgRL.py --dataset elect`
+     ```shell
+     python3.8 train_pred_MgRL.py --dataset elect
+     ```
+    
+    
