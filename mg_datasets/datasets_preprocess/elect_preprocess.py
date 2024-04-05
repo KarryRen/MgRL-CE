@@ -45,12 +45,9 @@ import pandas as pd
 TRAIN_DAYS, VALID_DAYS, TEST_DAYS = 1096, 181, 184
 
 # ---- Step 1. Change the `PATH` based on your situation ---- #
-UCI_ELECT_DOWNLOAD_FILE_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
-                                "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/LD2011_2014.txt")
-UCI_ELECT_DOWNLOAD_FIX_FILE_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
-                                    "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/LD2011_2014(Fix).txt")
-UCI_ELECT_DATASET_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
-                          "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
+UCI_ELECT_DOWNLOAD_FILE_PATH = "../../../Data/UCI_electricity_dataset/LD2011_2014.txt"
+UCI_ELECT_DOWNLOAD_FIX_FILE_PATH = "../../../Data/UCI_electricity_dataset/LD2011_2014(Fix).txt"
+UCI_ELECT_DATASET_PATH = "../../../Data/UCI_electricity_dataset/dataset"
 print("************************** BEGIN UCI ELECTRICITY DATASET PREPROCESSING **************************")
 
 # ---- Step 2. Change all `,` in .txt file to `.` ---- #
@@ -61,7 +58,7 @@ with open(UCI_ELECT_DOWNLOAD_FILE_PATH, "r") as f:  # read the raw data
         if "," in wrong_line:
             right_line = wrong_line.replace(",", ".")  # change `,` to `.`
         else:
-            right_line = wrong_line  # if have no `,`, just keep raw
+            right_line = wrong_line  # have no `,`, just keep raw
         right_line_list.append(right_line)  # append all lines
 with open(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH, "w") as f:  # write the right line to file
     for right_line in right_line_list:
