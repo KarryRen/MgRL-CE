@@ -2,7 +2,8 @@
 # @Time    : 2024/4/5 09:33
 # @Author  : Karry Ren
 
-""" Training and Prediction code of `MgRLNet` for UCI electricity dataset.
+""" Training and Prediction code of `MgRLNet` for
+    - UCI electricity dataset.
 
 Training, Validation and Prediction be together !
     Here are two functions:
@@ -22,7 +23,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from utils import fix_random_seed, load_best_model
-import elect_config as config
+import configs.elect_config as config
 from datasets.elect_dataset import ELECTDataset
 from model.MgRL import MgRLNet
 from model.loss import MgRL_Loss
@@ -267,7 +268,7 @@ if __name__ == "__main__":
     fix_random_seed(seed=config.RANDOM_SEED)
 
     # ---- Step 1. Train & Valid model ---- #
-    train_valid_model()
+    # train_valid_model()
 
     # ---- Step 2. Pred Model ---- #
     pred_model()

@@ -14,9 +14,9 @@ MgRL-CE/
     ├── MgRL.py # The BASIC Multi-Granularity Residual Learning Framework.
     ├── MgRL_CE.py # Multi-granularity Residual Learning Framework with Confidence Estimation.
     ├── modules.py # The modules for model.
-├── exp_elect # The train&prediction code of UCI electricity dataset.
-    ├── elect_train_pred_MgRL.py # Training and Prediction code of `MgRLNet` for UCI electricity dataset.
+├── configs # The train&prediction code of 3 datasets.
     ├── elect_config.py # Config file of UCI electricity dataset.
+├── train_pred_MgRL.py # Training and Prediction code of `MgRLNet` for 3 datasets.
 └── utils.py # Some util functions.
 ```
 
@@ -55,7 +55,11 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
 
 ## Training & Prediction
 
-There are many **differences** between the different datasets **during Training and Prediction**, so we built separate training and prediction code for each dataset to run:
+There are many **differences** between the different datasets **during Training and Prediction**, so please carefully set the `configs` file of different datasets.
 
 - **UCI electricity dataset**. 
-  - The Training and Prediction code of `MgRLNet` is in ` elect_train_pred_MgRL.py `, **HERE** ! You can **RUN** it by `python3 elect_train_pred_MgRL.py`
+  - You should set the config file firstly in `elect_config.py` , **HERE** !
+  
+  - The Training and Prediction code of `MgRLNet` is in ` train_pred_MgRL.py `, **HERE** ! 
+  
+    You can **RUN** it by `python3 elect_train_pred_MgRL.py`

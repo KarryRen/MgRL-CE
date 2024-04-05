@@ -42,7 +42,7 @@ def load_best_model(model_save_path: str, metric: str) -> tuple:
     """
 
     # ---- Step 1. Read the metric df and test the `metric` ---- #
-    metric_df = pd.read_csv(model_save_path + "model_pytorch_metric.csv", index_col=0)
+    metric_df = pd.read_csv(model_save_path + "model_metric.csv", index_col=0)
     assert metric in metric_df.columns, f"The metric you want use to select best model `{metric}` is not allowed !"
 
     # ---- Step 2. Get the path of best epoch model ---- #
