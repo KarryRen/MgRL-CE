@@ -43,6 +43,8 @@ class ELECTDataset(data.Dataset):
 
         """
 
+        assert data_type in ["Train", "Valid", "Test"], "data_type ERROR !"
+
         # ---- Step 0. Set the params and load all data to memory ---- #
         self.T = time_steps
         feature_1_day = pd.read_csv(f"{root_path}/{data_type}/1_day.csv", index_col=0)  # g1
