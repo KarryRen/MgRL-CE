@@ -15,6 +15,27 @@ Because we want to make the code clear and beautiful, so we need you to do some 
     you need to create the following directory structure `BY HAND`:
         UCI_ELECT_DATASET_PATH/
             ├── Train
+            ├── Valid
+            └── Test
+
+During the preprocessing, we wil do the following things:
+    1. Set the path.
+    2. Change all `,` in .txt file to `.`, in fact the raw .txt data has some errors, all `,` should be `.` !
+    3. Intercept the raw elect data for the three-year period `from 2012 to 2014`, totally 1096 days and 105216 15_minutes.
+    4. Exclude the samples with more than 10 days of missing data, and just keep 321 clients, while change the unit of data.
+    5. Split the raw data to Train/Valid/Test and save to `15_minutes.csv` file as following:
+        - Train (24 months, 366+365=1096 days, and 70176 rows of data)
+        - Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
+        - Test (6 months, 31+31+30+31+30+31=184 days, and 17664 rows of data)
+    6. Use the down-granularity algorithm to Compute other granularity (1-hour, 4-hours, 12-hours and 1-day) uci electricity data.
+       And compute the daily label.
+
+All in all, after downloading the file from the web, you need:
+    1. Change the `UCI_DOWNLOAD_FILE_PATH` and `UCI_PROCESS_FILE_PATH` based on your situation.
+    2. Create the directory structure `BY HAND` following the top comment.
+    3. Run this file by `python elect_preprocess.py` and you will ge the following directory structure:
+        UCI_ELECT_DATASET_PATH/
+            ├── Train
                ├── 15_minutes.csv
                ├── 1_hour.csv
                ├── 4_hours.csv
@@ -23,26 +44,14 @@ Because we want to make the code clear and beautiful, so we need you to do some 
             ├── Valid
             └── Test
 
-During the preprocessing, we wil do the following things:
-    1. Change all `,` in .txt file to `.`, in fact the raw .txt data has some errors, all `,` should be `.` !
-    2. Split the raw data to Train/Valid/Test and save to `15_minutes.csv` file as following:
-        - Train (36 months, 365+366+365=1096 days, and 105216 rows of data)
-        - Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
-        - Test (6 months, 31+31+30+31+30+31=184 days, and 17664 rows of data)
-    3. Compute other frequency (1-hour, 4-hours, 12-hours and 1-day) uci electricity data (re-frequency).
-    4. Compute the daily label.
-
-All in all, after downloading the file from the web, you need:
-    1. Change the `UCI_DOWNLOAD_FILE_PATH` and `UCI_PROCESS_FILE_PATH` based on your situation.
-    2. Create the directory structure.
-    3. Run this file by `python uci_preprocess.py`
-
 """
 
 import pandas as pd
+import numpy as np
+import os
 
 # ---- Define the PARAMS ---- #
-TRAIN_DAYS, VALID_DAYS, TEST_DAYS = 1096, 181, 184
+TRAIN_DAYS, VALID_DAYS, TEST_DAYS = 731, 181, 184
 
 # ---- Step 1. Change the `PATH` based on your situation ---- #
 UCI_ELECT_DOWNLOAD_FILE_PATH = "../../../Data/UCI_electricity_dataset/LD2011_2014.txt"
@@ -50,64 +59,82 @@ UCI_ELECT_DOWNLOAD_FIX_FILE_PATH = "../../../Data/UCI_electricity_dataset/LD2011
 UCI_ELECT_DATASET_PATH = "../../../Data/UCI_electricity_dataset/dataset"
 print("************************** BEGIN UCI ELECTRICITY DATASET PREPROCESSING **************************")
 
-# ---- Step 2. Change all `,` in .txt file to `.` ---- #
-with open(UCI_ELECT_DOWNLOAD_FILE_PATH, "r") as f:  # read the raw data
-    wrong_line_list = f.readlines()  # all lines are wrong
-    right_line_list = []  # right line list is empty
-    for wrong_line in wrong_line_list:  # for loop to change wrong line to right line
-        if "," in wrong_line:
-            right_line = wrong_line.replace(",", ".")  # change `,` to `.`
-        else:
-            right_line = wrong_line  # have no `,`, just keep raw
-        right_line_list.append(right_line)  # append all lines
-with open(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH, "w") as f:  # write the right line to file
-    for right_line in right_line_list:
-        f.writelines(right_line)
+# ---- Step 2. Change all `,` in .txt file to `.` to fix the error ---- #
+if not os.path.exists(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH):
+    # read the raw data
+    with open(UCI_ELECT_DOWNLOAD_FILE_PATH, "r") as f:
+        wrong_line_list = f.readlines()  # all lines are wrong
+        right_line_list = []  # right line list is empty
+        for wrong_line in wrong_line_list:
+            if "," in wrong_line:  # change wrong line to right line
+                right_line = wrong_line.replace(",", ".")  # change `,` to `.`
+            else:  # have no `,`, just keep raw
+                right_line = wrong_line
+            right_line_list.append(right_line)  # append all lines
+    # write the right line to file
+    with open(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH, "w") as f:
+        for right_line in right_line_list:
+            f.writelines(right_line)
 print("************************** FINISH `,` to `.` REPLACING **************************")
 
-# ---- Step 3. Read the raw data, and change the Time type ---- #
-uci_data = pd.read_table(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH, delimiter=";")  # read data
-uci_data = uci_data.rename(columns={"Unnamed: 0": "Time"})  # change volume name
-pd.to_datetime(uci_data["Time"])  # change Time type
-print("************************** FINISH RAW FILE READING **************************")
+# ---- Step 3. Intercept the raw data for the three-year period `from 2012 to 2014`, while change kW*15min to kW*h ---- #
+elect_data = pd.read_table(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH, delimiter=";")  # read data
+elect_data = elect_data.rename(columns={"Unnamed: 0": "Time"})  # change time column name
+pd.to_datetime(elect_data["Time"])  # change Time type (format)
+elect_data = elect_data[365 * 96:]  # Intercepts from `2012 to 2014` (cut off the 2011)
+print("************************** FINISH INTERCEPTING **************************")
 
-# ---- Step 4. Split to Train & Valid & Test, and save the 15_minutes.csv ---- #
-train_uci_data = uci_data[:105216]  # Train (36 months, 365+366+365=1096 days, and 105216 rows of data)
-train_uci_data.to_csv(f"{UCI_ELECT_DATASET_PATH}/Train/15_minutes.csv", index=False)
-valid_uci_data = uci_data[105216:122592]  # Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
-valid_uci_data.to_csv(f"{UCI_ELECT_DATASET_PATH}/Valid/15_minutes.csv", index=False)
-test_uci_data = uci_data[122592:]  # Test (6 months, 31+31+30+31+30+31=184 days, and 17664 rows of data)
-test_uci_data.to_csv(f"{UCI_ELECT_DATASET_PATH}/Test/15_minutes.csv", index=False)
+# ---- Step 4. Exclude the samples with more than 10 days of missing data ---- #
+elect_data_1_day = elect_data.groupby(elect_data.index // 96).transform("sum")  # group sum
+elect_data_1_day["Time"] = elect_data["Time"]  # change time column
+elect_data_1_day = elect_data_1_day[elect_data_1_day.index % 96 == 95]  # just keep 1-day data
+elect_data_1_day = elect_data_1_day[:10]  # 2012-01-01 to 2012-01-10
+keep_clients_list = []
+for client in elect_data_1_day.columns[1:]:  # for-loop all clients
+    if np.sum(elect_data_1_day[client].values == 0) < 10:  # no more 10
+        keep_clients_list.append(client)  # append the right clients
+elect_data = elect_data[["Time"] + keep_clients_list]  # exclude
+print(f"************************** FINISH EXCLUDING AND GET {len(keep_clients_list)} CLIENTS **************************")
+elect_data[keep_clients_list] = elect_data[keep_clients_list] / 4.0  # change the unit of data.
+print(f"************************** FINISH CHANGE kW*15min to kW*h **************************")
+
+# ---- Step 5. Split to Train & Valid & Test, and save the 15_minutes.csv ---- #
+train_elect_data = elect_data[:70176]  # Train (24 months, 366+365=731 days, and 70176 rows of data)
+train_elect_data.to_csv(f"{UCI_ELECT_DATASET_PATH}/Train/15_minutes.csv", index=False)
+valid_elect_data = elect_data[70176:87552]  # Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
+valid_elect_data.to_csv(f"{UCI_ELECT_DATASET_PATH}/Valid/15_minutes.csv", index=False)
+test_elect_data = elect_data[87552:]  # Test (6 months, 31+31+30+31+30+31=184 days, and 17664 rows of data)
+test_elect_data.to_csv(f"{UCI_ELECT_DATASET_PATH}/Test/15_minutes.csv", index=False)
 print("************************** FINISH 15 MINUTES SPLITTING **************************")
 
-# ---- Step 5. Compute other frequency (1-hour, 4-hours, 12-hours and 1-day) uci electricity data ---- #
+# ---- Step 6. Down-granularity algorithm (1-hour, 4-hours, 12-hours and 1-day) uci electricity data ---- #
 for data_type in ["Train", "Valid", "Test"]:
     print(data_type)
     # Read the 15 minutes data, from the saved `.csv` file
-    uci_data_15_min = pd.read_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/15_minutes.csv")
+    elect_data_15_min = pd.read_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/15_minutes.csv")
     # Compute the 1-hour data, 4-`15 minutes` group
-    uci_data_1_hour = uci_data_15_min.groupby(uci_data_15_min.index // 4).transform("sum")
-    uci_data_1_hour["Time"] = uci_data_15_min["Time"]  # change time column
-    uci_data_1_hour = uci_data_1_hour[uci_data_1_hour.index % 4 == 3]  # just keep 1-hour data
-    uci_data_1_hour.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/1_hour.csv", index=False)
+    elect_data_1_hour = elect_data_15_min.groupby(elect_data_15_min.index // 4).transform("sum")
+    elect_data_1_hour["Time"] = elect_data_15_min["Time"]  # change time column
+    elect_data_1_hour = elect_data_1_hour[elect_data_1_hour.index % 4 == 3]  # just keep 1-hour data
+    elect_data_1_hour.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/1_hour.csv", index=False)
     # Compute the 4-hours data, 16-`15 minutes` group
-    uci_data_4_hours = uci_data_15_min.groupby(uci_data_15_min.index // 16).transform("sum")
-    uci_data_4_hours["Time"] = uci_data_15_min["Time"]  # change time column
-    uci_data_4_hours = uci_data_4_hours[uci_data_4_hours.index % 16 == 15]  # just keep 4-hours data
-    uci_data_4_hours.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/4_hours.csv", index=False)
+    elect_data_4_hours = elect_data_15_min.groupby(elect_data_15_min.index // 16).transform("sum")
+    elect_data_4_hours["Time"] = elect_data_15_min["Time"]  # change time column
+    elect_data_4_hours = elect_data_4_hours[elect_data_4_hours.index % 16 == 15]  # just keep 4-hours data
+    elect_data_4_hours.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/4_hours.csv", index=False)
     # Compute the 12-hours data, 48-`15 minutes` group
-    uci_data_12_hours = uci_data_15_min.groupby(uci_data_15_min.index // 48).transform("sum")
-    uci_data_12_hours["Time"] = uci_data_15_min["Time"]  # change time column
-    uci_data_12_hours = uci_data_12_hours[uci_data_12_hours.index % 48 == 47]  # just keep 12-hours data
-    uci_data_12_hours.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/12_hours.csv", index=False)
+    elect_data_12_hours = elect_data_15_min.groupby(elect_data_15_min.index // 48).transform("sum")
+    elect_data_12_hours["Time"] = elect_data_15_min["Time"]  # change time column
+    elect_data_12_hours = elect_data_12_hours[elect_data_12_hours.index % 48 == 47]  # just keep 12-hours data
+    elect_data_12_hours.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/12_hours.csv", index=False)
     # Compute the 1-day data, 96-`15 minutes` group
-    uci_data_1_day = uci_data_15_min.groupby(uci_data_15_min.index // 96).transform("sum")
-    uci_data_1_day["Time"] = uci_data_15_min["Time"]  # change time column
-    uci_data_1_day = uci_data_1_day[uci_data_1_day.index % 96 == 95]  # just keep 1-day data
-    uci_data_1_day.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/1_day.csv", index=False)
+    elect_data_1_day = elect_data_15_min.groupby(elect_data_15_min.index // 96).transform("sum")
+    elect_data_1_day["Time"] = elect_data_15_min["Time"]  # change time column
+    elect_data_1_day = elect_data_1_day[elect_data_1_day.index % 96 == 95]  # just keep 1-day data
+    elect_data_1_day.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/1_day.csv", index=False)
     # Get the label
-    uci_label_1_day = uci_data_1_day.shift(-1)
-    uci_label_1_day.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/label.csv", index=False)
+    elect_label_1_day = elect_data_1_day.shift(-1)
+    elect_label_1_day.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/label.csv", index=False)
     # Assert for detection
     if data_type == "Train":
         DAYS = TRAIN_DAYS
@@ -115,12 +142,11 @@ for data_type in ["Train", "Valid", "Test"]:
         DAYS = VALID_DAYS
     else:
         DAYS = TEST_DAYS
-    assert len(uci_data_1_day) == DAYS, f"{data_type} days error !!"
-    assert len(uci_data_12_hours) == DAYS * 2, f"{data_type} 12 hours error !!"
-    assert len(uci_data_4_hours) == DAYS * 6, f"{data_type} 4 hours error !!"
-    assert len(uci_data_1_hour) == DAYS * 24, f"{data_type} 1 hour error !!"
-    assert len(uci_data_15_min) == DAYS * 96, f"{data_type} 15 minutes error !!"
-    assert len(uci_label_1_day) == DAYS, f"{data_type} labels error !!"
+    assert len(elect_data_1_day) == DAYS, f"{data_type} days error !!"
+    assert len(elect_data_12_hours) == DAYS * 2, f"{data_type} 12 hours error !!"
+    assert len(elect_data_4_hours) == DAYS * 6, f"{data_type} 4 hours error !!"
+    assert len(elect_data_1_hour) == DAYS * 24, f"{data_type} 1 hour error !!"
+    assert len(elect_data_15_min) == DAYS * 96, f"{data_type} 15 minutes error !!"
+    assert len(elect_label_1_day) == DAYS, f"{data_type} labels error !!"
     print(f"{data_type} FINISH !!")
-
 print("************************** FINISH UCI ELECTRICITY DATASET PREPROCESSING **************************")
