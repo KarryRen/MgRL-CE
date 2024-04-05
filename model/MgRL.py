@@ -139,10 +139,10 @@ class MgRLNet(nn.Module):
 
         :param mul_granularity_input: the input multi granularity, a dict with the format:
             {
-                "feature_g1": feature_g1,
-                "feature_g2": feature_g2,
+                "g1": feature_g1,
+                "g2": feature_g2,
                 ...,
-                "feature_gG": feature_gG
+                "gG": feature_gG
             }
 
         returns: output, a dict with format:
@@ -156,15 +156,15 @@ class MgRLNet(nn.Module):
         # ---- Step 1. Align the granularity ---- #
         # get the different granularity feature
         # - g1 feature (coarsest), shape=(bs, T, K^g1, D)
-        feature_g1 = mul_granularity_input["feature_1_day"].to(dtype=torch.float32, device=self.device)
+        feature_g1 = mul_granularity_input["g1"].to(dtype=torch.float32, device=self.device)
         # - g2 feature, shape=(bs, T, K^g2, D)
-        feature_g2 = mul_granularity_input["feature_12_hours"].to(dtype=torch.float32, device=self.device)
+        feature_g2 = mul_granularity_input["g2"].to(dtype=torch.float32, device=self.device)
         # - g3 feature, shape=(bs, T, K^g3, D)
-        feature_g3 = mul_granularity_input["feature_4_hours"].to(dtype=torch.float32, device=self.device)
+        feature_g3 = mul_granularity_input["g3"].to(dtype=torch.float32, device=self.device)
         # - g4 feature, shape=(bs, T, K^g4, D)
-        feature_g4 = mul_granularity_input["feature_1_hour"].to(dtype=torch.float32, device=self.device)
+        feature_g4 = mul_granularity_input["g4"].to(dtype=torch.float32, device=self.device)
         # - g5 feature (finest), shape=(bs, T, K^g5, D)
-        feature_g5 = mul_granularity_input["feature_15_minutes"].to(dtype=torch.float32, device=self.device)
+        feature_g5 = mul_granularity_input["g5"].to(dtype=torch.float32, device=self.device)
         # transpose the feature for alignment
         feature_g1 = feature_g1.permute(0, 1, 3, 2)  # shape from (bs, T, K^g1, D) to (bs, T, D, K^g1)
         feature_g2 = feature_g2.permute(0, 1, 3, 2)  # shape from (bs, T, K^g2, D) to (bs, T, D, K^g2)
@@ -217,11 +217,11 @@ class MgRLNet(nn.Module):
 if __name__ == '__main__':
     bath_size, time_steps, D = 16, 4, 1
     mg_input = {
-        "feature_1_day": torch.ones((bath_size, time_steps, 1, D)),
-        "feature_12_hours": torch.ones((bath_size, time_steps, 2, D)),
-        "feature_4_hours": torch.ones((bath_size, time_steps, 6, D)),
-        "feature_1_hour": torch.ones((bath_size, time_steps, 24, D)),
-        "feature_15_minutes": torch.ones((bath_size, time_steps, 96, D))
+        "g1": torch.ones((bath_size, time_steps, 1, D)),
+        "g2": torch.ones((bath_size, time_steps, 2, D)),
+        "g3": torch.ones((bath_size, time_steps, 6, D)),
+        "g4": torch.ones((bath_size, time_steps, 24, D)),
+        "g5": torch.ones((bath_size, time_steps, 96, D))
     }
     g_dict = {"g1": 1, "g2": 2, "g3": 6, "g4": 24, "g5": 96}
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
