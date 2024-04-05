@@ -215,6 +215,8 @@ def train_valid_model() -> None:
     plt.plot(epoch_metric["train_MAE"], label="train MAE", color="g")
     plt.plot(epoch_metric["valid_MAE"], label="valid MAE", color="b")
     plt.legend()
+    plt.savefig(config.SAVE_PATH + "training_steps.png", dpi=200, bbox_inches="tight")
+    logging.info("***************** TRAINING OVER ! *****************")
 
 
 def pred_model() -> None:

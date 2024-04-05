@@ -2,8 +2,10 @@
 # @Time    : 2024/4/5 13:48
 # @Author  : Karry Ren
 
-"""The metrics of y_ture and y_pred.
-    - corr_score: the correlation score
+""" The metrics of y_ture and y_pred.
+        - corr_score: the Pearson correlation coefficients.
+        - rmse_score: the Root Mean Square Error (RMSE).
+        - mae_score: the Mean Absolute Error (MAE).
 
 """
 
@@ -11,7 +13,7 @@ import numpy as np
 
 
 def corr_score(y_true: np.ndarray, y_pred: np.ndarray, weight: np.ndarray, epsilon: float = 1e-10):
-    """ The correlation score.
+    """ The Pearson correlation coefficients.
 
     :math:`corr = E[(y_true - y_true_bar)(y_pred - y_pred_bar)] / (std(y_true)*std(y_pred))`
     here we multiply `n - 1` in both numerator and denominator to get:

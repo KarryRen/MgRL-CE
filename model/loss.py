@@ -2,7 +2,7 @@
 # @Time    : 2024/4/5 10:37
 # @Author  : Karry Ren
 
-""" The loss function of MgRLNet and MgRL_CE_Net"""
+""" The loss function of MgRLNet and MgRL_CE_Net. """
 
 import torch
 
