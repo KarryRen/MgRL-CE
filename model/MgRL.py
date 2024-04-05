@@ -148,7 +148,7 @@ class MgRLNet(nn.Module):
         returns: output, a dict with format:
             {
                 "pred" : the prediction result, shape=(bs, 1),
-                "residuals" : a tuple of residual, shape=(bs, T, D*K)
+                "rec_residuals" : a tuple of reconstruction residual, each residual have the same shape=(bs, T, D*K)
             }
 
         """
@@ -209,7 +209,7 @@ class MgRLNet(nn.Module):
         # ---- Step 3. Return ---- #
         output = {
             "pred": (y_g1 + y_g2 + y_g3 + y_g4 + y_g5) / 5,
-            "residuals": (P_g2, P_g3, P_g4, P_g5)
+            "rec_residuals": (P_g2, P_g3, P_g4, P_g5)
         }
         return output
 
