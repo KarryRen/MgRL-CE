@@ -152,11 +152,16 @@ class ELECTDataset(data.Dataset):
 if __name__ == "__main__":  # a demo using UCIDataset
     UCI_ELECT_DATASET_PATH = "../../Data/UCI_electricity_dataset/dataset"
 
-    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=2)
-    # weight_1_sum = 0
-    # for i in range(len(data_set)):
-    #     uci_data = data_set[i]
-    #     if uci_data["weight"] != [0]:
-    #         weight_1_sum += 1
-    # print(weight_1_sum)
-    print(data_set[1])
+    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=1)
+    for i in range(len(data_set)):
+        g1_data = data_set[i]["mg_features"]["g1"]
+        g2_data = data_set[i]["mg_features"]["g2"]
+        g3_data = data_set[i]["mg_features"]["g3"]
+        g4_data = data_set[i]["mg_features"]["g4"]
+        g5_data = data_set[i]["mg_features"]["g5"]
+        assert (g1_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g1 error !! {g1_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
+        assert (g2_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g2 error !! {g2_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
+        assert (g3_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g3 error !! {g3_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
+        assert (g4_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g4 error !! {g4_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
+        print(i)
+    # print(data_set[1])
