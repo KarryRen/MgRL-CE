@@ -34,12 +34,12 @@ Here are two new Net : `MgRLNet` and `MgRL_CE_Net`.
 
 This study extensively performs experiments on 3 real-world Datasets to verify the feasibility of the proposed MgRL-CE. You can **DOWNLOAD** the raw dataset from the following links. 
 
-- **UCI electricity dataset**. Could be downloaded from [**HERE**](https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014) ! 
+- **UCI electricity dataset (ELECT)**. Could be downloaded from [**HERE**](https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014) ! 
 
   > The UCI electricity dataset collects the electricity consumption (kWh) every 15 minutes of 370 clients from 2011 to 2014. This study aims to **predict the daily consumption of each client**. I split Train, Valid and Test datasets with 36, 6 and 6 months separately. The granularity of input features is 1 day, 12 hours, 4 hours, 1 hour, and 15 minutes.
 
-- **IF_M0 future Limit Order Book(LOB) dataset**. Updating 🔥.
-- **CSI300 Stock dataset**. Updating 🔥.
+- **IF_M0 future Limit Order Book dataset (LOB)**. Updating 🔥.
+- **CSI300 Stock dataset (STOCK)**. Updating 🔥.
 
 
 
