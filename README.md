@@ -16,6 +16,7 @@ MgRL-CE/
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
     ├── metric.py # The metrics of y_ture and y_pred.
     ├── modules.py # The modules of model.
+├── data_visualization
 ├── configs # The train&prediction code of 3 datasets.
     ├── elect_config.py # Config file of UCI electricity dataset.
 ├── train_pred_MgRL.py # Training and Prediction code of `MgRLNet` for 3 datasets.
@@ -36,7 +37,8 @@ This study extensively performs experiments on 3 real-world Datasets to verify t
 
 - **UCI electricity dataset (ELECT)**. Could be downloaded from [**HERE**](https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014) ! 
 
-  > The UCI electricity dataset collects the electricity consumption (kWh) every 15 minutes of 370 clients from 2011 to 2014. This study aims to **predict the daily consumption of each client**. I split Train, Valid and Test datasets with 36, 6 and 6 months separately. The granularity of input features is 1 day, 12 hours, 4 hours, 1 hour, and 15 minutes.
+  > The UCI electricity dataset collects electricity consumption (kW of each 15mins) of **370 clients** over a 4-year period from 2011 to 2014, some of which were created after 2011, and all of the missing electricity consumption data for these customers are filled with **ZEROS**.
+  >
 
 - **IF_M0 future Limit Order Book dataset (LOB)**. Updating 🔥.
 - **CSI300 Stock dataset (STOCK)**. Updating 🔥.
@@ -45,13 +47,18 @@ This study extensively performs experiments on 3 real-world Datasets to verify t
 
 ## Data Pre-Process and `torch.Dataset`
 
-After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. I have released Pre-Process code for datasets, please read them carefully and **follow the guidelines in the comment rather than running the shell command directly !!!** I also released `torch.Dataset` code for datasets.
+After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. I have released Pre-Process code for datasets, please read them carefully and **follow the guidelines in the top comment rather than running the shell command directly !!!** I also released `torch.Dataset` code for datasets.
 
 - **UCI electricity dataset**. 
+  
+  > In order to minimize the interference caused by missing data, this study intercepts the sample data from the original dataset for the three-year period from **2012 to 2014**, and excludes the samples with more than 10 days of missing data in the interval, and finally retains the electricity consumption data of **370 clients**. The target task of this paper is to **predict the daily electricity consumption of each clients**, and the dataset is divided into training set, validation set and test set according to the time sequence, which covers 24 months, 6 months and 6 months, respectively. The input network is characterized by **five granularity**: 1 day, 12 hours, 4 hours, 1 hour and 15 minutes.
+  
   - The Pre-Process code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by `python3 elect_preprocess.py`
   - The  `torch.Dataset` code is in `elect_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/elect_dataset.py) ! 
+  
 - **IF_M0 future dataset**. 
   - Updating 🔥.
+  
 - **CSI300 stock dataset**. 
   - Updating 🔥.
 
