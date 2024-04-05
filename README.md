@@ -11,10 +11,13 @@ MgRL-CE/
     ├── elect_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
 ├── images # All used images of this repo.
 ├── model # The MgRL-CE models.
-    ├── MgRL.py # The basic Multi-Granularity Residual Learning Framework.
+    ├── MgRL.py # The BASIC Multi-Granularity Residual Learning Framework.
     ├── MgRL_CE.py # Multi-granularity Residual Learning Framework with Confidence Estimation.
     ├── modules.py # The modules for model.
-└── 
+├── exp_elect # The train&prediction code of UCI electricity dataset.
+    ├── elect_train_pred_MgRL.py # Training and Prediction code of `MgRLNet` for UCI electricity dataset.
+    ├── elect_config.py # Config file of UCI electricity dataset.
+└── utils.py # Some util functions.
 ```
 
 
@@ -47,3 +50,12 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
   - Updating 🔥.
 - **CSI300 stock dataset**. 
   - Updating 🔥.
+
+
+
+## Training & Prediction
+
+There are many **differences** between the different datasets **during Training and Prediction**, so we built separate training and prediction code for each dataset to run:
+
+- **UCI electricity dataset**. 
+  - The Training and Prediction code of `MgRLNet` is in ` elect_train_pred_MgRL.py `, **HERE** ! You can **RUN** it by `python3 elect_train_pred_MgRL.py`

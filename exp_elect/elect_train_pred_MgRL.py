@@ -51,7 +51,7 @@ def train_valid_model() -> None:
     logging.info(f"**** TRAINING DATASET & DATALOADER ****")
     train_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=config.TIME_STEPS)
     train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)
-    logging.info(f"**** TRAINING DATASET & DATALOADER ****")
+    logging.info(f"**** VALID DATASET & DATALOADER ****")
     valid_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=config.TIME_STEPS)
     valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
     logging.info("***************** DATASET MAKE OVER ! *****************")
