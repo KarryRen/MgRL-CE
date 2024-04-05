@@ -18,7 +18,7 @@ After the preprocessing raw UCI electricity dataset (download from web) by
 
 In this dataset:
     - during `__init__()`, we will READ all `.csv` files of multi-granularity data to memory.
-    - during `__getitem__()`, we will READ 1 item with multi-granularity data and lag it by day.
+    - during `__getitem__()`, we will READ 1 item with multi-granularity data and lag it by `DAY`.
 
 """
 
@@ -85,12 +85,12 @@ class ELECTDataset(data.Dataset):
         return: item_data (one day of one client)
             - `mg_features`: the multi-granularity (5 kinds of granularity) features of UCI electricity dataset, the format is:
                 {
-                    "feature_1_day": , shape=(time_steps, 1, 1),
-                    "feature_12_hours": , shape=(time_steps, 2, 1),
-                    "feature_4_hours": , shape=(time_steps, 6, 1),
-                    "feature_1_hour": , shape=(time_steps, 24, 1),
-                    "feature_15_minutes": , shape=(time_steps, 96, 1)
-                } shape is (T, K^g, D)
+                    "g1": , shape=(time_steps, 1, 1), # feature_1_day
+                    "g2": , shape=(time_steps, 2, 1), # feature_12_hours
+                    "g3": , shape=(time_steps, 6, 1), # feature_4_hours
+                    "g4": , shape=(time_steps, 24, 1), # feature_1_hour
+                    "g5": , shape=(time_steps, 96, 1) # feature_15_minutes
+                } shape is (T, K^g, D), please make sure REMEMBER the true time period of each granularity !!!
             - `label`: the return label, shape=(1)
             - `weight`: the weight, shape=(1)
 
@@ -102,24 +102,19 @@ class ELECTDataset(data.Dataset):
         hour_12_idx = (day_idx + 1) * 2 - 1  # get the 12 hours index
         hour_4_idx = (day_idx + 1) * 6 - 1  # get the 4 hours index
         hour_1_idx = (day_idx + 1) * 24 - 1  # get the 1 hour idx
-        minute_15_idx = (day_idx + 1) * 96 - 1  # get thr
+        minute_15_idx = (day_idx + 1) * 96 - 1  # get the 15 minutes idx
 
         # ---- Get the multi-granularity features, label and weight ---- #
-        mg_features_dict = {
-            "feature_1_day": [],
-            "feature_12_hours": [],
-            "feature_4_hours": [],
-            "feature_1_hour": [],
-            "feature_15_minutes": []
-        }  # feature dict, each item shape=(time_steps, feature_shape)
+        # feature dict, each item is a list of ndarray with shape=(time_steps, feature_shape)
+        mg_features_dict = {"g1": [], "g2": [], "g3": [], "g4": [], "g5": []}
         # meaningless data, features are made to all zeros, erasing the front and tail data
         if day_idx < self.T - 1 or day_idx >= self.total_day_nums - 1:
             # set features, all zeros, shape is different from granularity to granularity
-            mg_features_dict["feature_1_day"] = np.zeros((self.T, 1, 1))
-            mg_features_dict["feature_12_hours"] = np.zeros((self.T, 2, 1))
-            mg_features_dict["feature_4_hours"] = np.zeros((self.T, 6, 1))
-            mg_features_dict["feature_1_hour"] = np.zeros((self.T, 24, 1))
-            mg_features_dict["feature_15_minutes"] = np.zeros((self.T, 96, 1))
+            mg_features_dict["g1"] = np.zeros((self.T, 1, 1))  # 1_day granularity
+            mg_features_dict["g2"] = np.zeros((self.T, 2, 1))  # 12_hours granularity
+            mg_features_dict["g3"] = np.zeros((self.T, 6, 1))  # 4_hours granularity
+            mg_features_dict["g4"] = np.zeros((self.T, 24, 1))  # 1_hour granularity
+            mg_features_dict["g5"] = np.zeros((self.T, 96, 1))  # 15_minutes granularity
             # `label = 0.0` for loss computation, shape=(1)
             label = np.zeros(1)
             # `weight = 0.0` means data is meaningless, shape=(1)
@@ -127,16 +122,16 @@ class ELECTDataset(data.Dataset):
         # meaningful data, load the true feature and label
         else:
             # load features, shape is based on granularity, (T, K^g, D)
-            mg_features_dict["feature_1_day"] = self.mg_features_list_dict["feature_1_day"][client_idx][
-                                                day_idx - self.T + 1:day_idx + 1].reshape(self.T, 1, 1)
-            mg_features_dict["feature_12_hours"] = self.mg_features_list_dict["feature_12_hours"][client_idx][
-                                                   hour_12_idx - self.T * 2 + 1:hour_12_idx + 1].reshape(self.T, 2, 1)
-            mg_features_dict["feature_4_hours"] = self.mg_features_list_dict["feature_4_hours"][client_idx][
-                                                  hour_4_idx - self.T * 6 + 1:hour_4_idx + 1].reshape(self.T, 6, 1)
-            mg_features_dict["feature_1_hour"] = self.mg_features_list_dict["feature_1_hour"][client_idx][
-                                                 hour_1_idx - self.T * 24 + 1:hour_1_idx + 1].reshape(self.T, 24, 1)
-            mg_features_dict["feature_15_minutes"] = self.mg_features_list_dict["feature_15_minutes"][client_idx][
-                                                     minute_15_idx - self.T * 96 + 1:minute_15_idx + 1].reshape(self.T, 96, 1)
+            mg_features_dict["g1"] = self.mg_features_list_dict["feature_1_day"][client_idx][day_idx - self.T + 1:
+                                                                                             day_idx + 1].reshape(self.T, 1, 1)
+            mg_features_dict["g2"] = self.mg_features_list_dict["feature_12_hours"][client_idx][hour_12_idx - self.T * 2 + 1:
+                                                                                                hour_12_idx + 1].reshape(self.T, 2, 1)
+            mg_features_dict["g3"] = self.mg_features_list_dict["feature_4_hours"][client_idx][hour_4_idx - self.T * 6 + 1:
+                                                                                               hour_4_idx + 1].reshape(self.T, 6, 1)
+            mg_features_dict["g4"] = self.mg_features_list_dict["feature_1_hour"][client_idx][hour_1_idx - self.T * 24 + 1:
+                                                                                              hour_1_idx + 1].reshape(self.T, 24, 1)
+            mg_features_dict["g5"] = self.mg_features_list_dict["feature_15_minutes"][client_idx][minute_15_idx - self.T * 96 + 1:
+                                                                                                  minute_15_idx + 1].reshape(self.T, 96, 1)
             # get the label, shape=(1)
             label = self.label_list[client_idx][day_idx].reshape(1)
             # set `the weight = 1`, shape=(1)
@@ -156,11 +151,11 @@ if __name__ == "__main__":  # a demo using UCIDataset
     UCI_ELECT_DATASET_PATH = ("/Users/karry/KarryRen/Scientific-Projects/"
                               "2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset")
 
-    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=1)
+    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=2)
     # weight_1_sum = 0
     # for i in range(len(data_set)):
     #     uci_data = data_set[i]
     #     if uci_data["weight"] != [0]:
     #         weight_1_sum += 1
     # print(weight_1_sum)
-    print(data_set[0])
+    print(data_set[1])

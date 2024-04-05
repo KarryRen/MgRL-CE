@@ -61,7 +61,7 @@ with open(UCI_ELECT_DOWNLOAD_FILE_PATH, "r") as f:  # read the raw data
         if "," in wrong_line:
             right_line = wrong_line.replace(",", ".")  # change `,` to `.`
         else:
-            right_line = wrong_line  # keep raw
+            right_line = wrong_line  # if have no `,`, just keep raw
         right_line_list.append(right_line)  # append all lines
 with open(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH, "w") as f:  # write the right line to file
     for right_line in right_line_list:
