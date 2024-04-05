@@ -24,6 +24,8 @@ MgRL-CE/
 
 ## Introduction
 
+Here are two new Net : `MgRLNet` and `MgRL_CE_Net`.
+
 
 
 ## Dataset Acquisition
