@@ -27,3 +27,8 @@ GA_K = 1  # the alignment granularity K
 ENCODING_INPUT_SIZE, ENCODING_HIDDEN_SIZE = 1 * GA_K, 64  # the input and hidden size
 LOSS_REDUCTION, LAMBDA_1, LAMBDA_THETA = "sum", 1.0, 0.001  # loss parameter
 LR = 0.01  # the learning rate
+
+# ************************************************************************************ #
+# ********************************* FOR NET TRAINING ********************************* #
+# ************************************************************************************ #
+EPOCHS = 10
