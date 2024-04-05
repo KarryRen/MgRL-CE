@@ -62,4 +62,4 @@ There are many **differences** between the different datasets **during Training 
   
   - The Training and Prediction code of `MgRLNet` is in ` train_pred_MgRL.py `, **HERE** ! 
   
-    You can **RUN** it by `python3 elect_train_pred_MgRL.py`
+    You can **RUN** it by `python3.8 train_pred_MgRL.py --dataset elect`

@@ -21,13 +21,26 @@ from tqdm import tqdm
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+import argparse
 
 from utils import fix_random_seed, load_best_model
-import configs.elect_config as config
 from datasets.elect_dataset import ELECTDataset
 from model.MgRL import MgRLNet
 from model.loss import MgRL_Loss
 from model.metrics import corr_score, rmse_score, mae_score
+
+# ---- Init the args parser ---- #
+parser = argparse.ArgumentParser()
+parser.add_argument("--dataset", type=str, default="elect")
+
+# ---- Get the args ---- #
+args = parser.parse_args()
+
+# ---- Based on the args import config ---- #
+if args.dataset == "elect":  # The UCI electricity dataset.
+    import configs.elect_config as config
+else:
+    raise TypeError(args.dataset)
 
 
 def train_valid_model() -> None:
@@ -48,15 +61,21 @@ def train_valid_model() -> None:
     logging.info(f"***************** In device {device}   *****************")
 
     # ---- Make the dataset and dataloader ---- #
-    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER ! *****************")
+    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER of `{args.dataset}` ! *****************")
     logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
     # make the dataset and dataloader of training
     logging.info(f"**** TRAINING DATASET & DATALOADER ****")
-    train_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=config.TIME_STEPS)
-    train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)
+    if args.dataset == "elect":  # The UCI electricity dataset.
+        train_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=config.TIME_STEPS)
+        train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)
+    else:
+        raise TypeError(args.dataset)
     logging.info(f"**** VALID DATASET & DATALOADER ****")
-    valid_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=config.TIME_STEPS)
-    valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
+    if args.dataset == "elect":  # The UCI electricity dataset.
+        valid_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=config.TIME_STEPS)
+        valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
+    else:
+        raise TypeError(args.dataset)
     logging.info("***************** DATASET MAKE OVER ! *****************")
     logging.info(f"Train dataset: length = {len(train_dataset)}")
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
@@ -216,12 +235,15 @@ def pred_model() -> None:
     logging.info(f"***************** In device {device}   *****************")
 
     # ---- Make the dataset and dataloader ---- #
-    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER ! *****************")
+    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER of `{args.dataset}` !! *****************")
     logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
     # make the dataset and dataloader of test
     logging.info(f"**** TEST DATASET & DATALOADER ****")
-    test_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=config.TIME_STEPS)
-    test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
+    if args.dataset == "elect":  # The UCI electricity dataset.
+        test_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=config.TIME_STEPS)
+        test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
+    else:
+        raise TypeError(args.dataset)
     logging.info("***************** DATASET MAKE OVER ! *****************")
     logging.info(f"Test dataset: length = {len(test_dataset)}")
 
@@ -255,7 +277,6 @@ def pred_model() -> None:
     test_CORR = corr_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
     test_RMSE = rmse_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
     test_MAE = mae_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
-
     logging.info(f"******** test_CORR : {test_CORR} **********")
     logging.info(f"******** test_RMSE : {test_RMSE} **********")
     logging.info(f"******** test_MAE : {test_MAE} **********")
@@ -268,7 +289,7 @@ if __name__ == "__main__":
     fix_random_seed(seed=config.RANDOM_SEED)
 
     # ---- Step 1. Train & Valid model ---- #
-    # train_valid_model()
+    train_valid_model()
 
     # ---- Step 2. Pred Model ---- #
     pred_model()
