@@ -24,15 +24,57 @@ class MgRL_Loss:
 
         :param y_true: the true label of time series prediction, shape=(bs, 1)
         :param y_pred: the prediction of MgRL Net, shape=(bs, 1)
-        :param
+        :param rec_residuals: the rec_residuals of MgRL Net, a tuple of (bs, T, D*K)
+        :param weight: the weight indicates item meaningful or meaningless, shape=(bs, 1)
 
+        return:
+            - batch_loss: a Tensor number, shape=([])
         """
 
-        # ---- Step 1. Test the weight shape & make the default weight ---- #
+        # ---- Step 0. Test the weight shape & make the default weight ---- #
         assert weight.shape[0] == y_true.shape[0], "Weight should have the same length with y_true&y_pred !"
+        bs, device = y_pred.shape[0], y_pred.device
 
-        # ---- Step 2. Compute the batch loss ---- #
+        # ---- Step 1. Compute the loss ---- #
         if self.reduction == "mean":
-            batch_loss = torch.sum(weight * torch.sum((y_pred - y_true) ** 2, dim=1, keepdim=True)) / torch.sum(weight)
+            # compute mse loss (`mean`)
+            mse_sample_loss = (y_pred - y_true) ** 2  # shape=(bs, 1)
+            mse_loss = torch.sum(weight * mse_sample_loss) / torch.sum(weight)  # weighted and mean
+            # compute rec loss (`mean`)
+            rec_sample_loss = torch.zeros((bs, 1)).to(dtype=torch.float32, device=device)  # shape=(bs, 1)
+            for rec_res in rec_residuals:  # for loop to compute rec loss of each sample
+                rec_sample_loss += torch.sum(rec_res ** 2, dim=(1, 2), keepdim=True).reshape(bs, 1)
+            rec_loss = torch.sum(weight * rec_sample_loss) / torch.sum(weight)  # weighted and mean
+            # sum the mse loss and rec loss
+            batch_loss = mse_loss + self.lambda_1 * rec_loss
         elif self.reduction == "sum":
-            batch_loss = torch.sum((weight * (y_pred - y_true)) ** 2)
+            # compute mse loss (`sum`)
+            mse_sample_loss = (y_pred - y_true) ** 2  # shape=(bs, 1)
+            mse_loss = torch.sum((weight * mse_sample_loss))  # weighted and sum
+            # compute rec loss (`sum`)
+            rec_sample_loss = torch.zeros((bs, 1)).to(dtype=torch.float32, device=device)  # shape=(bs, 1)
+            for rec_res in rec_residuals:  # for loop to compute rec loss of each sample
+                rec_sample_loss += torch.sum(rec_res ** 2, dim=(1, 2), keepdim=True).reshape(bs, 1)
+            rec_loss = torch.sum(weight * rec_sample_loss)  # weighted and sum
+            # sum the mse loss and rec loss
+            batch_loss = mse_loss + self.lambda_1 * rec_loss
+        else:
+            raise TypeError(self.reduction)
+
+        # ---- Step 2. Return loss ---- #
+        return batch_loss
+
+
+if __name__ == "__main__":
+    # An Example test two loss
+    bs, T, D = 4, 3, 2
+    y_true, y_pred, weight = torch.zeros((bs, 1)), torch.zeros((bs, 1)), torch.ones((bs, 1))
+    # y_true[31], y_true[30] = 100, 2
+    # weight[31], weight[30] = 0, 0
+    a = torch.ones((bs, T, D))
+    rec_residuals = (torch.zeros((bs, T, D)), a, torch.zeros((bs, T, D)), torch.zeros((bs, T, D)))
+
+    # ---- Test MgRL_Loss ---- #
+    loss1 = MgRL_Loss(reduction="sum", lambda_1=1.0)
+    l = loss1(y_true=y_true, y_pred=y_pred, rec_residuals=rec_residuals, weight=weight)
+    print(l)
