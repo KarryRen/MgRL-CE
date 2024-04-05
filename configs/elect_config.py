@@ -17,7 +17,7 @@ MODEL_SAVE_PATH = SAVE_PATH + "trained_models/"  # the saving path of models
 # ************************************************************************************ #
 UCI_ELECT_DATASET_PATH = "/Users/karry/KarryRen/Scientific-Projects/2023-SCU-Graduation-Paper/Code/Data/UCI_electricity_dataset/dataset"
 TIME_STEPS = 2
-BATCH_SIZE = 1024
+BATCH_SIZE = 2048
 
 # ************************************************************************************ #
 # ******************************* FOR NET CONSTRUCTING ******************************* #
@@ -32,7 +32,7 @@ LR = 0.01  # the learning rate
 # ********************************* FOR NET TRAINING ********************************* #
 # ************************************************************************************ #
 # ---- Train Model ---- #
-EPOCHS = 1
+EPOCHS = 20
 
 # ---- Main metric using to select models ---- #
 MAIN_METRIC = "valid_CORR"
