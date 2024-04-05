@@ -7,7 +7,7 @@
 Training, Validation and Prediction be together !
     Here are two functions:
         - `train_valid_model()` => train and valid model, and save trained models of all epochs.
-        - `pred_model()` => use the best model to do prediction.
+        - `pred_model()` => use the best model to do prediction (test model).
 
 """
 
@@ -21,7 +21,7 @@ from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from utils import fix_random_seed
+from utils import fix_random_seed, load_best_model
 import elect_config as config
 from datasets.elect_dataset import ELECTDataset
 from model.MgRL import MgRLNet
@@ -30,6 +30,8 @@ from model.metrics import corr_score, rmse_score, mae_score
 
 
 def train_valid_model() -> None:
+    """ Train & Valid Model. """
+
     # ---- Build up the save directory ---- #
     if not os.path.exists(config.SAVE_PATH):
         os.makedirs(config.SAVE_PATH)
@@ -38,7 +40,7 @@ def train_valid_model() -> None:
 
     # ---- Construct the train&valid log file (might be same as prediction) ---- #
     logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
-    logging.info(f"***************** RUN TRAIN DEEP-LOB ! *****************")
+    logging.info(f"***************** RUN TRAIN&VALID MgRL ! *****************")
 
     # ---- Get the device ---- #
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -195,9 +197,77 @@ def train_valid_model() -> None:
     plt.legend()
 
 
+def pred_model() -> None:
+    """ Test Model. """
+
+    # ---- Build the save directory ---- #
+    if not os.path.exists(config.SAVE_PATH):
+        os.makedirs(config.SAVE_PATH)
+    if not os.path.exists(config.MODEL_SAVE_PATH):
+        os.makedirs(config.MODEL_SAVE_PATH)
+
+    # ---- Construct the test log file (might be same with train&valid) ---- #
+    logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+
+    # ---- Get the computing device ---- #
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logging.info(f"***************** RUN PRED MgRL ! *****************")
+    logging.info(f"***************** In device {device}   *****************")
+
+    # ---- Make the dataset and dataloader ---- #
+    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER ! *****************")
+    logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
+    # make the dataset and dataloader of test
+    logging.info(f"**** TEST DATASET & DATALOADER ****")
+    test_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=config.TIME_STEPS)
+    test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
+    logging.info("***************** DATASET MAKE OVER ! *****************")
+    logging.info(f"Test dataset: length = {len(test_dataset)}")
+
+    # ---- Load model and test ---- #
+    model, model_path = load_best_model(config.MODEL_SAVE_PATH, config.MAIN_METRIC)
+    logging.info(f"***************** LOAD Best Model {model_path} *****************")
+
+    # ---- Test Model ---- #
+    labels_array = torch.zeros(len(test_dataset)).to(device=device)
+    predictions_array = torch.zeros(len(test_dataset)).to(device=device)
+    weight_array = torch.zeros(len(test_dataset)).to(device=device)
+    last_step = 0
+    model.eval()  # start test
+    with torch.no_grad():
+        for batch_data in tqdm(test_loader):
+            # move data to device, and change the dtype from double to float32
+            mg_features = batch_data["mg_features"]
+            labels = batch_data["label"].to(device=device, dtype=torch.float32)
+            weights = batch_data["weight"].to(device=device, dtype=torch.float32)
+            # forward
+            outputs = model(mg_features)
+            preds, rec_residuals_tuple = outputs["pred"], outputs["rec_residuals"]
+            # doc the result
+            now_step = last_step + preds.shape[0]
+            labels_array[last_step:now_step] = labels[:, 0].detach()
+            predictions_array[last_step:now_step] = preds[:, 0].detach()
+            weight_array[last_step:now_step] = weights[:, 0].detach()
+            last_step = now_step
+
+    # ---- Logging the result ---- #
+    test_CORR = corr_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
+    test_RMSE = rmse_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
+    test_MAE = mae_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
+
+    logging.info(f"******** test_CORR : {test_CORR} **********")
+    logging.info(f"******** test_RMSE : {test_RMSE} **********")
+    logging.info(f"******** test_MAE : {test_MAE} **********")
+    logging.info("***************** TEST OVER ! *****************")
+    logging.info("")
+
+
 if __name__ == "__main__":
     # ---- Step 0. Fix the random seed ---- #
     fix_random_seed(seed=config.RANDOM_SEED)
 
     # ---- Step 1. Train & Valid model ---- #
     train_valid_model()
+
+    # ---- Step 2. Pred Model ---- #
+    pred_model()
