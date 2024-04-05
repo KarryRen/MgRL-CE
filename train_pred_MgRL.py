@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 import argparse
 
 from utils import fix_random_seed, load_best_model
-from datasets.elect_dataset import ELECTDataset
+from mg_datasets.elect_dataset import ELECTDataset
 from model.MgRL import MgRLNet
 from model.loss import MgRL_Loss
 from model.metrics import corr_score, rmse_score, mae_score
