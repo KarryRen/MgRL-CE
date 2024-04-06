@@ -50,7 +50,9 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
 
 - **UCI electricity dataset**. 
   
-  > In order to minimize the interference caused by missing data, this study intercepts the sample data from the original dataset for the three-year period from **2012 to 2014**, and excludes the samples with more than 1 days of missing data in the interval, and finally retains the electricity consumption data of **320 clients**. The target task of this paper is to **predict the daily electricity consumption of each clients**, and the dataset is divided into training set, validation set and test set according to the time sequence, which covers 24 months, 6 months and 6 months, respectively. The input network is characterized by **five granularity**: 1 day (coarsest), 12 hours, 4 hours, 1 hour and 15 minutes (finest). During the pre-process i have also **change the unit of data from kW*15min to kWh**.
+  > In order to minimize the interference caused by missing data, this study intercepts the sample data from the original dataset for the three-year period from **2012 to 2014**, and excludes the samples with more than 1 days of missing data in the interval, and finally retains the electricity consumption data of **320 clients**. The target task of this paper is to **predict the daily electricity consumption of each clients**, and the dataset is divided into training set, validation set and test set according to the time sequence, which covers 24 months, 6 months and 6 months, respectively. The input network is characterized by **five granularity**: 1 day (coarsest), 12 hours, 4 hours, 1 hour and 15 minutes (finest). 
+  >
+  > ATTENTION: During the pre-process i have also **change the unit of data from kW*15min to kWh** and **adjust the scale of distribution**.
   
   - The Pre-Process code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
   

@@ -16,7 +16,7 @@ MODEL_SAVE_PATH = SAVE_PATH + "trained_models/"  # the saving path of models
 # ************************************ FOR DATASET *********************************** #
 # ************************************************************************************ #
 UCI_ELECT_DATASET_PATH = "../Data/UCI_electricity_dataset/dataset"
-TIME_STEPS = 2
+TIME_STEPS = 7
 BATCH_SIZE = 2048
 
 # ************************************************************************************ #

@@ -54,6 +54,7 @@ import seaborn as sns
 
 # ---- Define the PARAMS ---- #
 TRAIN_DAYS, VALID_DAYS, TEST_DAYS = 731, 181, 184
+VERBOSE = False
 
 # ---- Step 1. Change the `PATH` based on your situation ---- #
 UCI_ELECT_DOWNLOAD_FILE_PATH = "../../../Data/UCI_electricity_dataset/LD2011_2014.txt"
@@ -80,12 +81,13 @@ elect_data = elect_data[["Time"] + keep_clients_list]  # exclude clients and kee
 print(f"************************** FINISH EXCLUDING AND GET `{len(keep_clients_list)}` CLIENTS **************************")
 # change the unit of data (from kW*15min to kW*h)
 elect_data[keep_clients_list] = elect_data[keep_clients_list] / 4.0
-plt.figure()
-sns.distplot(elect_data[keep_clients_list].values.flatten(), hist=True, label="elect", color="#FFCC33")
-plt.legend()
-plt.xlabel("")
-plt.savefig(f"{UCI_ELECT_DATASET_PATH}/raw_elect_distribution.png", dpi=200, bbox_inches="tight")
-plt.close()
+if VERBOSE:
+    plt.figure()
+    sns.distplot(elect_data[keep_clients_list].values.flatten(), hist=True, label="elect", color="#FFCC33")
+    plt.legend()
+    plt.xlabel("")
+    plt.savefig(f"{UCI_ELECT_DATASET_PATH}/raw_elect_distribution.png", dpi=200, bbox_inches="tight")
+    plt.close()
 print(f"************************** FINISH CHANGE kW*15min to kW*h **************************")
 
 # ---- Step 4. Adjust the scale of different data distributions ---- #
@@ -95,12 +97,13 @@ elect_data_1_day_of_first_day = elect_data_1_day[["Time"] + keep_clients_list][:
 elect_data_1_day_of_first_day.to_csv(f"{UCI_ELECT_DATASET_PATH}/elect_data_1_day_of_first_day.csv", index=False)
 # change the scale by the first day data
 elect_data[keep_clients_list] = elect_data[keep_clients_list].values / elect_data_1_day_of_first_day[keep_clients_list].values
-plt.figure()
-sns.distplot(elect_data[keep_clients_list].values.flatten(), hist=True, label="elect", color="#FFCC33")
-plt.legend()
-plt.xlabel("")
-plt.savefig(f"{UCI_ELECT_DATASET_PATH}/adj_elect_distribution.png", dpi=200, bbox_inches="tight")
-plt.close()
+if VERBOSE:
+    plt.figure()
+    sns.distplot(elect_data[keep_clients_list].values.flatten(), hist=True, label="elect", color="#FFCC33")
+    plt.legend()
+    plt.xlabel("")
+    plt.savefig(f"{UCI_ELECT_DATASET_PATH}/adj_elect_distribution.png", dpi=200, bbox_inches="tight")
+    plt.close()
 print(f"************************** FINISH ADJUSTING SCALE **************************")
 
 # ---- Step 5. Split to Train & Valid & Test, and save the 15_minutes.csv ---- #

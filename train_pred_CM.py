@@ -75,7 +75,7 @@ def train_valid_model() -> None:
         train_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=config.TIME_STEPS)
     else:
         raise TypeError(args.dataset)
-    train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the train dataloader
+    train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)  # the train dataloader
     logging.info(f"**** VALID DATASET & DATALOADER ****")
     if args.dataset == "elect":  # The UCI electricity dataset.
         valid_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=config.TIME_STEPS)
@@ -89,7 +89,7 @@ def train_valid_model() -> None:
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     # the model
     if METHOD_NAME == "gru":
-        model = GRUNet(input_size=config.INPUT_SIZE)
+        model = GRUNet(input_size=config.INPUT_SIZE, device=device)
     else:
         raise TypeError(METHOD_NAME)
     # the loss function
@@ -116,7 +116,6 @@ def train_valid_model() -> None:
         "train_MAE": np.zeros(config.EPOCHS),
         "valid_MAE": np.zeros(config.EPOCHS)
     }
-
     # train model epoch by epoch
     logging.info(f"***************** BEGIN TRAINING `{METHOD_NAME}` ! *****************")
     # start train and valid during train
@@ -169,7 +168,6 @@ def train_valid_model() -> None:
         epoch_metric["train_MAE"][epoch] = mae_score(y_true=train_labels_one_epoch.cpu().numpy(),
                                                      y_pred=train_preds_one_epoch.cpu().numpy(),
                                                      weight=train_weights_one_epoch.cpu().numpy())
-
         # - valid model
         last_step = 0
         model.eval()

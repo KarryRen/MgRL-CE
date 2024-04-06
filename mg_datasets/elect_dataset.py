@@ -46,13 +46,13 @@ class ELECTDataset(data.Dataset):
         assert data_type in ["Train", "Valid", "Test"], "data_type ERROR !"
 
         # ---- Step 0. Set the params and load all data to memory ---- #
-        self.T = time_steps
+        self.T = time_steps  # time steps (seq len)
         feature_1_day = pd.read_csv(f"{root_path}/{data_type}/1_day.csv", index_col=0)  # g1
         feature_12_hours = pd.read_csv(f"{root_path}/{data_type}/12_hours.csv", index_col=0)  # g2
         feature_4_hours = pd.read_csv(f"{root_path}/{data_type}/4_hours.csv", index_col=0)  # g3
         feature_1_hour = pd.read_csv(f"{root_path}/{data_type}/1_hour.csv", index_col=0)  # g4
         feature_15_minutes = pd.read_csv(f"{root_path}/{data_type}/15_minutes.csv", index_col=0)  # g5
-        label = pd.read_csv(f"{root_path}/{data_type}/label.csv", index_col=0)
+        label = pd.read_csv(f"{root_path}/{data_type}/label.csv", index_col=0)  # label
 
         # ---- Step 1. Read some params from 1-day feature ---- #
         client_list = feature_1_day.columns  # each column represents a client
@@ -151,8 +151,8 @@ class ELECTDataset(data.Dataset):
 
 if __name__ == "__main__":  # a demo using UCIDataset
     UCI_ELECT_DATASET_PATH = "../../Data/UCI_electricity_dataset/dataset"
+    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=7)
 
-    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=1)
     for i in range(len(data_set)):
         g1_data = data_set[i]["mg_features"]["g1"]
         g2_data = data_set[i]["mg_features"]["g2"]
@@ -163,5 +163,6 @@ if __name__ == "__main__":  # a demo using UCIDataset
         assert (g2_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g2 error !! {g2_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
         assert (g3_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g3 error !! {g3_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
         assert (g4_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g4 error !! {g4_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
-        print(i)
+        print("g1 data: ", g1_data)
+        print("label: ", data_set[i]["label"])
     # print(data_set[1])
