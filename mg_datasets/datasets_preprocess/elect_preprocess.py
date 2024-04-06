@@ -21,12 +21,12 @@ Because we want to make the code clear and beautiful, so we need you to do some 
 During the preprocessing, we wil do the following things:
     1. Set the path.
     2. Intercept the raw elect data for the three-year period `from 2012 to 2014`, totally 1096 days and 105216 15_minutes.
-    4. Exclude the samples with more than 10 days of missing data, and just keep 321 clients, while change the unit of data.
-    5. Split the raw data to Train/Valid/Test and save to `15_minutes.csv` file as following:
+    3. Exclude the samples with more than 10 days of missing data, and just keep 321 clients, while change the unit of data.
+    4. Split the raw data to Train/Valid/Test and save to `15_minutes.csv` file as following:
         - Train (24 months, 366+365=1096 days, and 70176 rows of data)
         - Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
         - Test (6 months, 31+31+30+31+30+31=184 days, and 17664 rows of data)
-    6. Use the down-granularity algorithm to Compute other granularity (1-hour, 4-hours, 12-hours and 1-day) uci electricity data.
+    5. Use the down-granularity algorithm to Compute other granularity (1-hour, 4-hours, 12-hours and 1-day) uci electricity data.
        And compute the daily label.
 
 All in all, after downloading the file from the web, you need:
@@ -58,14 +58,14 @@ UCI_ELECT_DOWNLOAD_FIX_FILE_PATH = "../../../Data/UCI_electricity_dataset/LD2011
 UCI_ELECT_DATASET_PATH = "../../../Data/UCI_electricity_dataset/dataset"
 print("************************** BEGIN UCI ELECTRICITY DATASET PREPROCESSING **************************")
 
-# ---- Step 3. Intercept the raw data for the three-year period `from 2012 to 2014`, while change kW*15min to kW*h ---- #
+# ---- Step 2. Intercept the raw data for the three-year period `from 2012 to 2014`, while change kW*15min to kW*h ---- #
 elect_data = pd.read_csv(UCI_ELECT_DOWNLOAD_FILE_PATH, sep=";", parse_dates=True, decimal=',')  # read the data
 elect_data = elect_data.rename(columns={"Unnamed: 0": "Time"})  # change time column name
 pd.to_datetime(elect_data["Time"])  # change Time type (format)
 elect_data = elect_data[365 * 96:]  # Intercepts from `2012 to 2014` (cut off the 2011)
 print("************************** FINISH INTERCEPTING **************************")
 
-# ---- Step 4. Exclude the samples with more than 10 days of missing data ---- #
+# ---- Step 3. Exclude the samples with more than 10 days of missing data ---- #
 elect_data_1_day = elect_data.groupby(elect_data.index // 96).transform("sum")  # group sum
 elect_data_1_day["Time"] = elect_data["Time"]  # change time column
 elect_data_1_day = elect_data_1_day[elect_data_1_day.index % 96 == 95]  # just keep 1-day data
@@ -79,7 +79,7 @@ print(f"************************** FINISH EXCLUDING AND GET {len(keep_clients_li
 elect_data[keep_clients_list] = elect_data[keep_clients_list] / 4.0  # change the unit of data.
 print(f"************************** FINISH CHANGE kW*15min to kW*h **************************")
 
-# ---- Step 5. Split to Train & Valid & Test, and save the 15_minutes.csv ---- #
+# ---- Step 4. Split to Train & Valid & Test, and save the 15_minutes.csv ---- #
 train_elect_data = elect_data[:70176]  # Train (24 months, 366+365=731 days, and 70176 rows of data)
 train_elect_data.to_csv(f"{UCI_ELECT_DATASET_PATH}/Train/15_minutes.csv", index=False)
 valid_elect_data = elect_data[70176:87552]  # Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
@@ -88,7 +88,7 @@ test_elect_data = elect_data[87552:]  # Test (6 months, 31+31+30+31+30+31=184 da
 test_elect_data.to_csv(f"{UCI_ELECT_DATASET_PATH}/Test/15_minutes.csv", index=False)
 print("************************** FINISH 15 MINUTES SPLITTING **************************")
 
-# ---- Step 6. Down-granularity algorithm (1-hour, 4-hours, 12-hours and 1-day) uci electricity data ---- #
+# ---- Step 5. Down-granularity algorithm (1-hour, 4-hours, 12-hours and 1-day) uci electricity data ---- #
 for data_type in ["Train", "Valid", "Test"]:
     print(data_type)
     # Read the 15 minutes data, from the saved `.csv` file
