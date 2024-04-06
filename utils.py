@@ -48,7 +48,6 @@ def load_best_model(model_save_path: str, metric: str) -> tuple:
     # ---- Step 2. Get the path of best epoch model ---- #
     best_epoch = metric_df.index[np.argmax(metric_df[metric].values)]
     model_path = model_save_path + f"model_pytorch_epoch_{best_epoch}"
-    config_path = model_save_path + f"model_config_epoch_{best_epoch}"
 
     # ---- Step 3. Load the best model ---- #
     model = torch.load(model_path)
