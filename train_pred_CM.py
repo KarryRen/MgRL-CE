@@ -75,7 +75,7 @@ def train_valid_model() -> None:
         train_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=config.TIME_STEPS)
     else:
         raise TypeError(args.dataset)
-    train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)  # the train dataloader
+    train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the train dataloader
     logging.info(f"**** VALID DATASET & DATALOADER ****")
     if args.dataset == "elect":  # The UCI electricity dataset.
         valid_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=config.TIME_STEPS)
@@ -192,7 +192,7 @@ def train_valid_model() -> None:
                 valid_weights_one_epoch[last_step:now_step] = weights[:, 0].detach()
                 last_step = now_step
         # note the loss and all metrics for one epoch of VALID
-        epoch_metric["valid_loss"][epoch] = np.mean(train_loss_one_epoch)
+        epoch_metric["valid_loss"][epoch] = np.mean(valid_loss_one_epoch)
         epoch_metric["valid_R2"][epoch] = r2_score(y_true=valid_labels_one_epoch.cpu().numpy(),
                                                    y_pred=valid_preds_one_epoch.cpu().numpy(),
                                                    weight=valid_weights_one_epoch.cpu().numpy())
