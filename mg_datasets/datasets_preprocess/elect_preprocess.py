@@ -117,7 +117,7 @@ print("************************** FINISH 15 MINUTES SPLITTING ******************
 
 # ---- Step 6. Down-granularity algorithm (1-hour, 4-hours, 12-hours and 1-day) uci electricity data ---- #
 for data_type in ["Train", "Valid", "Test"]:
-    print(data_type)
+    print(f"|| Down-granularity {data_type} ||")
     # Read the 15 minutes data, from the saved `.csv` file
     elect_data_15_min = pd.read_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/15_minutes.csv")
     # Compute the 1-hour data, 4-`15 minutes` group

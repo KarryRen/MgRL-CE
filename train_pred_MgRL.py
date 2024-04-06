@@ -29,7 +29,7 @@ from utils import fix_random_seed, load_best_model
 from mg_datasets.elect_dataset import ELECTDataset
 from model.MgRL import MgRLNet
 from model.loss import MgRL_Loss
-from model.metrics import corr_score, rmse_score, mae_score
+from model.metrics import r2_score, corr_score, rmse_score, mae_score
 
 # ---- Init the args parser ---- #
 parser = argparse.ArgumentParser()
@@ -43,6 +43,8 @@ if args.dataset == "elect":  # The UCI electricity dataset.
     import configs.elect_config as config
 else:
     raise TypeError(args.dataset)
+# method name
+METHOD_NAME = "MgRL"
 
 
 def train_valid_model() -> None:
@@ -97,6 +99,9 @@ def train_valid_model() -> None:
         # train & valid loss
         "train_loss": np.zeros(config.EPOCHS),
         "valid_loss": np.zeros(config.EPOCHS),
+        # train & valid r2
+        "train_R2": np.zeros(config.EPOCHS),
+        "valid_R2": np.zeros(config.EPOCHS),
         # train & valid CORR
         "train_CORR": np.zeros(config.EPOCHS),
         "valid_CORR": np.zeros(config.EPOCHS),
@@ -148,6 +153,9 @@ def train_valid_model() -> None:
             last_step = now_step
         # note the loss and metrics for one epoch of TRAINING
         epoch_metric["train_loss"][epoch] = np.mean(train_loss_one_epoch)
+        epoch_metric["train_R2"][epoch] = r2_score(y_true=train_labels_one_epoch.cpu().numpy(),
+                                                   y_pred=train_preds_one_epoch.cpu().numpy(),
+                                                   weight=train_weights_one_epoch.cpu().numpy())
         epoch_metric["train_CORR"][epoch] = corr_score(y_true=train_labels_one_epoch.cpu().numpy(),
                                                        y_pred=train_preds_one_epoch.cpu().numpy(),
                                                        weight=train_weights_one_epoch.cpu().numpy())
@@ -180,7 +188,10 @@ def train_valid_model() -> None:
                 valid_weights_one_epoch[last_step:now_step] = weights[:, 0].detach()
                 last_step = now_step
         # note the loss and all metrics for one epoch of VALID
-        epoch_metric["valid_loss"][epoch] = np.mean(train_loss_one_epoch)
+        epoch_metric["valid_loss"][epoch] = np.mean(valid_loss_one_epoch)
+        epoch_metric["valid_R2"][epoch] = r2_score(y_true=valid_labels_one_epoch.cpu().numpy(),
+                                                   y_pred=valid_preds_one_epoch.cpu().numpy(),
+                                                   weight=valid_weights_one_epoch.cpu().numpy())
         epoch_metric["valid_CORR"][epoch] = corr_score(y_true=valid_labels_one_epoch.cpu().numpy(),
                                                        y_pred=valid_preds_one_epoch.cpu().numpy(),
                                                        weight=valid_weights_one_epoch.cpu().numpy())
@@ -192,7 +203,7 @@ def train_valid_model() -> None:
                                                      weight=valid_weights_one_epoch.cpu().numpy())
 
         # save model&model_config and metrics
-        torch.save(model, config.MODEL_SAVE_PATH + f"model_pytorch_epoch_{epoch}")
+        torch.save(model, config.MODEL_SAVE_PATH + f"{METHOD_NAME}_model_pytorch_epoch_{epoch}")
         pd.DataFrame(epoch_metric).to_csv(config.MODEL_SAVE_PATH + "model_metric.csv")
 
         # write metric log
@@ -201,19 +212,23 @@ def train_valid_model() -> None:
                      f"{['%s:%.4f ' % (key, value[epoch]) for key, value in epoch_metric.items()]}")
     # draw figure of train and valid metrics
     plt.figure(figsize=(15, 6))
-    plt.subplot(2, 2, 1)
+    plt.subplot(3, 1, 1)
     plt.plot(epoch_metric["train_loss"], label="train loss", color="g")
     plt.plot(epoch_metric["valid_loss"], label="valid loss", color="b")
     plt.legend()
-    plt.subplot(2, 2, 2)
+    plt.subplot(3, 2, 3)
+    plt.plot(epoch_metric["train_R2"], label="train R2", color="g")
+    plt.plot(epoch_metric["valid_R2"], label="valid R2", color="b")
+    plt.legend()
+    plt.subplot(3, 2, 4)
     plt.plot(epoch_metric["train_CORR"], label="train CORR", color="g")
     plt.plot(epoch_metric["valid_CORR"], label="valid CORR", color="b")
     plt.legend()
-    plt.subplot(2, 2, 3)
+    plt.subplot(3, 2, 5)
     plt.plot(epoch_metric["train_RMSE"], label="train RMSE", color="g")
     plt.plot(epoch_metric["valid_RMSE"], label="valid RMSE", color="b")
     plt.legend()
-    plt.subplot(2, 2, 4)
+    plt.subplot(3, 2, 6)
     plt.plot(epoch_metric["train_MAE"], label="train MAE", color="g")
     plt.plot(epoch_metric["valid_MAE"], label="valid MAE", color="b")
     plt.legend()
@@ -252,7 +267,7 @@ def pred_model() -> None:
     logging.info(f"Test dataset: length = {len(test_dataset)}")
 
     # ---- Load model and test ---- #
-    model, model_path = load_best_model(config.MODEL_SAVE_PATH, config.MAIN_METRIC)
+    model, model_path = load_best_model(config.MODEL_SAVE_PATH, METHOD_NAME, config.MAIN_METRIC)
     logging.info(f"***************** LOAD Best Model {model_path} *****************")
 
     # ---- Test Model ---- #
@@ -278,9 +293,11 @@ def pred_model() -> None:
             last_step = now_step
 
     # ---- Logging the result ---- #
+    test_R2 = r2_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
     test_CORR = corr_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
     test_RMSE = rmse_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
     test_MAE = mae_score(y_true=labels_array.cpu().numpy(), y_pred=predictions_array.cpu().numpy(), weight=weight_array.cpu().numpy())
+    logging.info(f"******** test_R2 : {test_R2} **********")
     logging.info(f"******** test_CORR : {test_CORR} **********")
     logging.info(f"******** test_RMSE : {test_RMSE} **********")
     logging.info(f"******** test_MAE : {test_MAE} **********")
