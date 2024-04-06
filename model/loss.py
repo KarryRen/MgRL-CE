@@ -7,10 +7,62 @@
 import torch
 
 
+class MSE_Loss:
+    """ Compute the MSE loss.
+    loss = reduction((y_true - y_pred)^2)
+
+    """
+
+    def __init__(self, reduction: str = "sum", lambda_1: float = 1.0):
+        """ Init function of the MSE Loss.
+
+        :param reduction: the reduction of this loss, you have only 2 choices now:
+            - `sum` for sum reduction
+            - `mean` for mean reduction
+
+        """
+
+        assert reduction in ["sum", "mean"], f"Reduction in MgRL_Loss ERROR !! `{reduction}` is not allowed !!"
+        self.reduction = reduction  # the reduction
+
+    def __call__(self, y_true: torch.Tensor, y_pred: torch.Tensor, weight: torch.Tensor):
+        """ Call function of  the MSE Loss.
+
+        :param y_true: the true label of time series prediction, shape=(bs, 1)
+        :param y_pred: the prediction of MgRL Net, shape=(bs, 1)
+        :param weight: the weight indicates item meaningful or meaningless, shape=(bs, 1)
+
+        return:
+            - batch_loss: a Tensor number, shape=([])
+        """
+
+        # ---- Step 0. Test the weight shape & make the default weight ---- #
+        assert weight.shape[0] == y_true.shape[0], "Weight should have the same length with y_true&y_pred !"
+
+        # ---- Step 1. Compute the loss ---- #
+        if self.reduction == "mean":
+            # compute mse loss (`mean`)
+            mse_sample_loss = (y_pred - y_true) ** 2  # shape=(bs, 1)
+            mse_loss = torch.sum(weight * mse_sample_loss) / torch.sum(weight)  # weighted and mean
+            batch_loss = mse_loss
+        elif self.reduction == "sum":
+            # compute mse loss (`sum`)
+            mse_sample_loss = (y_pred - y_true) ** 2  # shape=(bs, 1)
+            mse_loss = torch.sum((weight * mse_sample_loss))  # weighted and sum
+            batch_loss = mse_loss
+        else:
+            raise TypeError(self.reduction)
+
+        # ---- Step 2. Return loss ---- #
+        return batch_loss
+
+
 class MgRL_Loss:
     """ Compute the loss of MgRL, which has two parts:
         - part 1. MSE Loss
         - part 2. Reconstruction Loss
+
+    The detail computing function please see my paper.
 
     """
 
@@ -79,14 +131,16 @@ class MgRL_Loss:
 
 if __name__ == "__main__":
     # An Example test two loss
-    bs, T, D = 4, 3, 2
-    y_true, y_pred, weight = torch.zeros((bs, 1)), torch.zeros((bs, 1)), torch.ones((bs, 1))
-    # y_true[31], y_true[30] = 100, 2
-    # weight[31], weight[30] = 0, 0
+    bs, T, D = 64, 3, 2
+    y_true, y_pred, weight = torch.zeros((bs, 1)), torch.ones((bs, 1)), torch.ones((bs, 1))
     a = torch.ones((bs, T, D))
     rec_residuals = (torch.zeros((bs, T, D)), a, torch.zeros((bs, T, D)), torch.zeros((bs, T, D)))
-
-    # ---- Test MgRL_Loss ---- #
-    loss1 = MgRL_Loss(reduction="sum", lambda_1=1.0)
-    l = loss1(y_true=y_true, y_pred=y_pred, rec_residuals=rec_residuals, weight=weight)
-    print(l)
+    # ---- Test MSE_Loss ---- #
+    loss_mse_sum = MSE_Loss(reduction="sum")
+    l_sum = loss_mse_sum(y_true=y_true, y_pred=y_pred, weight=weight)
+    print(l_sum)
+    assert l_sum == bs * 1
+    loss_mse_mean = MSE_Loss(reduction="mean")
+    l_sum = loss_mse_mean(y_true=y_true, y_pred=y_pred, weight=weight)
+    print(l_sum)
+    assert l_sum == bs / weight.sum()
