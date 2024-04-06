@@ -13,7 +13,7 @@ class MSE_Loss:
 
     """
 
-    def __init__(self, reduction: str = "sum", lambda_1: float = 1.0):
+    def __init__(self, reduction: str = "mean", lambda_1: float = 1.0):
         """ Init function of the MSE Loss.
 
         :param reduction: the reduction of this loss, you have only 2 choices now:
