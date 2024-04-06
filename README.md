@@ -17,7 +17,6 @@ MgRL-CE/
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
     ├── metric.py # The metrics of y_ture and y_pred.
     ├── modules.py # The modules of model.
-├── data_visualization # some data visulization functions
 ├── configs # The train&prediction code of 3 datasets.
     ├── elect_config.py # Config file of UCI electricity dataset.
 ├── train_pred_MgRL.py # Training and Prediction code of `MgRLNet` for 3 datasets.
@@ -125,6 +124,3 @@ To facilitate the comparison of all Comparison Methods, i built the training and
 ```shell
 python3 train_pred_CM.py --dataset dataset_name --method method_name
 ```
-
-
-
