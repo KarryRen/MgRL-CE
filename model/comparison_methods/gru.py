@@ -41,8 +41,7 @@ class GRUNet(nn.Module):
 
         # ---- Part 1. The rnn of the GRU module ---- #
         self.rnn = nn.GRU(
-            input_size=input_size, hidden_size=hidden_size,
-            num_layers=num_layers, batch_first=True, dropout=dropout
+            input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True, dropout=dropout
         ).to(device=device)
 
         # ---- Part 2. The output fully connect layer ---- #
@@ -60,9 +59,7 @@ class GRUNet(nn.Module):
             }
 
         returns: output, a dict with format:
-            {
-                "pred" : the prediction result, shape=(bs, 1)
-            }
+            {"pred" : the prediction result, shape=(bs, 1)}
 
         """
 
