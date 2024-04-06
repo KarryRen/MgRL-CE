@@ -45,8 +45,11 @@ class ELECTDataset(data.Dataset):
 
         assert data_type in ["Train", "Valid", "Test"], "data_type ERROR !"
 
-        # ---- Step 0. Set the params and load all data to memory ---- #
+        # ---- Step 0. Set the params ---- #
         self.T = time_steps  # time steps (seq len)
+        self.elect_data_scale_adj = pd.read_csv(f"{root_path}/elect_data_1_day_of_first_day.csv", index_col=0)
+
+        # ---- Step 0. Load all data to memory ---- #
         feature_1_day = pd.read_csv(f"{root_path}/{data_type}/1_day.csv", index_col=0)  # g1
         feature_12_hours = pd.read_csv(f"{root_path}/{data_type}/12_hours.csv", index_col=0)  # g2
         feature_4_hours = pd.read_csv(f"{root_path}/{data_type}/4_hours.csv", index_col=0)  # g3
@@ -55,9 +58,9 @@ class ELECTDataset(data.Dataset):
         label = pd.read_csv(f"{root_path}/{data_type}/label.csv", index_col=0)  # label
 
         # ---- Step 1. Read some params from 1-day feature ---- #
-        client_list = feature_1_day.columns  # each column represents a client
+        self.client_list = feature_1_day.columns  # each column represents a client
         self.total_day_nums = len(feature_1_day)  # the total number of days
-        self.total_client_nums = len(client_list)  # the total number of clients
+        self.total_client_nums = len(self.client_list)  # the total number of clients
 
         # ---- Step 3. Read all `.csv` files of multi-granularity data to memory. ---- #
         self.label_list = []  # label list, each item is a daily label array (T, 1) for one client
@@ -68,7 +71,7 @@ class ELECTDataset(data.Dataset):
             "feature_1_hour": [],
             "feature_15_minutes": []
         }  # features key-value pair, each item of dict is a list of features for one client
-        for client in client_list:  # for-loop to append label and feature
+        for client in self.client_list:  # for-loop to append label and feature
             self.label_list.append(label[client].values)
             self.mg_features_list_dict["feature_1_day"].append(feature_1_day[client].values)
             self.mg_features_list_dict["feature_12_hours"].append(feature_12_hours[client].values)

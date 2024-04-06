@@ -234,7 +234,7 @@ def train_valid_model() -> None:
     plt.plot(epoch_metric["train_MAE"], label="train MAE", color="g")
     plt.plot(epoch_metric["valid_MAE"], label="valid MAE", color="b")
     plt.legend()
-    plt.savefig(config.SAVE_PATH + "training_steps.png", dpi=200, bbox_inches="tight")
+    plt.savefig(f"{config.SAVE_PATH}training_steps.png", dpi=200, bbox_inches="tight")
     logging.info("***************** TRAINING OVER ! *****************")
 
 
@@ -303,6 +303,23 @@ def pred_model() -> None:
     logging.info(f"******** test_CORR : {test_CORR} **********")
     logging.info(f"******** test_RMSE : {test_RMSE} **********")
     logging.info(f"******** test_MAE : {test_MAE} **********")
+
+    # ---- Plt the pred ---- #
+    client_num, day_num = test_dataset.total_client_nums, test_dataset.total_day_nums  # get the client num & day_num
+    scale_adj_df = test_dataset.elect_data_scale_adj  # get the scale adjustment dataframe
+    client_labels_array = labels_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
+    client_predictions_array = predictions_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
+    client_weights_array = weight_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
+    for client_idx, client in enumerate(test_dataset.client_list):
+        scale_adj_array = np.repeat(scale_adj_df[client].values, np.sum(client_weights_array[client_idx]))  # (day_num)
+        plt.figure(figsize=(15, 6))
+        plt.plot(client_labels_array[client_idx][client_weights_array[client_idx] == 1] * scale_adj_array, label="label", color="g")
+        plt.plot(client_predictions_array[client_idx][client_weights_array[client_idx] == 1] * scale_adj_array, label="pred", color="b")
+        plt.legend()
+        plt.savefig(f"{config.SAVE_PATH}{client}.png", dpi=200, bbox_inches="tight")
+        print(f"Plot Prediction {client_idx}: {client} !!")
+
+    # ---- Finish Pred ---- #
     logging.info("***************** TEST OVER ! *****************")
     logging.info("")
 
@@ -312,7 +329,7 @@ if __name__ == "__main__":
     fix_random_seed(seed=config.RANDOM_SEED)
 
     # ---- Step 1. Train & Valid model ---- #
-    train_valid_model()
+    # train_valid_model()
 
     # ---- Step 2. Pred Model ---- #
     pred_model()

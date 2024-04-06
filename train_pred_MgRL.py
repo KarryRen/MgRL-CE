@@ -260,9 +260,9 @@ def pred_model() -> None:
     logging.info(f"**** TEST DATASET & DATALOADER ****")
     if args.dataset == "elect":  # The UCI electricity dataset.
         test_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=config.TIME_STEPS)
-        test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
     else:
         raise TypeError(args.dataset)
+    test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
     logging.info("***************** DATASET MAKE OVER ! *****************")
     logging.info(f"Test dataset: length = {len(test_dataset)}")
 
