@@ -49,7 +49,8 @@ All in all, after downloading the file from the web, you need:
 
 import pandas as pd
 import numpy as np
-import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # ---- Define the PARAMS ---- #
 TRAIN_DAYS, VALID_DAYS, TEST_DAYS = 731, 181, 184
@@ -76,9 +77,15 @@ for client in elect_data_1_day.columns[1:]:  # for-loop all clients
     if np.sum(elect_data_1_day[client].values == 0) < 1:  # no more than 1 day
         keep_clients_list.append(client)  # append the right clients
 elect_data = elect_data[["Time"] + keep_clients_list]  # exclude clients and keep `Time` column of 15 minutes
-print(f"************************** FINISH EXCLUDING AND GET {len(keep_clients_list)} CLIENTS **************************")
+print(f"************************** FINISH EXCLUDING AND GET `{len(keep_clients_list)}` CLIENTS **************************")
 # change the unit of data (from kW*15min to kW*h)
 elect_data[keep_clients_list] = elect_data[keep_clients_list] / 4.0
+plt.figure()
+sns.distplot(elect_data[keep_clients_list].values.flatten(), hist=True, label="elect", color="#FFCC33")
+plt.legend()
+plt.xlabel("")
+plt.savefig(f"{UCI_ELECT_DATASET_PATH}/raw_elect_distribution.png", dpi=200, bbox_inches="tight")
+plt.close()
 print(f"************************** FINISH CHANGE kW*15min to kW*h **************************")
 
 # ---- Step 4. Adjust the scale of different data distributions ---- #
@@ -88,6 +95,12 @@ elect_data_1_day_of_first_day = elect_data_1_day[["Time"] + keep_clients_list][:
 elect_data_1_day_of_first_day.to_csv(f"{UCI_ELECT_DATASET_PATH}/elect_data_1_day_of_first_day.csv", index=False)
 # change the scale by the first day data
 elect_data[keep_clients_list] = elect_data[keep_clients_list].values / elect_data_1_day_of_first_day[keep_clients_list].values
+plt.figure()
+sns.distplot(elect_data[keep_clients_list].values.flatten(), hist=True, label="elect", color="#FFCC33")
+plt.legend()
+plt.xlabel("")
+plt.savefig(f"{UCI_ELECT_DATASET_PATH}/adj_elect_distribution.png", dpi=200, bbox_inches="tight")
+plt.close()
 print(f"************************** FINISH ADJUSTING SCALE **************************")
 
 # ---- Step 5. Split to Train & Valid & Test, and save the 15_minutes.csv ---- #
