@@ -13,7 +13,7 @@ MgRL-CE/
 ├── model # The MgRL-CE models.
     ├── MgRL.py # The Multi-Granularity Residual Learning Framework (includes two core models).
     ├── comparision_methods # All comparison methods.
-        ├── 
+        ├── gru.py # The Comparison Methods 1. GRU.
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
     ├── metric.py # The metrics of y_ture and y_pred.
     ├── modules.py # The modules of model.
@@ -28,8 +28,6 @@ MgRL-CE/
 
 
 ## Introduction
-
-Here are two new Net : `MgRLNet` and `MgRL_CE_Net`.
 
 
 
@@ -91,26 +89,41 @@ There are some **differences** between the different datasets **during Training 
 
 ## Comparison Methods
 
-This study compares the proposed method with numerous other methods. The competitive baselines i compared can be categorized into four groups:
+### Comparison Methods List
+
+This study compares the proposed method with numerous other methods. The competitive baselines i compared can be categorized into **4 Groups:**
 
 **GROUP 1. General Time Series Forecasting Models (using single granularity)**
 
-- GRU, [**Ref. Paper**](https://arxiv.org/pdf/1406.1078.pdf), 
-- LSTM, [**Ref. Paper**](https://blog.xpgreat.com/file/lstm.pdf), 
-- Transformer, [**Ref. Paper**](https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf), 
-- DeepAR, [**Ref. Paper**](http://162.14.120.130/机器学习-时间序列分析/deepAR.pdf), 
-- Informer, [**Ref. Paper**](https://www.researchgate.net/publication/347125466_Informer_Beyond_Efficient_Transformer_for_Long_Sequence_Time-Series_Forecasting), 
+- GRU: HERE, [**Kyunghyun Cho, et al. 2014**](https://arxiv.org/pdf/1406.1078.pdf), [**Ref. Code**](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_gru.py#L294).
+- LSTM, [**Sepp Hochreiter, et al. Neural computation 1997 **](https://blog.xpgreat.com/file/lstm.pdf), [**Ref. Code**](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_lstm.py#L286).
+- Transformer, [**Ashish Vaswani, et al. NeurIPS 2017**](https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf), [**Ref. Code**](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_transformer.py#L258).
+- DeepAR, [**Salinas D, et al. Int. J. Forecasting 2020**](http://162.14.120.130/机器学习-时间序列分析/deepAR.pdf), [**Ref. Code**](https://github.com/husnejahan/DeepAR-pytorch/tree/master).
+- Informer, [**Zhou H, et al. AAAI 2021**](https://www.researchgate.net/publication/347125466_Informer_Beyond_Efficient_Transformer_for_Long_Sequence_Time-Series_Forecasting), [**Ref. Code**](https://github.com/zhouhaoyi/Informer2020/tree/main).
 
 **GROUP 2. Current TOP Models for Stock Trend Prediction (using single granularity)**
 
+- SFM, [**Liheng Zhang, et al. KDD 2017**](https://userpages.umbc.edu/~nroy/courses/fall2018/cmisr/papers/stock_price.pdf), [**Ref. Code**](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_sfm.py#L25).
+- ALSTM, [**Yao Qin, et al. IJCAI 2017**](https://arxiv.org/pdf/1704.02971.pdf), [**Ref. Code**](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_alstm.py#L294).
+- ADV-ALSTM, [**Feng F, et al. IJCAI 2019**](https://www.ijcai.org/proceedings/2019/0810.pdf), [**Ref. Code**](https://zhuanlan.zhihu.com/p/566172868).
 
+**GROUP 3. Model Variants (using different granularities of data)**
 
+- Fine-Grained GRU, using only finest-grained data.
+- Multi-Grained GRU, using the concatenation of two granularity data.
+- Ensemble, ensembeing result for five independent training models with different granularity data.
 
+**GROUP 4. Two Ablation Models for MgRL_CE  (using different granularities of data)**
 
-To facilitate the comparison of all Comparison Methods, i built the training and prediction framework: `train_pred_CM.py` of 3 datasets, **HERE** ! You can **RUN** it by:
+- MgRL, not containing the confidence estimation mechanism in MgRL_CE.
+- MgRL_Attention, replacing the confidence estimation mechanism in MgRL_CE with the classical [**soft attention mechanism**](https://arxiv.org/pdf/1409.0473.pdf?utm_source=ColumnsChannel).
+
+### Run the comparison methods
+
+To facilitate the comparison of all Comparison Methods, i built the training and prediction frameworks for each comparison methods of 3 datasets ! 
 
 ```shell
-python3 train_pred_CM.py --dataset dataset_name --method methond_name
+python3 train_pred_CM.py --dataset dataset_name --method method_name
 ```
 
 
