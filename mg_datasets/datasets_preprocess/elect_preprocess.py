@@ -20,8 +20,7 @@ Because we want to make the code clear and beautiful, so we need you to do some 
 
 During the preprocessing, we wil do the following things:
     1. Set the path.
-    2. Change all `,` in .txt file to `.`, in fact the raw .txt data has some errors, all `,` should be `.` !
-    3. Intercept the raw elect data for the three-year period `from 2012 to 2014`, totally 1096 days and 105216 15_minutes.
+    2. Intercept the raw elect data for the three-year period `from 2012 to 2014`, totally 1096 days and 105216 15_minutes.
     4. Exclude the samples with more than 10 days of missing data, and just keep 321 clients, while change the unit of data.
     5. Split the raw data to Train/Valid/Test and save to `15_minutes.csv` file as following:
         - Train (24 months, 366+365=1096 days, and 70176 rows of data)
@@ -59,26 +58,8 @@ UCI_ELECT_DOWNLOAD_FIX_FILE_PATH = "../../../Data/UCI_electricity_dataset/LD2011
 UCI_ELECT_DATASET_PATH = "../../../Data/UCI_electricity_dataset/dataset"
 print("************************** BEGIN UCI ELECTRICITY DATASET PREPROCESSING **************************")
 
-# ---- Step 2. Change all `,` in .txt file to `.` to fix the error ---- #
-if not os.path.exists(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH):
-    # read the raw data
-    with open(UCI_ELECT_DOWNLOAD_FILE_PATH, "r") as f:
-        wrong_line_list = f.readlines()  # all lines are wrong
-        right_line_list = []  # right line list is empty
-        for wrong_line in wrong_line_list:
-            if "," in wrong_line:  # change wrong line to right line
-                right_line = wrong_line.replace(",", ".")  # change `,` to `.`
-            else:  # have no `,`, just keep raw
-                right_line = wrong_line
-            right_line_list.append(right_line)  # append all lines
-    # write the right line to file
-    with open(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH, "w") as f:
-        for right_line in right_line_list:
-            f.writelines(right_line)
-print("************************** FINISH `,` to `.` REPLACING **************************")
-
 # ---- Step 3. Intercept the raw data for the three-year period `from 2012 to 2014`, while change kW*15min to kW*h ---- #
-elect_data = pd.read_table(UCI_ELECT_DOWNLOAD_FIX_FILE_PATH, delimiter=";")  # read data
+elect_data = pd.read_csv(UCI_ELECT_DOWNLOAD_FILE_PATH, sep=";", parse_dates=True, decimal=',')  # read the data
 elect_data = elect_data.rename(columns={"Unnamed: 0": "Time"})  # change time column name
 pd.to_datetime(elect_data["Time"])  # change Time type (format)
 elect_data = elect_data[365 * 96:]  # Intercepts from `2012 to 2014` (cut off the 2011)
@@ -148,5 +129,5 @@ for data_type in ["Train", "Valid", "Test"]:
     assert len(elect_data_1_hour) == DAYS * 24, f"{data_type} 1 hour error !!"
     assert len(elect_data_15_min) == DAYS * 96, f"{data_type} 15 minutes error !!"
     assert len(elect_label_1_day) == DAYS, f"{data_type} labels error !!"
-    print(f"{data_type} FINISH !!")
+    print(f"|| {data_type} FINISH !! ||")
 print("************************** FINISH UCI ELECTRICITY DATASET PREPROCESSING **************************")
