@@ -238,14 +238,12 @@ def train_valid_model() -> None:
     logging.info("***************** TRAINING OVER ! *****************")
 
 
-def pred_model() -> None:
-    """ Test Model. """
+def pred_model(verbose: bool = False) -> None:
+    """ Test Model.
 
-    # ---- Build the save directory ---- #
-    if not os.path.exists(config.SAVE_PATH):
-        os.makedirs(config.SAVE_PATH)
-    if not os.path.exists(config.MODEL_SAVE_PATH):
-        os.makedirs(config.MODEL_SAVE_PATH)
+    :param verbose: show image or not
+
+    """
 
     # ---- Construct the test log file (might be same with train&valid) ---- #
     logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -305,19 +303,24 @@ def pred_model() -> None:
     logging.info(f"******** test_MAE : {test_MAE} **********")
 
     # ---- Plt the pred ---- #
-    client_num, day_num = test_dataset.total_client_nums, test_dataset.total_day_nums  # get the client num & day_num
-    scale_adj_df = test_dataset.elect_data_scale_adj  # get the scale adjustment dataframe
-    client_labels_array = labels_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
-    client_predictions_array = predictions_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
-    client_weights_array = weight_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
-    for client_idx, client in enumerate(test_dataset.client_list):
-        scale_adj_array = np.repeat(scale_adj_df[client].values, np.sum(client_weights_array[client_idx]))  # (day_num)
-        plt.figure(figsize=(15, 6))
-        plt.plot(client_labels_array[client_idx][client_weights_array[client_idx] == 1] * scale_adj_array, label="label", color="g")
-        plt.plot(client_predictions_array[client_idx][client_weights_array[client_idx] == 1] * scale_adj_array, label="pred", color="b")
-        plt.legend()
-        plt.savefig(f"{config.SAVE_PATH}{client}.png", dpi=200, bbox_inches="tight")
-        print(f"Plot Prediction {client_idx}: {client} !!")
+    if verbose:
+        # build up the images save directory
+        if not os.path.exists(config.IMAGE_SAVE_PATH):
+            os.makedirs(config.IMAGE_SAVE_PATH)
+        client_num, day_num = test_dataset.total_client_nums, test_dataset.total_day_nums  # get the client num & day_num
+        scale_adj_df = test_dataset.elect_data_scale_adj_df  # get the scale adjustment dataframe
+        client_labels_array = labels_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
+        client_predictions_array = predictions_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
+        client_weights_array = weight_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
+        for client_idx, client in enumerate(test_dataset.client_list):
+            scale_adj_array = np.repeat(scale_adj_df[client].values, np.sum(client_weights_array[client_idx]))  # (day_num)
+            plt.figure(figsize=(15, 6))
+            plt.plot(client_labels_array[client_idx][client_weights_array[client_idx] == 1] * scale_adj_array, label="label", color="g")
+            plt.plot(client_predictions_array[client_idx][client_weights_array[client_idx] == 1] * scale_adj_array, label="pred", color="b")
+            plt.legend()
+            plt.savefig(f"{config.IMAGE_SAVE_PATH}{client}.png", dpi=200, bbox_inches="tight")
+            print(f"|| Plot Prediction {client_idx}: {client} !! ||")
+            break
 
     # ---- Finish Pred ---- #
     logging.info("***************** TEST OVER ! *****************")
@@ -329,7 +332,7 @@ if __name__ == "__main__":
     fix_random_seed(seed=config.RANDOM_SEED)
 
     # ---- Step 1. Train & Valid model ---- #
-    # train_valid_model()
+    train_valid_model()
 
     # ---- Step 2. Pred Model ---- #
-    pred_model()
+    pred_model(verbose=False)
