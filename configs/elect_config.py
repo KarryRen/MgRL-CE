@@ -11,6 +11,7 @@ RANDOM_SEED = [0, 42, 3407, 114514][0]  # the random seed
 SAVE_PATH = f"exp_elect/rs_{RANDOM_SEED}/"  # the save path of UCI electricity experiments
 LOG_FILE = SAVE_PATH + "log.log"  # the log file path
 MODEL_SAVE_PATH = SAVE_PATH + "trained_models/"  # the saving path of models
+IMAGE_SAVE_PATH = SAVE_PATH + "pred_images/"  # the saving path of pred images
 
 # ************************************************************************************ #
 # ************************************ FOR DATASET *********************************** #

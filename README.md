@@ -5,11 +5,13 @@
 
 ```python
 MgRL-CE/
+├── images # All used images of this repo.
 ├── datasets
     ├── datasets_preprocess
         ├── elect_preprocess.py # The preprocess code of UCI electricity dataset (download from web).
     ├── elect_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
-├── images # All used images of this repo.
+├── configs # The train&prediction code of 3 datasets.
+    ├── elect_config.py # Config file of UCI electricity dataset.
 ├── model # The MgRL-CE models.
     ├── MgRL.py # The Multi-Granularity Residual Learning Framework (includes two core models).
     ├── comparision_methods # All comparison methods.
@@ -17,8 +19,6 @@ MgRL-CE/
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
     ├── metric.py # The metrics of y_ture and y_pred.
     ├── modules.py # The modules of model.
-├── configs # The train&prediction code of 3 datasets.
-    ├── elect_config.py # Config file of UCI electricity dataset.
 ├── train_pred_MgRL.py # Training and Prediction code of `MgRLNet` for 3 datasets.
 ├── train_pred_CM.py # Training and Prediction code of Comparison Methods for 3 datasets.
 └── utils.py # Some util functions.
@@ -52,7 +52,7 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
   
   > In order to minimize the interference caused by missing data, this study intercepts the sample data from the original dataset for the **3-year period from 2012 to 2014**, and excludes the clients with **more than 1 day of missing data** in the interval, and finally retains the electricity consumption data of **320 clients**. The target task of this paper is to **predict the next day's electricity consumption of each client**, and the dataset is divided into training set, validation set and test set according to the time sequence, which covers 24 months, 6 months and 6 months, respectively. The feature data input to the network has **5 kind of granularity**: 1 day (coarsest), 12 hours, 4 hours, 1 hour and 15 minutes (finest).
   >
-  > ATTENTION: During the preprocessing i have also **changed the unit of data from kW*15min to kWh** and **adjusted the scale of data distribution  by dividing each client data by their daily electricity consumption on the first day**.
+  > ATTENTION: During the preprocessing I have also **changed the unit of data from kW*15min to kWh** and **adjusted the scale of data distribution by dividing each client data by their daily electricity consumption on the first day**.
   
   - The preprocess code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
   
