@@ -5,7 +5,7 @@
 """ The torch.Dataset of UCI electricity dataset.
 
 After the preprocessing raw UCI electricity dataset (download from web) by
-    run `python uci_preprocess.py` you will get the following I-SPY1 dataset directory:
+    run `python elect_preprocess.py` you will get the following UCI electricity dataset directory:
         UCI_ELECT_DATASET_PATH/
             ├── Train
                ├── 15_minutes.csv
@@ -47,7 +47,8 @@ class ELECTDataset(data.Dataset):
 
         # ---- Step 0. Set the params ---- #
         self.T = time_steps  # time steps (seq len)
-        self.elect_data_scale_adj = pd.read_csv(f"{root_path}/elect_data_1_day_of_first_day.csv", index_col=0)
+        # the scale adjusting dataframe, very important when get raw data distribution
+        self.elect_data_scale_adj_df = pd.read_csv(f"{root_path}/elect_data_1_day_of_first_day.csv", index_col=0)
 
         # ---- Step 0. Load all data to memory ---- #
         feature_1_day = pd.read_csv(f"{root_path}/{data_type}/1_day.csv", index_col=0)  # g1
@@ -154,9 +155,9 @@ class ELECTDataset(data.Dataset):
 
 if __name__ == "__main__":  # a demo using UCIDataset
     UCI_ELECT_DATASET_PATH = "../../Data/UCI_electricity_dataset/dataset"
-    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=7)
-
+    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=7)
     for i in range(len(data_set)):
+        print(i)
         g1_data = data_set[i]["mg_features"]["g1"]
         g2_data = data_set[i]["mg_features"]["g2"]
         g3_data = data_set[i]["mg_features"]["g3"]
@@ -168,4 +169,3 @@ if __name__ == "__main__":  # a demo using UCIDataset
         assert (g4_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g4 error !! {g4_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
         print("g1 data: ", g1_data)
         print("label: ", data_set[i]["label"])
-    # print(data_set[1])
