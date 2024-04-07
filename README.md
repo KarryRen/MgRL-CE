@@ -7,7 +7,7 @@
 MgRL-CE/
 ├── datasets
     ├── datasets_preprocess
-        ├── elect_preprocess.py # The pre-process code of UCI electricity dataset (download from web).
+        ├── elect_preprocess.py # The preprocess code of UCI electricity dataset (download from web).
     ├── elect_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
 ├── images # All used images of this repo.
 ├── model # The MgRL-CE models.
@@ -32,11 +32,11 @@ MgRL-CE/
 
 ## Dataset Acquisition
 
-This study extensively performs experiments on 3 real-world Datasets to verify the feasibility of the proposed MgRL-CE. You can **DOWNLOAD** the raw dataset from the following links. 
+This study extensively performs experiments on **3 Real-World Datasets** to verify the feasibility of the proposed MgRL-CE. You can **DOWNLOAD** the raw datasets from the following links, and here are also some description about the datasets.
 
 - **UCI electricity dataset (ELECT)**. Could be downloaded from [**HERE**](https://archive.ics.uci.edu/dataset/321/electricityloaddiagrams20112014) ! 
 
-  > The UCI electricity dataset collects electricity consumption (kW of each 15mins) of **370 clients** over a 4-year period from 2011 to 2014, some of which were created after 2011, and all of the missing electricity consumption data for these customers are filled with **ZEROS**.
+  > The UCI electricity dataset collects electricity consumption of each 15 minutes (unit: kW*15min) from a total of **370** clients over a **4-year period from 2011 to 2014**, some of which were created after 2011, and all missing data on electricity consumption for these clients are filled with **ZEROS** !
   >
 
 - **IF_M0 future Limit Order Book dataset (LOB)**. Updating 🔥.
@@ -44,17 +44,17 @@ This study extensively performs experiments on 3 real-world Datasets to verify t
 
 
 
-## Data Pre-Process and `torch.Dataset`
+## Data Preprocess and `torch.Dataset`
 
-After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. I have released Pre-Process code for datasets, please read them carefully and **follow the guidelines in the top comment rather than running the shell command directly !** I have also released `torch.Dataset` code for datasets.
+After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. I have released preprocess code for datasets, please read them carefully and **follow the guidelines in the top comment rather than running the shell command directly !** I have also released `torch.Dataset` code for datasets.
 
 - **UCI electricity dataset**. 
   
-  > In order to minimize the interference caused by missing data, this study intercepts the sample data from the original dataset for the three-year period from **2012 to 2014**, and excludes the samples with more than 1 days of missing data in the interval, and finally retains the electricity consumption data of **320 clients**. The target task of this paper is to **predict the daily electricity consumption of each clients**, and the dataset is divided into training set, validation set and test set according to the time sequence, which covers 24 months, 6 months and 6 months, respectively. The input network is characterized by **five granularity**: 1 day (coarsest), 12 hours, 4 hours, 1 hour and 15 minutes (finest). 
+  > In order to minimize the interference caused by missing data, this study intercepts the sample data from the original dataset for the **3-year period from 2012 to 2014**, and excludes the clients with **more than 1 day of missing data** in the interval, and finally retains the electricity consumption data of **320 clients**. The target task of this paper is to **predict the next day's electricity consumption of each client**, and the dataset is divided into training set, validation set and test set according to the time sequence, which covers 24 months, 6 months and 6 months, respectively. The feature data input to the network has **5 kind of granularity**: 1 day (coarsest), 12 hours, 4 hours, 1 hour and 15 minutes (finest).
   >
-  > ATTENTION: During the pre-process i have also **change the unit of data from kW*15min to kWh** and **adjust the scale of distribution**.
+  > ATTENTION: During the preprocessing i have also **changed the unit of data from kW*15min to kWh** and **adjusted the scale of data distribution  by dividing each client data by their daily electricity consumption on the first day**.
   
-  - The Pre-Process code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
+  - The preprocess code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
   
     ```shell
     python3 elect_preprocess.py
