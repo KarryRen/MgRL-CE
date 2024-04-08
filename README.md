@@ -28,6 +28,8 @@ MgRL-CE/
 
 ## Introduction
 
+<img src="./images/MgRL_Framework.png" alt="MgRL_Framework" style="zoom:50%;" />
+
 
 
 ## Dataset Acquisition
