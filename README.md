@@ -10,7 +10,7 @@ MgRL-CE/
     ├── datasets_preprocess
         ├── elect_preprocess.py # The preprocess code of UCI electricity dataset (download from web).
     ├── elect_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
-├── configs # The train&prediction code of 3 datasets.
+├── configs # The train&prediction config of 3 datasets.
     ├── elect_config.py # Config file of UCI electricity dataset.
 ├── model # The MgRL-CE models.
     ├── MgRL.py # The Multi-Granularity Residual Learning Framework (includes two core models).
