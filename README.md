@@ -28,7 +28,7 @@ MgRL-CE/
 
 ## Introduction
 
-<img src="./images/MgRL_Framework.png" alt="MgRL_Framework" style="zoom:50%;" />
+<img src="./images/MgRL_Framework.png" alt="MgRL_Framework " style="zoom:50%;" />
 
 <center>Framework of MgRL</center>
 
