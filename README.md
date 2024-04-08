@@ -32,7 +32,7 @@ MgRL-CE/
 
 <center>Framework of MgRL</center>
 
-<img src="./images/image-20240408150447098.png" alt="CE " style="zoom:50%;" />
+<img src="./images/CE.png" alt="CE " style="zoom:50%;" />
 
 <center>CE Module</center>
 
