@@ -24,7 +24,7 @@ class MgRLNet(nn.Module):
 
         There are 2 main parts of Multi-Granularity Residual Learning Net:
             - Part 1. Granularity Alignment Module: Align the different granularity features to K dim
-            - Part 2. Feature Encoding Module
+            - Part 2. Feature Encoding Module: Encoding the K dim feature and get the 3 outputs
 
         :param granularity_dict: the dict of input data granularity, should be format like:
             { "g1": g_1, "g2": g_2, ..., "gG":g_G}
@@ -175,7 +175,7 @@ class MgRLNet(nn.Module):
         feature_g3 = feature_g3.permute(0, 1, 3, 2)  # shape from (bs, T, K^g3, D) to (bs, T, D, K^g3)
         feature_g4 = feature_g4.permute(0, 1, 3, 2)  # shape from (bs, T, K^g4, D) to (bs, T, D, K^g4)
         feature_g5 = feature_g5.permute(0, 1, 3, 2)  # shape from (bs, T, K^g5, D) to (bs, T, D, K^g5)
-        # get the shape
+        # get the shape for next step reshaping
         bs, T = feature_g1.shape[0], feature_g1.shape[1]
         # align the feature with linear transform, get the `F`
         F_g1 = self.granularity_alignment_dict["g1"](feature_g1).reshape(bs, T, -1)  # shape=(bs, T, D*K)
