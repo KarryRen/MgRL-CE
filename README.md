@@ -28,9 +28,13 @@ MgRL-CE/
 
 ## Introduction
 
-<img src="./images/MgRL_Framework.png" alt="MgRL_Framework " style="zoom:50%;" />
+<img src="./images/MgRL_Framework.png" alt="image-20240408150414517 " style="zoom:50%;" />
 
 <center>Framework of MgRL</center>
+
+<img src="./images/image-20240408150447098.png" alt="CE " style="zoom:50%;" />
+
+<center>CE Module</center>
 
 
 
