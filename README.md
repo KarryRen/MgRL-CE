@@ -12,10 +12,10 @@ MgRL-CE/
     ├── elect_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
 ├── configs # The train&prediction config of 3 datasets.
     ├── elect_config.py # Config file of UCI electricity dataset.
-├── model # The MgRL-CE models.
+├── models # The MgRL-CE models and Comparison Methods.
     ├── MgRL.py # The basic Multi-Granularity Residual Learning Net: MgRLNet.
     ├── MgRL_CE.py # Multi-granularity Residual Learning Framework with Confidence Estimation: MgRL_CE_Net.
-    ├── comparision_methods # All comparison methods.
+    ├── comparison_methods # All comparison methods.
         ├── gru.py # The Comparison Methods 1. GRU.
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
     ├── metric.py # The metrics of y_ture and y_pred.

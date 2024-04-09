@@ -27,9 +27,9 @@ import argparse
 
 from utils import fix_random_seed, load_best_model
 from mg_datasets.elect_dataset import ELECTDataset
-from model.MgRL import MgRLNet
-from model.loss import MgRL_Loss
-from model.metrics import r2_score, corr_score, rmse_score, mae_score
+from models.MgRL import MgRLNet
+from models.loss import MgRL_Loss
+from models.metrics import r2_score, corr_score, rmse_score, mae_score
 
 # ---- Init the args parser ---- #
 parser = argparse.ArgumentParser()
