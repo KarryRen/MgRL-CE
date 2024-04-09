@@ -32,6 +32,11 @@ During the preprocessing, we wil do operations by the following steps:
         - Train (24 months, 366+365=1096 days, and 70176 rows of data)
         - Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
         - Test (6 months, 31+31+30+31+30+31=184 days, and 17664 rows of data)
+        Here, you may wonder why not just divide the set by date (as will be used for the stock and futures data) ?
+        This is because the electricity data is available throughout the day, so there would be a 0/24 criticality issue involved,
+            and here we have chosen to divide by rows in order to keep the code more concise.
+        Admittedly, this is a very inflexible and error-prone way of dividing the data,
+            but due to time constraints, this can only be fixed in subsequent code.
     6. Use the down-granularity algorithm to Compute other granularity (1-hour, 4-hours, 12-hours and 1-day) uci electricity data,
            while computing the daily label.
 
