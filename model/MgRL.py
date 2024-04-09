@@ -2,11 +2,7 @@
 # @Time    : 2024/4/2 15:31
 # @Author  : Karry Ren
 
-""" The Multi-Granularity Residual Learning Framework (includes two core models):
-        - The basic Multi-Granularity Residual Learning Net: MgRLNet.
-        - Multi-granularity Residual Learning Framework with Confidence Estimation: MgRL_CE_Net.
-
-"""
+""" The basic Multi-Granularity Residual Learning Net: MgRLNet. """
 
 from typing import Dict
 import torch
