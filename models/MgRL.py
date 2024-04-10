@@ -8,6 +8,8 @@ from typing import Dict
 import torch
 from torch import nn
 
+from models.modules import FeatureEncoder
+
 
 class MgRLNet(nn.Module):
     """ The basic Multi-Granularity Residual Learning Net. """
@@ -19,8 +21,8 @@ class MgRLNet(nn.Module):
         """ The init function of MgRL Net.
 
         There are 2 main parts of Multi-Granularity Residual Learning Net:
-            - Part 1. Granularity Alignment Module: Align the different granularity features to K dim
-            - Part 2. Feature Encoding Module: Encoding the K dim feature and get the 3 outputs
+            - Part 1. Granularity Alignment Module (granularity_alignment): Align the different granularity features to K dim
+            - Part 2. Feature Encoding Module (feature_encoder): Encoding the K dim feature and get the 3 outputs
 
         :param granularity_dict: the dict of input data granularity, should be format like:
             { "g1": g_1, "g2": g_2, ..., "gG":g_G}
@@ -39,13 +41,13 @@ class MgRLNet(nn.Module):
         # Granularity 1 (coarsest)
         self.granularity_alignment_dict["g1"] = nn.Linear(in_features=granularity_dict["g1"], out_features=ga_K,
                                                           bias=False).to(device=device)
-        # Granularity 2
+        # Granularity 2 (fine)
         self.granularity_alignment_dict["g2"] = nn.Linear(in_features=granularity_dict["g2"], out_features=ga_K,
                                                           bias=False).to(device=device)
-        # Granularity 3
+        # Granularity 3 (finer)
         self.granularity_alignment_dict["g3"] = nn.Linear(in_features=granularity_dict["g3"], out_features=ga_K,
                                                           bias=False).to(device=device)
-        # Granularity 4
+        # Granularity 4 (finer)
         self.granularity_alignment_dict["g4"] = nn.Linear(in_features=granularity_dict["g4"], out_features=ga_K,
                                                           bias=False).to(device=device)
         # Granularity 5 (finest)
@@ -55,80 +57,15 @@ class MgRLNet(nn.Module):
         # ---- Part 2. Feature Encoding Module (Each Module includes 3 Parts) ---- #
         self.feature_encoder_dict = nn.ModuleDict({})  # must use nn.ModuleDict or backward wrong !
         # Granularity 1 (coarsest)
-        self.feature_encoder_dict["g1"] = nn.ModuleDict({})
-        self.feature_encoder_dict["g1"]["Enc"] = nn.GRU(
-            input_size=encoding_input_size, hidden_size=encoding_hidden_size, batch_first=True
-        ).to(device=device)
-        self.feature_encoder_dict["g1"]["Pred"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
-        ).to(device=device)
-        self.feature_encoder_dict["g1"]["Rec"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
-        ).to(device=device)
-        # Granularity 2
-        self.feature_encoder_dict["g2"] = nn.ModuleDict({})
-        self.feature_encoder_dict["g2"]["Enc"] = nn.GRU(
-            input_size=encoding_input_size, hidden_size=encoding_hidden_size, batch_first=True
-        ).to(device=device)
-        self.feature_encoder_dict["g2"]["Pred"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
-        ).to(device=device)
-        self.feature_encoder_dict["g2"]["Rec"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
-        ).to(device=device)
-        # Granularity 3
-        self.feature_encoder_dict["g3"] = nn.ModuleDict({})
-        self.feature_encoder_dict["g3"]["Enc"] = nn.GRU(
-            input_size=encoding_input_size, hidden_size=encoding_hidden_size, batch_first=True
-        ).to(device=device)
-        self.feature_encoder_dict["g3"]["Pred"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
-        ).to(device=device)
-        self.feature_encoder_dict["g3"]["Rec"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
-        ).to(device=device)
-        # Granularity 4
-        self.feature_encoder_dict["g4"] = nn.ModuleDict({})
-        self.feature_encoder_dict["g4"]["Enc"] = nn.GRU(
-            input_size=encoding_input_size, hidden_size=encoding_hidden_size, batch_first=True
-        ).to(device=device)
-        self.feature_encoder_dict["g4"]["Pred"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
-        ).to(device=device)
-        self.feature_encoder_dict["g4"]["Rec"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
-        ).to(device=device)
+        self.feature_encoder_dict["g1"] = FeatureEncoder(encoding_input_size, encoding_hidden_size).to(device=device)
+        # Granularity 2 (fine)
+        self.feature_encoder_dict["g2"] = FeatureEncoder(encoding_input_size, encoding_hidden_size).to(device=device)
+        # Granularity 3 (finer)
+        self.feature_encoder_dict["g3"] = FeatureEncoder(encoding_input_size, encoding_hidden_size).to(device=device)
+        # Granularity 4 (finer)
+        self.feature_encoder_dict["g4"] = FeatureEncoder(encoding_input_size, encoding_hidden_size).to(device=device)
         # Granularity 5 (finest)
-        self.feature_encoder_dict["g5"] = nn.ModuleDict({})
-        self.feature_encoder_dict["g5"]["Enc"] = nn.GRU(
-            input_size=encoding_input_size, hidden_size=encoding_hidden_size, batch_first=True
-        ).to(device=device)
-        self.feature_encoder_dict["g5"]["Pred"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=1, bias=False)
-        ).to(device=device)
-        self.feature_encoder_dict["g5"]["Rec"] = nn.Sequential(
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_hidden_size, bias=False),
-            nn.GELU(),
-            nn.Linear(in_features=encoding_hidden_size, out_features=encoding_input_size, bias=False)
-        ).to(device=device)
+        self.feature_encoder_dict["g5"] = FeatureEncoder(encoding_input_size, encoding_hidden_size).to(device=device)
 
     def forward(self, mul_granularity_input: Dict[str, torch.Tensor]) -> dict:
         """ The forward function of MgRL Net.
@@ -183,28 +120,19 @@ class MgRLNet(nn.Module):
         # ---- Step 2. Encoding Feature with the residual learning framework ---- #
         # - g1 feature encoding
         P_g1 = F_g1  # the P of granularity is F
-        H_g1, _ = self.feature_encoder_dict["g1"]["Enc"](P_g1)  # shape=(bs, T, hidden_size)
-        y_g1 = self.feature_encoder_dict["g1"]["Pred"](H_g1[:, -1, :])  # shape=(bs, 1)
-        R_g1 = self.feature_encoder_dict["g1"]["Rec"](H_g1)  # shape=(bs, T, D*K)
+        H_g1, y_g1, R_g1 = self.feature_encoder_dict["g1"](P_g1)
         # - g2 feature encoding
         P_g2 = F_g2 - R_g1  # residual learning, shape=(bs, T, D*K)
-        H_g2, _ = self.feature_encoder_dict["g2"]["Enc"](P_g2)  # shape=(bs, T, hidden_size)
-        y_g2 = self.feature_encoder_dict["g2"]["Pred"](H_g2[:, -1, :])  # shape=(bs, 1)
-        R_g2 = self.feature_encoder_dict["g2"]["Rec"](H_g2)  # shape=(bs, T, D*K)
+        H_g2, y_g2, R_g2 = self.feature_encoder_dict["g2"](P_g2)
         # - g3 feature encoding
         P_g3 = F_g3 - R_g2  # residual learning, shape=(bs, T, D*K)
-        H_g3, _ = self.feature_encoder_dict["g3"]["Enc"](P_g3)  # shape=(bs, T, hidden_size)
-        y_g3 = self.feature_encoder_dict["g3"]["Pred"](H_g3[:, -1, :])  # shape=(bs, 1)
-        R_g3 = self.feature_encoder_dict["g3"]["Rec"](H_g3)  # shape=(bs, T, D*K)
+        H_g3, y_g3, R_g3 = self.feature_encoder_dict["g3"](P_g3)
         # - g4 feature encoding
         P_g4 = F_g4 - R_g3  # residual learning, shape=(bs, T, D*K)
-        H_g4, _ = self.feature_encoder_dict["g4"]["Enc"](P_g4)  # shape=(bs, T, hidden_size)
-        y_g4 = self.feature_encoder_dict["g4"]["Pred"](H_g4[:, -1, :])  # shape=(bs, 1)
-        R_g4 = self.feature_encoder_dict["g4"]["Rec"](H_g4)  # shape=(bs, T, D*K)
+        H_g4, y_g4, R_g4 = self.feature_encoder_dict["g4"](P_g4)
         # - g5 feature encoding
         P_g5 = F_g5 - R_g4  # residual learning, shape=(bs, T, D*K)
-        H_g5, _ = self.feature_encoder_dict["g5"]["Enc"](P_g5)  # shape=(bs, T, hidden_size)
-        y_g5 = self.feature_encoder_dict["g5"]["Pred"](H_g5[:, -1, :])  # shape=(bs, 1)
+        H_g5, y_g5, R_g5_ = self.feature_encoder_dict["g5"](P_g5)
 
         # ---- Step 3. Return ---- #
         output = {
