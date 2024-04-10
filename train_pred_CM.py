@@ -35,8 +35,6 @@ from models.metrics import r2_score, corr_score, rmse_score, mae_score
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", type=str, default="elect", help="the dataset name")
 parser.add_argument("--method", type=str, default="gru", help="the comparison method name")
-
-# ---- Get the args ---- #
 args = parser.parse_args()
 
 # ---- Based on the args adjust the settings ---- #

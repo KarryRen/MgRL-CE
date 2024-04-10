@@ -41,8 +41,8 @@ During the preprocessing, we wil do operations by the following steps:
            while computing the daily label.
 
 All in all, after downloading the file from the web, you need:
-    1. Change the `UCI_DOWNLOAD_FILE_PATH` and `UCI_PROCESS_FILE_PATH` based on your situation.
-    2. Create the directory structure `BY HAND` following the top comment.
+    1. Create the directory structure `BY HAND` following the top comment.
+    2. Change the `UCI_DOWNLOAD_FILE_PATH` and `UCI_PROCESS_FILE_PATH` based on your situation.
     3. Run this file by `python elect_preprocess.py` and you will ge the following directory structure:
         UCI_ELECT_DATASET_PATH/
             ├── Train

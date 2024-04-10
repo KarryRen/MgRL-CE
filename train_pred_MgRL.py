@@ -34,8 +34,6 @@ from models.metrics import r2_score, corr_score, rmse_score, mae_score
 # ---- Init the args parser ---- #
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", type=str, default="elect")
-
-# ---- Get the args ---- #
 args = parser.parse_args()
 
 # ---- Based on the args import config ---- #
