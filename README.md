@@ -29,11 +29,11 @@ MgRL-CE/
 
 ## Introduction
 
-<img src="./images/MgRL_Framework.png" alt="image-20240408150414517 " style="zoom:50%;" />
+![MgRL_Framework](./images/MgRL_Framework.png)
 
 <center>Framework of MgRL</center>
 
-<img src="./images/CE.png" alt="CE " style="zoom:50%;" />
+![CE](./images/CE.png)
 
 <center>CE Module</center>
 
