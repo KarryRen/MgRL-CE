@@ -2,7 +2,7 @@
 # @Time    : 2024/4/5 09:33
 # @Author  : Karry Ren
 
-""" Training and Prediction code of `MgRLNet` for
+""" Training and Prediction code of `MgRLNet` and `MgRL_CE_Net` for
     - UCI electricity dataset.
 
 Training, Validation and Prediction be together !
@@ -10,7 +10,11 @@ Training, Validation and Prediction be together !
         - `train_valid_model()` => train and valid model, and save trained models of all epochs.
         - `pred_model()` => use the best model to do prediction (test model).
 
-You can run this python script by `python3 train_pred_MgRL.py --dataset dataset_name`
+You can run this python script by:
+    `python3 train_pred_MgRL.py --model model_name --dataset dataset_name`
+where:
+    - model: The model name. You have 2 choices: `MgRLNet` or `MgRL_CE_Net`.
+    - dataset: The dataset name. You have only 1 choice: `elect`.
 
 """
 
@@ -27,13 +31,16 @@ import argparse
 
 from utils import fix_random_seed, load_best_model
 from mg_datasets.elect_dataset import ELECTDataset
-from models.MgRL import MgRLNet
+from models.MgRL import MgRLNet, MgRL_CE_Net
 from models.loss import MgRL_Loss
 from models.metrics import r2_score, corr_score, rmse_score, mae_score
 
 # ---- Init the args parser ---- #
 parser = argparse.ArgumentParser()
-parser.add_argument("--dataset", type=str, default="elect")
+parser.add_argument("--model", type=str, default="MgRLNet",
+                    help="The model name. You have only 2 choices: `MgRLNet` or `MgRL_CE_Net`.")
+parser.add_argument("--dataset", type=str, default="elect",
+                    help="The dataset name. You have only 1 choice: `elect`.")
 args = parser.parse_args()
 
 # ---- Based on the args import config ---- #

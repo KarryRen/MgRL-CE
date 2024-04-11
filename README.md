@@ -6,15 +6,18 @@
 ```python
 MgRL-CE/
 ├── images # All used images of this repo.
+    ├── MgRL_Framework.png # The MgRL FrameWork (without CE).
+    ├── CE.png # The Confidence Estimation Module.
+    ├── Elect_Data_Distribution.png # The distribution of uci electricity dataset.
+    ├── MgRL_CE_Images.pptx # The raw images of MgRL_CE.
 ├── datasets
     ├── datasets_preprocess
         ├── elect_preprocess.py # The preprocess code of UCI electricity dataset (download from web).
     ├── elect_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
-├── configs # The train&prediction config of 3 datasets.
+├── configs # The train&prediction config files of 3 datasets.
     ├── elect_config.py # Config file of UCI electricity dataset.
 ├── models # The MgRL-CE models and Comparison Methods.
-    ├── MgRL.py # The basic Multi-Granularity Residual Learning Net: MgRLNet.
-    ├── MgRL_CE.py # Multi-granularity Residual Learning Framework with Confidence Estimation: MgRL_CE_Net.
+    ├── MgRL.py # The Multi-Granularity Residual Learning Net: `MgRLNet` and `MgRL_CE_Net`.
     ├── comparison_methods # All comparison methods.
         ├── gru.py # The Comparison Methods 1. GRU.
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
@@ -83,13 +86,13 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
 
 ## Training & Prediction
 
-There are some **differences** between the different datasets **during Training and Prediction**, so please carefully set the `configs` file of different datasets. Also to facilitate the comparison of two different models `MgRLNet` and `MgRL_CE_Net`, i built two training and prediction frameworks: `train_pred_MgRL.py` and `train_pred_MgRL_CE.py (updating 🔥)`.
+There are some **differences** between the different datasets **during Training and Prediction**. Please carefully set the config files of different datasets following the example.
 
 - **UCI electricity dataset**. 
   
-  - You should set the config file firstly in `elect_config.py` , [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/configs/elect_config.py) !
+  - You should firstly set the config file of UCI electricity dataset in `elect_config.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/configs/elect_config.py) !
   
-  - The Training and Prediction code of `MgRLNet` is in ` train_pred_MgRL.py `, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/train_pred_MgRL.py) !  You can **RUN** it by:
+  - The Training and Prediction code is in ` train_pred_MgRL.py `, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/train_pred_MgRL.py) !  You can **RUN** it by:
   
      ```shell
      python3 train_pred_MgRL.py --dataset elect

@@ -233,7 +233,7 @@ class MgRL_CE_Net(nn.Module):
             {
                 "pred" : the prediction result, shape=(bs, 1),
                 "rec_residuals" : a tuple of reconstruction residual, each residual have the same shape=(bs, T, D*K),
-                "contrastive_loss" : a float of the trend contrastive loss, shape=()
+                "contrastive_loss" : a tensor of the trend contrastive loss, shape=(bs, 1)
             }
 
         """
@@ -293,7 +293,7 @@ class MgRL_CE_Net(nn.Module):
         y_all_g = y_all_g * alpha_all_g
         # construct the output and return
         output = {
-            "pred": torch.mean(y_all_g, -1),
+            "pred": torch.mean(y_all_g, -1, keepdim=True),
             "rec_residuals": (P_g2, P_g3, P_g4, P_g5),
             "contrastive_loss": con_l_g1 + con_l_g2 + con_l_g3 + con_l_g4 + con_l_g5
         }
