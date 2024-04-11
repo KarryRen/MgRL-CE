@@ -29,7 +29,7 @@ During the preprocessing, we wil do operations by the following steps:
     4. The scale of distribution of electricity data varies GREATLY from one client to another.
           We need to adjust the scale of data distribution !
     5. Split the raw data to Train/Valid/Test and save to `15_minutes.csv` file as following:
-        - Train (24 months, 366+365=1096 days, and 70176 rows of data)
+        - Train (24 months, 366+365=731 days, and 70176 rows of data)
         - Valid (6 months, 31+28+31+30+31+30=181 days, and 17376 rows of data)
         - Test (6 months, 31+31+30+31+30+31=184 days, and 17664 rows of data)
         Here, you may wonder why not just divide the set by date (as will be used for the stock and futures data) ?

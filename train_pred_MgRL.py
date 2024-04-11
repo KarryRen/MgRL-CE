@@ -156,6 +156,7 @@ def train_valid_model() -> None:
                 loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals, contrastive_loss=contrastive_loss, weight=weights)
             else:
                 raise TypeError(args.model)
+            print(loss.item())
             loss.backward()
             optimizer.step()
             # note the loss of training in one iter

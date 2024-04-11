@@ -214,6 +214,7 @@ class MgRL_CE_Loss:
 
         # ---- Step 2. Return loss ---- #
         # sum the mse loss and rec loss
+        print(mse_loss, rec_loss, contra_loss)
         batch_loss = mse_loss + self.lambda_1 * rec_loss + self.lambda_2 * contra_loss
         return batch_loss
 
