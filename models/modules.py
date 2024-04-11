@@ -142,7 +142,7 @@ class FeatureEncoderCE(nn.Module):
 
         # ---- Step 2. For loop each step to compute the contrastive loss ---- #
         # init the trend_contrastive_loss
-        trend_contrastive_loss = torch.zeros((bs, 1)).to(device=P.device)
+        trend_contrastive_loss = torch.zeros((bs, 1)).to(dtype=torch.float32, device=P.device)
         # for loop to compute the loss
         for t in range(1, T):
             # slice the P in time_step t, p_t which represents the `current status` in my paper
