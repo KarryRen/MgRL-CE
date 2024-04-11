@@ -119,7 +119,7 @@ class FeatureEncoderCE(nn.Module):
             nn.Linear(in_features=hidden_size, out_features=input_size, bias=False)
         )
 
-    def forward(self, P: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, float]:
+    def forward(self, P: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """ The forward function of FeatureEncoder.
 
         :param P: the P of each granularity, shape=(bs, T, D*K), where D*K is the encoding_input_size
@@ -130,7 +130,7 @@ class FeatureEncoderCE(nn.Module):
             - y: the prediction of each granularity, shape=(bs, 1)
             - R: the reconstruction of each granularity, shape=(bs, T, D*K|input_size)
             - alpha: the alpha of each granularity, shape=(bs, 1)
-            - trend_contrastive_loss: the contrastive loss of each granularity, shape=()
+            - trend_contrastive_loss: the contrastive loss of each granularity, shape=(bs, 1)
 
         """
 
@@ -142,7 +142,7 @@ class FeatureEncoderCE(nn.Module):
 
         # ---- Step 2. For loop each step to compute the contrastive loss ---- #
         # init the trend_contrastive_loss
-        trend_contrastive_loss = 0.0
+        trend_contrastive_loss = torch.zeros((bs, 1)).to(device=P.device)
         # for loop to compute the loss
         for t in range(1, T):
             # slice the P in time_step t, p_t which represents the `current status` in my paper
@@ -153,9 +153,9 @@ class FeatureEncoderCE(nn.Module):
             pos_neg_p_t = self._random_select_neg_sample(positive_p=p_t)  # (bs, 1+neg_sample_num, hidden_size)
             # get the discriminator score, which is different from paper
             D_p_c = torch.mean(self.W(C_t) * pos_neg_p_t, -1)  # broadcast, shape=(bs,  1+neg_sample_num)
-            # compute the trend_contrastive_loss
-            pos_ce_loss = F.log_softmax(D_p_c, dim=1)[:, 0]  # only the get the cross entropy loss of the positive sample
-            trend_contrastive_loss += -torch.mean(pos_ce_loss)  # use `mean` to do the reduction
+            # compute the trend_contrastive_loss, shape=(bs, 1)
+            pos_ce_loss = F.log_softmax(D_p_c, dim=1)[:, 0:1]  # only the get the cross entropy loss of the positive sample
+            trend_contrastive_loss += pos_ce_loss  # sum all time_steps
         # use the last step (p_T, C_T) to compute alpha
         p_last_step = P[:, -1:, :]  # last step P, shape=(bs, 1, hidden_size)
         C_last_step = H[:, -2:-1, :]  # last step C, shape=(bs, 1, hidden_size)
@@ -225,4 +225,4 @@ if __name__ == "__main__":
     # ---- Test the feature encoder with Confidence Estimating (CE) ---- #
     feature_encoder_ce = FeatureEncoderCE(input_size=input_size, hidden_size=hidden_size, negative_sample_num=3)
     H, y, R, alpha, c_loss = feature_encoder_ce(P1)
-    print(alpha * y)
+    print(c_loss.shape)
