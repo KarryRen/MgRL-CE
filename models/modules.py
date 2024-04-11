@@ -155,7 +155,7 @@ class FeatureEncoderCE(nn.Module):
             D_p_c = torch.mean(self.W(C_t) * pos_neg_p_t, -1)  # broadcast, shape=(bs,  1+neg_sample_num)
             # compute the trend_contrastive_loss, shape=(bs, 1)
             pos_ce_loss = F.log_softmax(D_p_c, dim=1)[:, 0:1]  # only the get the cross entropy loss of the positive sample
-            trend_contrastive_loss += pos_ce_loss  # sum all time_steps
+            trend_contrastive_loss += -pos_ce_loss  # sum all time_steps
         # use the last step (p_T, C_T) to compute alpha
         p_last_step = P[:, -1:, :]  # last step P, shape=(bs, 1, hidden_size)
         C_last_step = H[:, -2:-1, :]  # last step C, shape=(bs, 1, hidden_size)
