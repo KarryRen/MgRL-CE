@@ -23,7 +23,7 @@ MgRL-CE/
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
     ├── metric.py # The metrics of y_ture and y_pred.
     ├── modules.py # The modules of model.
-├── train_pred_MgRL.py # Training and Prediction code of `MgRLNet` for 3 datasets.
+├── train_pred_MgRL.py # Training and Prediction code of `MgRLNet` and `MgRL_CE_Net` for 3 datasets.
 ├── train_pred_CM.py # Training and Prediction code of Comparison Methods for 3 datasets.
 └── utils.py # Some util functions.
 ```
@@ -95,7 +95,11 @@ There are some **differences** between the different datasets **during Training 
   - The Training and Prediction code is in ` train_pred_MgRL.py `, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/train_pred_MgRL.py) !  You can **RUN** it by:
   
      ```shell
-     python3 train_pred_MgRL.py --dataset elect
+     # Run the basic Multi-Granularity Residual Learning Net: MgRLNet.
+     python3 train_pred_MgRL.py --model MgRLNet --dataset elect
+     
+     # Run the Multi-granularity Residual Learning Framework with Confidence Estimation: MgRL_CE_Net.
+     python3 train_pred_MgRL.py --model MgRL_CE_Net --dataset elect
      ```
 
 

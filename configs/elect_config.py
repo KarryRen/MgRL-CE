@@ -26,7 +26,8 @@ BATCH_SIZE = 2048
 ELECT_GRANULARITY_DICT = {"g1": 1, "g2": 2, "g3": 6, "g4": 24, "g5": 96}  # the granularity dict
 GA_K, INPUT_SIZE = 1, 1  # the alignment granularity K & the input size
 ENCODING_INPUT_SIZE, ENCODING_HIDDEN_SIZE = 1 * GA_K, 64  # the input and hidden size
-LOSS_REDUCTION, LAMBDA_1, LAMBDA_THETA = "mean", 1.0, 0.001  # loss parameter
+NEGATIVE_SAMPLE_NUM = 5  # the negative sample number (only work when use `MgRL_CE_Net`)
+LOSS_REDUCTION, LAMBDA_1, LAMBDA_2, LAMBDA_THETA = "mean", 1.0, 2.0, 0.001  # loss parameter
 LR = 0.01  # the learning rate
 
 # ************************************************************************************ #

@@ -2,7 +2,7 @@
 # @Time    : 2024/4/5 09:33
 # @Author  : Karry Ren
 
-""" Training and Prediction code of `MgRLNet` and `MgRL_CE_Net` for
+""" Training and Prediction code of `MgRLNet` and `MgRL_CE_Net` for 3 datasets:
     - UCI electricity dataset.
 
 Training, Validation and Prediction be together !
@@ -31,11 +31,9 @@ import argparse
 
 from utils import fix_random_seed, load_best_model
 from mg_datasets.elect_dataset import ELECTDataset
-from models.MgRL import MgRLNet, MgRL_CE_Net
-from models.loss import MgRL_Loss
 from models.metrics import r2_score, corr_score, rmse_score, mae_score
 
-# ---- Init the args parser ---- #
+# ---- Init and parse the args parser ---- #
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", type=str, default="MgRLNet",
                     help="The model name. You have only 2 choices: `MgRLNet` or `MgRL_CE_Net`.")
@@ -43,83 +41,89 @@ parser.add_argument("--dataset", type=str, default="elect",
                     help="The dataset name. You have only 1 choice: `elect`.")
 args = parser.parse_args()
 
-# ---- Based on the args import config ---- #
+# ---- Based on the args set the different params ---- #
+# - model
+if args.model == "MgRLNet":  # The MgRLNet
+    from models.MgRL import MgRLNet
+    from models.loss import MgRL_Loss
+elif args.model == "MgRL_CE_Net":  # The MgRL_CE_Net
+    from models.MgRL import MgRL_CE_Net
+    from models.loss import MgRL_CE_Loss
+else:
+    raise f"{args.model} is ERROR ! Please check your command of `--model` !"
+# - dataset
 if args.dataset == "elect":  # The UCI electricity dataset.
     import configs.elect_config as config
 else:
-    raise TypeError(args.dataset)
-# method name
-METHOD_NAME = "MgRL"
+    raise f"{args.dataset} is ERROR ! Please check your command of `--dataset` !"
 
 
 def train_valid_model() -> None:
     """ Train & Valid Model. """
 
-    # ---- Build up the save directory ---- #
-    if not os.path.exists(config.SAVE_PATH):
-        os.makedirs(config.SAVE_PATH)
-    if not os.path.exists(config.MODEL_SAVE_PATH):
-        os.makedirs(config.MODEL_SAVE_PATH)
+    logging.info(f"***************** RUN TRAIN&VALID MODEL: `{args.model}`, DATASET: `{args.dataset}` ! *****************")
 
-    # ---- Construct the train&valid log file (might be same as prediction) ---- #
-    logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
-    logging.info(f"***************** RUN TRAIN&VALID `MgRL` ! *****************")
-
-    # ---- Get the device ---- #
+    # ---- Get the train and valid device ---- #
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logging.info(f"***************** In device {device}   *****************")
 
     # ---- Make the dataset and dataloader ---- #
     logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER of `{args.dataset}` ! *****************")
     logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
-    # make the dataset and dataloader of training
     logging.info(f"**** TRAINING DATASET & DATALOADER ****")
     if args.dataset == "elect":  # The UCI electricity dataset.
         train_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=config.TIME_STEPS)
-        train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)
     else:
         raise TypeError(args.dataset)
+    train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)
     logging.info(f"**** VALID DATASET & DATALOADER ****")
     if args.dataset == "elect":  # The UCI electricity dataset.
         valid_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=config.TIME_STEPS)
-        valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
     else:
         raise TypeError(args.dataset)
+    valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
     logging.info("***************** DATASET MAKE OVER ! *****************")
     logging.info(f"Train dataset: length = {len(train_dataset)}")
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
-    model = MgRLNet(
-        granularity_dict=config.ELECT_GRANULARITY_DICT, ga_K=config.GA_K,
-        encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
-        device=device
-    )  # the model
-    criterion = MgRL_Loss(reduction=config.LOSS_REDUCTION, lambda_1=config.LAMBDA_1)  # the loss function
+    logging.info(f"***************** BEGIN BUILD UP THE MODEL `{args.model}`! *****************")
+    if args.model == "MgRLNet":  # The MgRLNet and loss
+        model = MgRLNet(
+            granularity_dict=config.ELECT_GRANULARITY_DICT, ga_K=config.GA_K,
+            encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
+            device=device
+        )
+        criterion = MgRL_Loss(reduction=config.LOSS_REDUCTION, lambda_1=config.LAMBDA_1)
+    elif args.model == "MgRL_CE_Net":  # The MgRL_CE_Net and loss
+        model = MgRL_CE_Net(
+            granularity_dict=config.ELECT_GRANULARITY_DICT, ga_K=config.GA_K,
+            encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
+            negative_sample_num=config.NEGATIVE_SAMPLE_NUM,
+            device=device
+        )
+        criterion = MgRL_CE_Loss(reduction=config.LOSS_REDUCTION, lambda_1=config.LAMBDA_1)
+    else:
+        raise TypeError(args.model)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.LR, weight_decay=config.LAMBDA_THETA)  # the optimizer
 
     # ---- Start Train and Valid ---- #
     # init the metric dict of all epochs
     epoch_metric = {
         # train & valid loss
-        "train_loss": np.zeros(config.EPOCHS),
-        "valid_loss": np.zeros(config.EPOCHS),
+        "train_loss": np.zeros(config.EPOCHS), "valid_loss": np.zeros(config.EPOCHS),
         # train & valid r2
-        "train_R2": np.zeros(config.EPOCHS),
-        "valid_R2": np.zeros(config.EPOCHS),
+        "train_R2": np.zeros(config.EPOCHS), "valid_R2": np.zeros(config.EPOCHS),
         # train & valid CORR
-        "train_CORR": np.zeros(config.EPOCHS),
-        "valid_CORR": np.zeros(config.EPOCHS),
+        "train_CORR": np.zeros(config.EPOCHS), "valid_CORR": np.zeros(config.EPOCHS),
         # train & valid RMSE
-        "train_RMSE": np.zeros(config.EPOCHS),
-        "valid_RMSE": np.zeros(config.EPOCHS),
+        "train_RMSE": np.zeros(config.EPOCHS), "valid_RMSE": np.zeros(config.EPOCHS),
         # train & valid MAE
-        "train_MAE": np.zeros(config.EPOCHS),
-        "valid_MAE": np.zeros(config.EPOCHS)
+        "train_MAE": np.zeros(config.EPOCHS), "valid_MAE": np.zeros(config.EPOCHS)
     }
 
     # train model epoch by epoch
-    logging.info("***************** BEGIN TRAINING `MgRL` ! *****************")
+    logging.info("***************** BEGIN TRAINING AND VALID THE MODEL `{args.model}` ! *****************")
     # start train and valid during train
     for epoch in tqdm(range(config.EPOCHS)):
         # start timer for one epoch
@@ -133,7 +137,7 @@ def train_valid_model() -> None:
         valid_preds_one_epoch = torch.zeros(valid_dataset_len).to(device=device)
         valid_labels_one_epoch = torch.zeros(valid_dataset_len).to(device=device)
         valid_weights_one_epoch = torch.zeros(valid_dataset_len).to(device=device)
-        # - train model
+        # - TRAIN model
         last_step = 0
         model.train()
         for batch_data in tqdm(train_loader):
@@ -144,8 +148,14 @@ def train_valid_model() -> None:
             # zero_grad, forward, compute loss, backward and optimize
             optimizer.zero_grad()
             outputs = model(mg_features)
-            preds, rec_residuals_tuple = outputs["pred"], outputs["rec_residuals"]
-            loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals_tuple, weight=weights)
+            if args.model == "MgRLNet":
+                preds, rec_residuals = outputs["pred"], outputs["rec_residuals"]
+                loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals, weight=weights)
+            elif args.model == "MgRL_CE_Net":
+                preds, rec_residuals, contrastive_loss = outputs["pred"], outputs["rec_residuals"], outputs["contrastive_loss"]
+                loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals, contrastive_loss=contrastive_loss, weight=weights)
+            else:
+                raise TypeError(args.model)
             loss.backward()
             optimizer.step()
             # note the loss of training in one iter
@@ -156,22 +166,22 @@ def train_valid_model() -> None:
             train_labels_one_epoch[last_step:now_step] = labels[:, 0].detach()
             train_weights_one_epoch[last_step:now_step] = weights[:, 0].detach()
             last_step = now_step
-        # note the loss and metrics for one epoch of TRAINING
+        # -- note the loss and metrics for one epoch of TRAINING
         epoch_metric["train_loss"][epoch] = np.mean(train_loss_one_epoch)
-        epoch_metric["train_R2"][epoch] = r2_score(y_true=train_labels_one_epoch.cpu().numpy(),
-                                                   y_pred=train_preds_one_epoch.cpu().numpy(),
-                                                   weight=train_weights_one_epoch.cpu().numpy())
-        epoch_metric["train_CORR"][epoch] = corr_score(y_true=train_labels_one_epoch.cpu().numpy(),
-                                                       y_pred=train_preds_one_epoch.cpu().numpy(),
-                                                       weight=train_weights_one_epoch.cpu().numpy())
-        epoch_metric["train_RMSE"][epoch] = rmse_score(y_true=train_labels_one_epoch.cpu().numpy(),
-                                                       y_pred=train_preds_one_epoch.cpu().numpy(),
-                                                       weight=train_weights_one_epoch.cpu().numpy())
-        epoch_metric["train_MAE"][epoch] = mae_score(y_true=train_labels_one_epoch.cpu().numpy(),
-                                                     y_pred=train_preds_one_epoch.cpu().numpy(),
-                                                     weight=train_weights_one_epoch.cpu().numpy())
+        epoch_metric["train_R2"][epoch] = r2_score(
+            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), weight=train_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["train_CORR"][epoch] = corr_score(
+            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), weight=train_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["train_RMSE"][epoch] = rmse_score(
+            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), weight=train_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["train_MAE"][epoch] = mae_score(
+            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), weight=train_weights_one_epoch.cpu().numpy()
+        )
 
-        # - valid model
+        # - VALID model
         last_step = 0
         model.eval()
         with torch.no_grad():
@@ -182,8 +192,14 @@ def train_valid_model() -> None:
                 weights = batch_data["weight"].to(device=device, dtype=torch.float32)
                 # forward to compute outputs
                 outputs = model(mg_features)
-                preds, rec_residuals_tuple = outputs["pred"], outputs["rec_residuals"]
-                loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals_tuple, weight=weights)
+                if args.model == "MgRLNet":
+                    preds, rec_residuals = outputs["pred"], outputs["rec_residuals"]
+                    loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals, weight=weights)
+                elif args.model == "MgRL_CE_Net":
+                    preds, rec_residuals, contrastive_loss = outputs["pred"], outputs["rec_residuals"], outputs["contrastive_loss"]
+                    loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals, contrastive_loss=contrastive_loss, weight=weights)
+                else:
+                    raise TypeError(args.model)
                 # note the loss of valid in one iter
                 valid_loss_one_epoch.append(loss.item())
                 # doc the result in one iter, no matter what label_len is, just get the last one
@@ -192,29 +208,31 @@ def train_valid_model() -> None:
                 valid_labels_one_epoch[last_step:now_step] = labels[:, 0].detach()
                 valid_weights_one_epoch[last_step:now_step] = weights[:, 0].detach()
                 last_step = now_step
-        # note the loss and all metrics for one epoch of VALID
+        # -- note the loss and all metrics for one epoch of VALID
         epoch_metric["valid_loss"][epoch] = np.mean(valid_loss_one_epoch)
-        epoch_metric["valid_R2"][epoch] = r2_score(y_true=valid_labels_one_epoch.cpu().numpy(),
-                                                   y_pred=valid_preds_one_epoch.cpu().numpy(),
-                                                   weight=valid_weights_one_epoch.cpu().numpy())
-        epoch_metric["valid_CORR"][epoch] = corr_score(y_true=valid_labels_one_epoch.cpu().numpy(),
-                                                       y_pred=valid_preds_one_epoch.cpu().numpy(),
-                                                       weight=valid_weights_one_epoch.cpu().numpy())
-        epoch_metric["valid_RMSE"][epoch] = rmse_score(y_true=valid_labels_one_epoch.cpu().numpy(),
-                                                       y_pred=valid_preds_one_epoch.cpu().numpy(),
-                                                       weight=valid_weights_one_epoch.cpu().numpy())
-        epoch_metric["valid_MAE"][epoch] = mae_score(y_true=valid_labels_one_epoch.cpu().numpy(),
-                                                     y_pred=valid_preds_one_epoch.cpu().numpy(),
-                                                     weight=valid_weights_one_epoch.cpu().numpy())
+        epoch_metric["valid_R2"][epoch] = r2_score(
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), weight=valid_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["valid_CORR"][epoch] = corr_score(
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), weight=valid_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["valid_RMSE"][epoch] = rmse_score(
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), weight=valid_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["valid_MAE"][epoch] = mae_score(
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), weight=valid_weights_one_epoch.cpu().numpy()
+        )
 
-        # save model&model_config and metrics
-        torch.save(model, config.MODEL_SAVE_PATH + f"{METHOD_NAME}_model_pytorch_epoch_{epoch}")
+        # - save model&model_config and metrics
+        torch.save(model, config.MODEL_SAVE_PATH + f"{args.model}_model_pytorch_epoch_{epoch}")
         pd.DataFrame(epoch_metric).to_csv(config.MODEL_SAVE_PATH + "model_metric.csv")
 
         # write metric log
         dt = datetime.now() - t_start
-        logging.info(f"Epoch {epoch + 1}/{config.EPOCHS}, Duration: {dt}, "
-                     f"{['%s:%.4f ' % (key, value[epoch]) for key, value in epoch_metric.items()]}")
+        logging.info(
+            f"Epoch {epoch + 1}/{config.EPOCHS}, Duration: {dt}, {['%s:%.4f ' % (key, value[epoch]) for key, value in epoch_metric.items()]}"
+        )
+
     # draw figure of train and valid metrics
     plt.figure(figsize=(15, 6))
     plt.subplot(3, 1, 1)
@@ -244,22 +262,14 @@ def train_valid_model() -> None:
 def pred_model() -> None:
     """ Test Model. """
 
-    # ---- Build the save directory ---- #
-    if not os.path.exists(config.SAVE_PATH):
-        os.makedirs(config.SAVE_PATH)
-    if not os.path.exists(config.MODEL_SAVE_PATH):
-        os.makedirs(config.MODEL_SAVE_PATH)
-
-    # ---- Construct the test log file (might be same with train&valid) ---- #
-    logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+    logging.info(f"***************** RUN PRED MODEL: `{args.model}`, DATASET: `{args.dataset}` ! *****************")
 
     # ---- Get the computing device ---- #
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logging.info(f"***************** RUN PRED `MgRL` ! *****************")
     logging.info(f"***************** In device {device}   *****************")
 
     # ---- Make the dataset and dataloader ---- #
-    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER of `{args.dataset}` !! *****************")
+    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER of `{args.dataset}` ! *****************")
     logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
     # make the dataset and dataloader of test
     logging.info(f"**** TEST DATASET & DATALOADER ****")
@@ -272,8 +282,8 @@ def pred_model() -> None:
     logging.info(f"Test dataset: length = {len(test_dataset)}")
 
     # ---- Load model and test ---- #
-    model, model_path = load_best_model(config.MODEL_SAVE_PATH, METHOD_NAME, config.MAIN_METRIC)
-    logging.info(f"***************** LOAD Best Model {model_path} *****************")
+    model, model_path = load_best_model(config.MODEL_SAVE_PATH, args.model, config.MAIN_METRIC)
+    logging.info(f"***************** LOAD BEST MODEL {model_path} *****************")
 
     # ---- Test Model ---- #
     labels_array = torch.zeros(len(test_dataset)).to(device=device)
@@ -287,9 +297,9 @@ def pred_model() -> None:
             mg_features = batch_data["mg_features"]
             labels = batch_data["label"].to(device=device, dtype=torch.float32)
             weights = batch_data["weight"].to(device=device, dtype=torch.float32)
-            # forward
+            # forward (no mater which model, just get the preds)
             outputs = model(mg_features)
-            preds, rec_residuals_tuple = outputs["pred"], outputs["rec_residuals"]
+            preds = outputs["pred"]
             # doc the result
             now_step = last_step + preds.shape[0]
             labels_array[last_step:now_step] = labels[:, 0].detach()
@@ -311,8 +321,16 @@ def pred_model() -> None:
 
 
 if __name__ == "__main__":
-    # ---- Step 0. Fix the random seed ---- #
+    # ---- Step 0. Prepare some environments for training and prediction ---- #
+    # fix the random seed
     fix_random_seed(seed=config.RANDOM_SEED)
+    # build up the save directory
+    if not os.path.exists(config.SAVE_PATH):
+        os.makedirs(config.SAVE_PATH)
+    if not os.path.exists(config.MODEL_SAVE_PATH):
+        os.makedirs(config.MODEL_SAVE_PATH)
+    # construct the train&valid log file
+    logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
     # ---- Step 1. Train & Valid model ---- #
     train_valid_model()
