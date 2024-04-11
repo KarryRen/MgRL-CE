@@ -135,7 +135,7 @@ class FeatureEncoderCE(nn.Module):
         """
 
         # ---- Step 0. Get the `T` ---- #
-        T = P.shape[1]
+        bs, T = P.shape[0], P.shape[1]
 
         # ---- Step 1. Use the temporal_feature_encoder to encode P ---- #
         H, _ = self.temporal_feature_encoder(P)  # shape=(bs, T, hidden_size)
