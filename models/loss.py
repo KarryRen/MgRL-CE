@@ -20,14 +20,14 @@ class MSE_Loss:
     def __init__(self, reduction: str = "mean", lambda_1: float = 1.0):
         """ Init function of the MSE Loss.
 
-        :param reduction: the reduction of this loss, you have only 2 choices now:
+        :param reduction: the reduction way of this loss, you have only 2 choices now:
             - `sum` for sum reduction
             - `mean` for mean reduction
 
         """
 
         assert reduction in ["sum", "mean"], f"Reduction in MgRL_Loss ERROR !! `{reduction}` is not allowed !!"
-        self.reduction = reduction  # the reduction
+        self.reduction = reduction  # the reduction way
 
     def __call__(self, y_true: torch.Tensor, y_pred: torch.Tensor, weight: torch.Tensor):
         """ Call function of the MSE Loss.
@@ -74,7 +74,7 @@ class MgRL_Loss:
     def __init__(self, reduction: str = "sum", lambda_1: float = 1.0):
         """ Init function of the MgRL Loss.
 
-        :param reduction: the reduction of this loss, you have only 2 choices now:
+        :param reduction: the reduction way of this loss, you have only 2 choices now:
             - `sum` for sum reduction
             - `mean` for mean reduction
         :param lambda_1: the hyper-param lambda_1 of MgRL Loss
@@ -85,7 +85,7 @@ class MgRL_Loss:
         """
 
         assert reduction in ["sum", "mean"], f"Reduction in MgRL_Loss ERROR !! `{reduction}` is not allowed !!"
-        self.reduction = reduction  # the reduction
+        self.reduction = reduction  # the reduction way
         self.lambda_1 = lambda_1  # the lambda weight of Reconstruction Loss
 
     def __call__(self, y_true: torch.Tensor, y_pred: torch.Tensor, rec_residuals: tuple, weight: torch.Tensor):
@@ -147,7 +147,7 @@ class MgRL_CE_Loss:
     def __init__(self, reduction: str = "sum", lambda_1: float = 1.0, lambda_2: float = 1.0):
         """ Init function of the MgRL Loss.
 
-        :param reduction: the reduction of this loss, you have only 2 choices now:
+        :param reduction: the reduction way of this loss, you have only 2 choices now:
             - `sum` for sum reduction
             - `mean` for mean reduction
         :param lambda_1: the hyper-param lambda_1 of MgRL_CE Loss
@@ -159,17 +159,20 @@ class MgRL_CE_Loss:
         """
 
         assert reduction in ["sum", "mean"], f"Reduction in MgRL_Loss ERROR !! `{reduction}` is not allowed !!"
-        self.reduction = reduction  # the reduction
+        self.reduction = reduction  # the reduction way
         self.lambda_1 = lambda_1  # the lambda weight of Reconstruction Loss
         self.lambda_2 = lambda_2  # the lambda weight of Contrastive Loss
 
-    def __call__(self, y_true: torch.Tensor, y_pred: torch.Tensor, rec_residuals: tuple, contrastive_loss: float, weight: torch.Tensor):
+    def __call__(
+            self, y_true: torch.Tensor, y_pred: torch.Tensor, rec_residuals: tuple,
+            contrastive_loss: torch.Tensor, weight: torch.Tensor
+    ):
         """ Call function of the MgRL_CE Loss.
 
         :param y_true: the true label of time series prediction, shape=(bs, 1)
         :param y_pred: the prediction of MgRL_CE_Net, shape=(bs, 1)
         :param rec_residuals: the rec_residuals of MgRL_CE_Net, a tuple of (bs, T, D*K)
-        :param contrastive_loss: the contrastive_loss of the MgRL_CE_Net, a float num
+        :param contrastive_loss: the contrastive_loss of the MgRL_CE_Net, shape=(bs, 1)
         :param weight: the weight indicates item meaningful or meaningless, shape=(bs, 1)
 
         return:
@@ -191,8 +194,9 @@ class MgRL_CE_Loss:
             for rec_res in rec_residuals:  # for loop to compute rec loss of each sample
                 rec_sample_loss += torch.sum(rec_res ** 2, dim=(1, 2), keepdim=True).reshape(bs, 1)
             rec_loss = torch.sum(weight * rec_sample_loss) / torch.sum(weight)  # weighted and mean
-            # sum the mse loss and rec loss
-            batch_loss = mse_loss + self.lambda_1 * rec_loss
+            # compute contrastive loss (`mean`)
+            contrastive_sample_loss = contrastive_loss  # shape=(bs, 1)
+            contra_loss = torch.sum(weight * contrastive_sample_loss) / torch.sum(weight)  # weighted and mean
         elif self.reduction == "sum":
             # compute mse loss (`sum`)
             mse_sample_loss = (y_pred - y_true) ** 2  # shape=(bs, 1)
@@ -202,12 +206,15 @@ class MgRL_CE_Loss:
             for rec_res in rec_residuals:  # for loop to compute rec loss of each sample
                 rec_sample_loss += torch.sum(rec_res ** 2, dim=(1, 2), keepdim=True).reshape(bs, 1)
             rec_loss = torch.sum(weight * rec_sample_loss)  # weighted and sum
-            # sum the mse loss and rec loss
-            batch_loss = mse_loss + self.lambda_1 * rec_loss
+            # compute contrastive loss (`sum`)
+            contrastive_sample_loss = contrastive_loss  # shape=(bs, 1)
+            contra_loss = torch.sum(weight * contrastive_sample_loss)  # weighted and sum
         else:
             raise TypeError(self.reduction)
 
         # ---- Step 2. Return loss ---- #
+        # sum the mse loss and rec loss
+        batch_loss = mse_loss + self.lambda_1 * rec_loss + self.lambda_2 * contra_loss
         return batch_loss
 
 
@@ -217,6 +224,7 @@ if __name__ == "__main__":
     y_true, y_pred, weight = torch.zeros((bs, 1)), torch.ones((bs, 1)), torch.ones((bs, 1))
     a = torch.ones((bs, T, D))
     rec_residuals = (torch.zeros((bs, T, D)), a, torch.zeros((bs, T, D)), torch.zeros((bs, T, D)))
+
     # ---- Test MSE_Loss ---- #
     loss_mse_sum = MSE_Loss(reduction="sum")
     l_sum = loss_mse_sum(y_true=y_true, y_pred=y_pred, weight=weight)

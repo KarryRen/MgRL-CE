@@ -145,7 +145,7 @@ class MgRLNet(nn.Module):
         y_all_g = torch.cat([y_g1, y_g2, y_g3, y_g4, y_g5], dim=1)  # shape=(bs, 5)
         # construct the output and return
         output = {
-            "pred": torch.mean(y_all_g, -1),
+            "pred": torch.mean(y_all_g, -1, keepdim=True),
             "rec_residuals": (P_g2, P_g3, P_g4, P_g5)
         }
         return output
@@ -291,7 +291,7 @@ class MgRL_CE_Net(nn.Module):
         alpha_all_g = F.softmax(alpha_all_g, dim=1)  # use the soft_max to weight, shape=(bs, 5)
         # use the alpha to weight the y
         y_all_g = y_all_g * alpha_all_g
-        # construct the output and return
+        # construct the output and return, contrastive_loss is sum of all granularity
         output = {
             "pred": torch.mean(y_all_g, -1, keepdim=True),
             "rec_residuals": (P_g2, P_g3, P_g4, P_g5),
