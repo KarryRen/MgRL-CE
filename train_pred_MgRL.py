@@ -123,7 +123,7 @@ def train_valid_model() -> None:
     }
 
     # train model epoch by epoch
-    logging.info("***************** BEGIN TRAINING AND VALID THE MODEL `{args.model}` ! *****************")
+    logging.info(f"***************** BEGIN TRAINING AND VALID THE MODEL `{args.model}` ! *****************")
     # start train and valid during train
     for epoch in tqdm(range(config.EPOCHS)):
         # start timer for one epoch
@@ -256,7 +256,7 @@ def train_valid_model() -> None:
     plt.plot(epoch_metric["valid_MAE"], label="valid MAE", color="b")
     plt.legend()
     plt.savefig(config.SAVE_PATH + "training_steps.png", dpi=200, bbox_inches="tight")
-    logging.info("***************** TRAINING OVER ! *****************")
+    logging.info("***************** TRAINING OVER ! *****************\n")
 
 
 def pred_model() -> None:
@@ -316,8 +316,7 @@ def pred_model() -> None:
     logging.info(f"******** test_CORR : {test_CORR} **********")
     logging.info(f"******** test_RMSE : {test_RMSE} **********")
     logging.info(f"******** test_MAE : {test_MAE} **********")
-    logging.info("***************** TEST OVER ! *****************")
-    logging.info("")
+    logging.info("***************** TEST OVER ! *****************\n")
 
 
 if __name__ == "__main__":
