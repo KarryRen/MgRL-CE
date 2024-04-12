@@ -135,7 +135,7 @@ This study compares the proposed method with numerous other methods. The competi
 - MgRL, not containing the confidence estimation mechanism in MgRL_CE.
 - MgRL_Attention, replacing the confidence estimation mechanism in MgRL_CE with the classical [**soft attention mechanism**](https://arxiv.org/pdf/1409.0473.pdf?utm_source=ColumnsChannel).
 
-### Run the comparison methods
+### Run the comparison methods training and prediction
 
 To facilitate the comparison of all Comparison Methods, i built the training and prediction frameworks for each comparison methods of 3 datasets ! 
 
