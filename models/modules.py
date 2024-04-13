@@ -159,7 +159,7 @@ class FeatureEncoderCE(nn.Module):
         # use the last step (p_T, C_T) to compute alpha
         p_last_step = P[:, -1:, :]  # last step P, shape=(bs, 1, hidden_size)
         C_last_step = H[:, -2:-1, :]  # last step C, shape=(bs, 1, hidden_size)
-        alpha = torch.mean(self.W(C_last_step) * p_last_step, -1)  # the al
+        alpha = torch.mean(self.W(C_last_step) * p_last_step, -1)  # the alpha
 
         # ---- Step 3. Use the prediction_net to get the prediction ---- #
         y = self.prediction_net(H[:, -1, :])  # shape=(bs, 1)
