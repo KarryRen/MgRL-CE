@@ -72,26 +72,24 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
   >
   > ATTENTION: During the preprocessing I have also **changed the unit of data from kW*15min to kWh** and **adjusted the scale of data distribution by dividing each client data by their daily electricity consumption on the first day**.
   
-  - The preprocess code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
+  - The preprocess code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/mg_datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
   
     ```shell
     python3 elect_preprocess.py
     ```
   
-  - The  `torch.Dataset` code is in `elect_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/elect_dataset.py) ! 
+  - The  `torch.Dataset` code is in `elect_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/mg_datasets/elect_dataset.py) ! 
   
 - **Future Limit Order Book dataset (LOB)**. 
   
   > Similarly, the LOB dataset is divided in chronological order: the training, validation, and test sets cover 6, 3, and 3 months, respectively. In this study, the original LOB data is modeled directly, i.e., only the **20 basic features of price and volume** from 1 to 5 ticks in both ask and bid directions are used, and no other factors are constructed manually. The objective is to **predict the minute frequency return of future**, i.e., $y=log(MidPrice_{T+1}/MidPrice_{T})*10^{5}$,  where $MidPrice_{t} = (Price_t^{ask} + Price_t^{bid}) / 2$ denotes the average of the 1 level ask price and bid price in the minute $t$. There are **5 types of input feature granularity**: 1 minute (coarsest), 30 seconds, 10 seconds, 1 second and 0.5 seconds (finest). All feature data were normalized by the Z-Score method.
   
-  - The preprocess code is in `lob_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
+  - The preprocess code is in `lob_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/tree/main/mg_datasets/datasets_preprocess/lob_preprocess) ! You can **RUN** it by：
   
     ```shell
     # ---- Step 1. Build up the Cython file ---- #
     sh build_cython.sh
     ```
-  
-    
   
 - **CSI300 stock dataset**.
   
@@ -127,8 +125,8 @@ This study compares the proposed method with numerous other methods. The competi
 
 **GROUP 1. General Time Series Forecasting Models (using single granularity)**
 
-- GRU: [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/model/comparison_methods/gru.py). [**Kyunghyun Cho, et al. 2014**](https://arxiv.org/pdf/1406.1078.pdf), [**Ref. Code**](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_gru.py#L294).
-- LSTM, [**Sepp Hochreiter, et al. Neural computation 1997**](https://blog.xpgreat.com/file/lstm.pdf), [**Ref. Code**](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_lstm.py#L286).
+- GRU: [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/models/comparison_methods/gru.py). [**Kyunghyun Cho, et al. 2014**](https://arxiv.org/pdf/1406.1078.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_gru.py#L294).
+- LSTM: [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/models/comparison_methods/lstm.py). [**Sepp Hochreiter, et al. Neural computation 1997**](https://blog.xpgreat.com/file/lstm.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_lstm.py#L286).
 - Transformer, [**Ashish Vaswani, et al. NeurIPS 2017**](https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf), [**Ref. Code**](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_transformer.py#L258).
 - DeepAR, [**Salinas D, et al. Int. J. Forecasting 2020**](http://162.14.120.130/机器学习-时间序列分析/deepAR.pdf), [**Ref. Code**](https://github.com/husnejahan/DeepAR-pytorch/tree/master).
 - Informer, [**Zhou H, et al. AAAI 2021**](https://www.researchgate.net/publication/347125466_Informer_Beyond_Efficient_Transformer_for_Long_Sequence_Time-Series_Forecasting), [**Ref. Code**](https://github.com/zhouhaoyi/Informer2020/tree/main).

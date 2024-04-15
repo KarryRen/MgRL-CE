@@ -4,7 +4,7 @@
 
 """ The Comparison Methods 1. LSTM.
 
-Ref. https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_gru.py#L294
+Ref. https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_lstm.py#L286
 
 """
 
@@ -14,33 +14,33 @@ from torch import nn
 from typing import Dict
 
 
-class GRUNet(nn.Module):
-    """ The 2 Layer GRU. hidden_size = 64. """
+class LSTMNet(nn.Module):
+    """ The 2 Layer LSTM. hidden_size = 64. """
 
     def __init__(
             self, input_size: int, hidden_size: int = 64, num_layers: int = 2,
             dropout: float = 0.0, device: torch.device = torch.device("cpu")
     ):
-        """ The init function of GRU Net.
+        """ The init function of LSTM Net.
 
         :param input_size: input size for each time step
-        :param hidden_size: hidden size of gru
-        :param num_layers: the num of gru layers
+        :param hidden_size: hidden size of lstm
+        :param num_layers: the num of lstm layers
         :param dropout: the dropout ratio
         :param device: the computing device
 
         """
 
-        super(GRUNet, self).__init__()
+        super(LSTMNet, self).__init__()
         self.device = device
         self.input_size = input_size
 
-        # ---- Log the info of GRU ---- #
-        logging.info(f"|||| Using GRU Now ! input_size={input_size}, hidden_size={hidden_size}, "
+        # ---- Log the info of LSTM ---- #
+        logging.info(f"|||| Using LSTM Now ! input_size={input_size}, hidden_size={hidden_size}, "
                      f"num_layers={num_layers}, dropout_ratio={dropout}||||")
 
-        # ---- Part 1. The rnn of the GRU module ---- #
-        self.rnn = nn.GRU(
+        # ---- Part 1. The rnn of the LSTM module ---- #
+        self.rnn = nn.LSTM(
             input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True, dropout=dropout
         ).to(device=device)
 
@@ -48,7 +48,7 @@ class GRUNet(nn.Module):
         self.fc_out = nn.Linear(hidden_size, 1).to(device=device)
 
     def forward(self, mul_granularity_input: Dict[str, torch.Tensor]):
-        """ The forward function of GRU Net.
+        """ The forward function of LSTM Net.
 
         :param mul_granularity_input: the input multi granularity, a dict with the format:
             {
@@ -86,7 +86,7 @@ class GRUNet(nn.Module):
         return output
 
 
-if __name__ == "__main__":  # A demo of GRU
+if __name__ == "__main__":  # A demo of LSTM
     bath_size, time_steps, D = 16, 4, 1
     mg_input = {
         "g1": torch.ones((bath_size, time_steps, 1, D)),
@@ -98,6 +98,6 @@ if __name__ == "__main__":  # A demo of GRU
     g_dict = {"g1": 1, "g2": 2, "g3": 6, "g4": 24, "g5": 96}
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = GRUNet(input_size=1, device=dev)
+    model = LSTMNet(input_size=1, device=dev)
     out = model(mg_input)
     print(out["pred"].shape)
