@@ -13,6 +13,9 @@ MgRL-CE/
 ├── datasets
     ├── datasets_preprocess
         ├── elect_preprocess.py # The preprocess code of UCI electricity dataset (download from web).
+        ├── lob_preprocess # The preprocess package of Future LOB dataset (downlaod from Qlib).
+            ├── price_alignment_features # The paf algorithm.
+            ├── lob_preprocess.py # The preprocess code of Future LOB dataset.
     ├── elect_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
 ├── configs # The train&prediction config files of 3 datasets.
     ├── elect_config.py # Config file of UCI electricity dataset.
@@ -51,8 +54,11 @@ This study extensively performs experiments on **3 Real-World Datasets** to veri
   > The UCI electricity dataset collects electricity consumption of each 15 minutes (unit: kW*15min) from a total of **370** clients over a **4-year period from 2011 to 2014**, some of which were created after 2011, and all missing data on electricity consumption for these clients are filled with **ZEROS** !
   >
 
-- **IF_M0 future Limit Order Book dataset (LOB)**. Updating 🔥.
-- **CSI300 Stock dataset (STOCK)**. Updating 🔥.
+- **Future Limit Order Book dataset (LOB)**. Could be downloaded from the public Qlib interface, [**HERE**](https://github.com/microsoft/qlib) !
+
+  > The Future Limit Order Book dataset collects high-frequency trading data of CSI 300 stock index future (**IF_M0**), including Limit Order Book (LOB) with 5 levels for both ask and bid direction. The **trading frequency is 0.5 seconds**. The dataset **range from Jan. 4, 2022 to Dec. 30, 2022**, covering all **242 trading days** in 2022, with **28,800** trading records for each trading day.
+
+- **CSI300 index dataset (INDEX)**. Updating 🔥.
 
 
 
@@ -60,7 +66,7 @@ This study extensively performs experiments on **3 Real-World Datasets** to veri
 
 After downloading the datasets following the **Dataset Acquisition**, data preprocessing is needed to get the structured dataset. I have released preprocess code for datasets, please read them carefully and **follow the guidelines in the top comment rather than running the shell command directly !** I have also released `torch.Dataset` code for datasets.
 
-- **UCI electricity dataset**. 
+- **UCI electricity dataset (ELECT)**. 
   
   > In order to minimize the interference caused by missing data, this study intercepts the sample data from the original dataset for the **3-year period from 2012 to 2014**, and excludes the clients with **more than 1 day of missing data** in the interval, and finally retains the electricity consumption data of **320 clients**. The target task of this paper is to **predict the next day's electricity consumption of each client**, and the dataset is divided into training set, validation set and test set according to the time sequence, which covers 24 months, 6 months and 6 months, respectively. The feature data input to the network has **5 kind of granularity**: 1 day (coarsest), 12 hours, 4 hours, 1 hour and 15 minutes (finest).
   >
@@ -74,9 +80,18 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
   
   - The  `torch.Dataset` code is in `elect_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/elect_dataset.py) ! 
   
-- **IF_M0 future dataset**. 
+- **Future Limit Order Book dataset (LOB)**. 
   
-  - Updating 🔥.
+  > Similarly, the LOB dataset is divided in chronological order: the training, validation, and test sets cover 6, 3, and 3 months, respectively. In this study, the original LOB data is modeled directly, i.e., only the **20 basic features of price and volume** from 1 to 5 ticks in both ask and bid directions are used, and no other factors are constructed manually. The objective is to **predict the minute frequency return of future**, i.e., $y=log(MidPrice_{T+1}/MidPrice_{T})*10^{5}$,  where $MidPrice_{t} = (Price_t^{ask} + Price_t^{bid}) / 2$ denotes the average of the 1 level ask price and bid price in the minute $t$. There are **5 types of input feature granularity**: 1 minute (coarsest), 30 seconds, 10 seconds, 1 second and 0.5 seconds (finest). All feature data were normalized by the Z-Score method.
+  
+  - The preprocess code is in `lob_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
+  
+    ```shell
+    # ---- Step 1. Build up the Cython file ---- #
+    sh build_cython.sh
+    ```
+  
+    
   
 - **CSI300 stock dataset**.
   
