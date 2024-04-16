@@ -73,7 +73,7 @@ UCI_ELECT_DOWNLOAD_FILE_PATH = "../../../Data/UCI_electricity_dataset/LD2011_201
 assert os.path.exists(UCI_ELECT_DOWNLOAD_FILE_PATH), \
     f"Please DOWNLOAD the UCI electricity dataset following `README.md` ! And move `LD2011_2014.txt` to {UCI_ELECT_DOWNLOAD_FILE_PATH} !"
 UCI_ELECT_DATASET_PATH = "../../../Data/UCI_electricity_dataset/dataset"
-assert os.path.exists(UCI_ELECT_DOWNLOAD_FILE_PATH), \
+assert os.path.exists(UCI_ELECT_DATASET_PATH), \
     f"Please create the directory structure `BY HAND` following top comment: UCI_ELECT_DATASET_PATH/ ├── Train ├── Valid └── Test !"
 print("************************** BEGIN UCI ELECTRICITY DATASET PREPROCESSING **************************")
 
