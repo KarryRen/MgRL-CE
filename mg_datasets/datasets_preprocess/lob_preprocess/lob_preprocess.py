@@ -189,4 +189,3 @@ for file_idx, lob_file in enumerate(lob_file_list):  # Computing other granulari
     lob_data_1_minute = pd.DataFrame(lob_data_1_minute, columns=LOB_COLUMNS)  # to df
     lob_data_1_minute.to_csv(f"{LOB_1_MINUTE_FILE_PATH}/1_minute_{lob_file}", index=False)
     print(f"   - 5. FINISH 1 MINUTE !!!")
-    break
