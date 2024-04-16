@@ -11,6 +11,33 @@ During the preprocessing, we wil do operations by the following steps:
 
 All in all, after downloading the file from the web, you need:
     1. Change and Create the `PATH` based on your situation.
+    2. Run this file by `python lob_preprocess.py` and you will ge the following directory structure:
+        FUTURE_LOB_DATASET_PATH/
+            ├── 0.5_seconds
+                ├── 05_seconds_20220104.csv
+                ├── 05_seconds_20220105.csv
+                ├── ...
+                └── 05_seconds_20221230.csv
+            ├── 1_second
+                ├── 1_second_20220104.csv
+                ├── 1_second_20220105.csv
+                ├── ...
+                └── 1_second_20221230.csv
+            ├── 10_seconds
+                ├── 10_seconds_20220104.csv
+                ├── 10_seconds_20220105.csv
+                ├── ...
+                └── 10_seconds_20221230.csv
+            ├── 30_seconds
+                ├── 30_seconds_20220104.csv
+                ├── 30_seconds_20220105.csv
+                ├── ...
+                └── 30_seconds_20221230.csv
+            └── 1_minute
+                ├── 1_minute_20220104.csv
+                ├── 1_minute_20220105.csv
+                ├── ...
+                └── 1_minute_20221230.csv
 
 """
 
@@ -53,6 +80,9 @@ assert os.path.exists(LOB_30_SECOND_FILE_PATH), f"Please CREATE the path of 30 s
 # the path of 1 minute files
 LOB_1_MINUTE_FILE_PATH = "../../../../Data/Future_LOB_dataset/IF_M0/1_minute"
 assert os.path.exists(LOB_1_MINUTE_FILE_PATH), f"Please CREATE the path of 1 minute files {LOB_1_MINUTE_FILE_PATH} !"
+# the path of 1 minute labels
+LOB_1_MINUTE_LABEL_PATH = "../../../../Data/Future_LOB_dataset/IF_M0/1_minute_label"
+assert os.path.exists(LOB_1_MINUTE_LABEL_PATH), f"Please CREATE the path of 1 minute label {LOB_1_MINUTE_LABEL_PATH} !"
 
 # ---- Step 2. For-Loop all `.csv` files of 0.5 seconds lob ---- #
 lob_file_list = sorted(os.listdir(LOB_DOWNLOAD_FILE_PATH))  # get the list of all raw lob files
@@ -160,8 +190,8 @@ for file_idx, lob_file in enumerate(lob_file_list):  # Computing other granulari
         lob_data_30_second[tick_i // SECOND_30_TICK_GAP, :, 1, 1] = ask_paf_volume.sum(axis=(0, 2))[:5]  # bid volume
     assert tick_i == TICK_NUM - 1, "tick_i ERROR !"  # test the tick_i
     lob_data_30_second = lob_data_30_second.reshape(TICK_NUM // SECOND_30_TICK_GAP, -1)  # reshape to (28800/20, 20)
-    lob_data_30_second = pd.DataFrame(lob_data_30_second, columns=LOB_COLUMNS)  # to df
-    lob_data_30_second.to_csv(f"{LOB_30_SECOND_FILE_PATH}/30_seconds_{lob_file}", index=False)
+    lob_data_30_second_df = pd.DataFrame(lob_data_30_second, columns=LOB_COLUMNS)  # construct the df
+    lob_data_30_second_df.to_csv(f"{LOB_30_SECOND_FILE_PATH}/30_seconds_{lob_file}", index=False)
     print(f"   - 4. FINISH 30 SECONDS !!!")
 
     # - 2.5 compute the 1-minute lob data, align by price during 120 ticks and sum volume
@@ -186,6 +216,16 @@ for file_idx, lob_file in enumerate(lob_file_list):  # Computing other granulari
         lob_data_1_minute[tick_i // MINUTE_1_TICK_GAP, :, 1, 1] = ask_paf_volume.sum(axis=(0, 2))[:5]  # bid volume
     assert tick_i == TICK_NUM - 1, "tick_i ERROR !"  # test the tick_i
     lob_data_1_minute = lob_data_1_minute.reshape(TICK_NUM // MINUTE_1_TICK_GAP, -1)  # reshape to (28800/20, 20)
-    lob_data_1_minute = pd.DataFrame(lob_data_1_minute, columns=LOB_COLUMNS)  # to df
-    lob_data_1_minute.to_csv(f"{LOB_1_MINUTE_FILE_PATH}/1_minute_{lob_file}", index=False)
+    lob_data_1_minute_df = pd.DataFrame(lob_data_1_minute, columns=LOB_COLUMNS)  # construct the df
+    lob_data_1_minute_df.to_csv(f"{LOB_1_MINUTE_FILE_PATH}/1_minute_{lob_file}", index=False)
     print(f"   - 5. FINISH 1 MINUTE !!!")
+
+    # - 2.6 compute the 1-minute lob label
+    # compute the mid-price
+    mid_price = (lob_data_1_minute_df["BidPrice1"] + lob_data_1_minute_df["AskPrice1"]) / 2
+    # set the label
+    lob_label_1_minute = np.log((mid_price.shift(-1) / mid_price).values) * 1e4
+    # construct the df
+    lob_label_1_minute_df = pd.DataFrame(lob_label_1_minute, columns=["1_minute_label"]).fillna(0)  # construct the df
+    lob_label_1_minute_df.to_csv(f"{LOB_1_MINUTE_LABEL_PATH}/1_minute_label_{lob_file}", index=False)
+    print(f"   - 6. FINISH 1 MINUTE LABEL !!!")
