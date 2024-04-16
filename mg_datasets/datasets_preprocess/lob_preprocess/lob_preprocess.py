@@ -9,6 +9,8 @@ During the preprocessing, we wil do operations by the following steps:
     2. For-loop all `.csv` files of 0.5 seconds lob.
         Computing other granularity data: 1 second, 10 seconds, 30 seconds, 1 minute.
 
+Because I want to make the code clear and beautiful, so I need you to do some directory creation by hand !!!
+
 All in all, after downloading the file from the web, you need:
     1. Change and Create the `PATH` based on your situation.
     2. Run this file by `python lob_preprocess.py` and you will ge the following directory structure:
