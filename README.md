@@ -54,11 +54,13 @@ This study extensively performs experiments on **3 Real-World Datasets** to veri
   > The UCI electricity dataset collects electricity consumption of each 15 minutes (unit: kW*15min) from a total of **370** clients over a **4-year period from 2011 to 2014**, some of which were created after 2011, and all missing data on electricity consumption for these clients are filled with **ZEROS** !
   >
 
-- **Future Limit Order Book dataset (LOB)**. Could be downloaded from the public Qlib interface, [**HERE**](https://github.com/microsoft/qlib) !
+- **Future Limit Order Book dataset (LOB)**. Could be downloaded from the public `Qlib` platform, [**HERE**](https://github.com/microsoft/qlib) !
 
   > The Future Limit Order Book dataset collects high-frequency trading data of CSI 300 stock index future (**IF_M0**), including Limit Order Book (LOB) with 5 levels for both ask and bid direction. The **trading frequency is 0.5 seconds**. The dataset **range from Jan. 4, 2022 to Dec. 30, 2022**, covering all **242 trading days** in 2022, with **28,800** trading records for each trading day.
 
-- **CSI300 index dataset (INDEX)**. Updating 🔥.
+- **CSI300 index dataset (INDEX)**. Could be downloaded based on the public `AKShare` toolkit, [**HRER**](https://github.com/akfamily/akshare) !
+
+  > The CSI300 index dataset collects 1 minute high-frequency trading data for the CSI 300 stock index (000300.SH) from publicly available data sources. The collection interval is from the **beginning of 2016** to the **end of 2023**, containing a total of **1,945 trading days** over an 8-year period, with **240** trading records for each trading day.
 
 
 
@@ -82,16 +84,20 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
   
 - **Future Limit Order Book dataset (LOB)**. 
   
-  > Similarly, the LOB dataset is divided in chronological order: the training, validation, and test sets cover 6, 3, and 3 months, respectively. In this study, the original LOB data is modeled directly, i.e., only the **20 basic features of price and volume** from 1 to 5 ticks in both ask and bid directions are used, and no other factors are constructed manually. The objective is to **predict the minute frequency return of future**, i.e., $y=log(MidPrice_{T+1}/MidPrice_{T})*10^{5}$,  where $MidPrice_{t} = (Price_t^{ask} + Price_t^{bid}) / 2$ denotes the average of the 1 level ask price and bid price in the minute $t$. There are **5 types of input feature granularity**: 1 minute (coarsest), 30 seconds, 10 seconds, 1 second and 0.5 seconds (finest). All feature data were normalized by the Z-Score method.
+  > Similarly, the LOB dataset is divided in chronological order: the training, validation, and test sets cover 8, 2, and 2 months, respectively. In this study, the original LOB data is modeled directly, i.e., only the **20 basic features of price and volume** from 1 to 5 ticks in both ask and bid directions are used, and no other factors are constructed manually. The objective is to **predict the minute frequency return of future**, i.e., $y=log(MidPrice_{T+1}/MidPrice_{T})*10^{4}$,  where $MidPrice_{t} = (Price_t^{ask} + Price_t^{bid}) / 2$ denotes the average of the 1 level ask price and bid price in the minute $t$. There are **5 types of input feature granularity**: 1 minute (coarsest), 30 seconds, 10 seconds, 1 second and 0.5 seconds (finest). All feature data were normalized by the Z-Score method.
   
   - The preprocess code is in `lob_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/tree/main/mg_datasets/datasets_preprocess/lob_preprocess) ! You can **RUN** it by：
   
     ```shell
     # ---- Step 1. Build up the Cython file ---- #
     sh build_cython.sh
+    # ---- Step 2. Preprocess the LOB dataset ---- #
+    python3.8 lob_preprocess.py
     ```
+    
+  - The `torch.Dataset` code is in `lob_dataset.py`, HERE !
   
-- **CSI300 stock dataset**.
+- **CSI300 index dataset (INDEX)**.
   
   - Updating 🔥.
 
