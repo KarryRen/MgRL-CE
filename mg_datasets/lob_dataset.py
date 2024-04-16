@@ -34,7 +34,7 @@ After the preprocessing raw Future LOB dataset(download from Qlib following `REA
                 └── 1_minute_20221230.csv
 
 In this dataset:
-    - during `__init__()`, we will READ all `.csv` files of multi-granularity data to memory.
+    - during `__init__()`, we will READ target `.csv` files of multi-granularity data to memory.
     - during `__getitem__()`, we will READ 1 item with multi-granularity data and lag it by `MINUTE`.
 
 """

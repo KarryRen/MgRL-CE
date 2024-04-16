@@ -174,7 +174,7 @@ for data_type in ["Train", "Valid", "Test"]:
     elect_data_1_day.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/1_day.csv", index=False)
     # Compute the label
     elect_label_1_day = elect_data_1_day.shift(-1)
-    elect_label_1_day.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/label.csv", index=False)
+    elect_label_1_day.to_csv(f"{UCI_ELECT_DATASET_PATH}/{data_type}/1_day_label.csv", index=False)
     # Assert for detection
     if data_type == "Train":
         DAYS = TRAIN_DAYS

@@ -56,7 +56,7 @@ class ELECTDataset(data.Dataset):
         feature_4_hours = pd.read_csv(f"{root_path}/{data_type}/4_hours.csv", index_col=0)  # g3
         feature_1_hour = pd.read_csv(f"{root_path}/{data_type}/1_hour.csv", index_col=0)  # g4
         feature_15_minutes = pd.read_csv(f"{root_path}/{data_type}/15_minutes.csv", index_col=0)  # g5
-        label = pd.read_csv(f"{root_path}/{data_type}/label.csv", index_col=0)  # label
+        label = pd.read_csv(f"{root_path}/{data_type}/1_day_label.csv", index_col=0)  # label
 
         # ---- Step 1. Read some params from 1-day feature ---- #
         self.client_list = feature_1_day.columns  # each column represents a client
