@@ -35,8 +35,8 @@ def r2_score(y_true: np.ndarray, y_pred: np.ndarray, weight: np.ndarray = None, 
     assert np.sum(weight) > 0, f"weight can't be all zero !"
 
     # ---- Step 2. Compute the SSR & SSE ---- #
-    # compute: SSE = sum(weight * (y - y_hat)^2)), a number, shape=()
-    sse = np.sum(weight * ((y_true - y_pred) ** 2), axis=0, dtype=np.float32)
+    # compute: SSR = sum(weight * (y - y_hat)^2)), a number, shape=()
+    ssr = np.sum(weight * ((y_true - y_pred) ** 2), axis=0, dtype=np.float32)
     # compute SST = sum((y - y_bar)^2)
     # - the weighted mean of y_true, shape=(num_of_samples)
     y_bar = np.sum(weight * y_true, axis=0, keepdims=True) / np.sum(weight, axis=0, keepdims=True)
@@ -44,7 +44,7 @@ def r2_score(y_true: np.ndarray, y_pred: np.ndarray, weight: np.ndarray = None, 
     sst = np.sum(weight * ((y_true - y_bar) ** 2), axis=0, dtype=np.float32)
 
     # ---- Step 3. Compute and Return r2 = 1 - SSR/SST ---- #
-    r2 = 1 - (sse / (sst + epsilon))
+    r2 = 1 - (ssr / (sst + epsilon))
     return r2
 
 
