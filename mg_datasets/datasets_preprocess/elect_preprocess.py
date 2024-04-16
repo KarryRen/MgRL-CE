@@ -7,7 +7,7 @@
 Please `DOWNLOAD` UCI electricity dataset following `README.md`, and you will get the `LD2011_2014.txt`
     file from the web, please move the file to the path `UCI_DOWNLOAD_FILE_PATH` in Step 1.
 
-DESCRIPTION OF RAW .TXT DATASET:
+DESCRIPTION OF RAW `.TXT` DATASET:
     In the `LD2011_2014.txt` file, you can get the electricity consumption data of each 15 minutes (unit: kW*15min) from
       a total of `370` clients over a `4-year period from 2011 to 2014`:
         - Totally 1461 days (2011-365, 2012-366, 2013-365, 2014-365),
