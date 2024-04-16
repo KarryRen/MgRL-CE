@@ -2,7 +2,7 @@
 # @Time    : 2024/4/6 15:15
 # @Author  : Karry Ren
 
-""" The Comparison Methods 1. GRU.
+""" The Comparison Methods 1: GRU.
 
 Ref. https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_gru.py#L294
 
@@ -15,7 +15,7 @@ from typing import Dict
 
 
 class GRUNet(nn.Module):
-    """ The 2 Layer GRU. hidden_size = 64. """
+    """ The 2 Layer GRU. hidden_size=64. """
 
     def __init__(
             self, input_size: int, hidden_size: int = 64, num_layers: int = 2,

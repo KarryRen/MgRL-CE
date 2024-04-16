@@ -2,7 +2,7 @@
 # @Time    : 2024/4/12 18:18
 # @Author  : Karry Ren
 
-""" The Comparison Methods 2. LSTM.
+""" The Comparison Methods 2: LSTM.
 
 Ref. https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_lstm.py#L286
 
@@ -15,7 +15,7 @@ from typing import Dict
 
 
 class LSTMNet(nn.Module):
-    """ The 2 Layer LSTM. hidden_size = 64. """
+    """ The 2 Layer LSTM. hidden_size=64. """
 
     def __init__(
             self, input_size: int, hidden_size: int = 64, num_layers: int = 2,
