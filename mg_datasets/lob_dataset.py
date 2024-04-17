@@ -142,8 +142,8 @@ class LOBDataset(data.Dataset):
             mg_features_dict["g1"] = np.zeros((self.T, 1, 20))  # 1_minute granularity
             mg_features_dict["g2"] = np.zeros((self.T, 2, 20))  # 30_seconds granularity
             mg_features_dict["g3"] = np.zeros((self.T, 6, 20))  # 10_seconds granularity
-            mg_features_dict["g4"] = np.zeros((self.T, 24, 20))  # 1_second granularity
-            mg_features_dict["g5"] = np.zeros((self.T, 96, 20))  # 0.5_seconds granularity
+            mg_features_dict["g4"] = np.zeros((self.T, 60, 20))  # 1_second granularity
+            mg_features_dict["g5"] = np.zeros((self.T, 120, 20))  # 0.5_seconds granularity
             # `label = 0.0` for loss computation, shape=(1)
             label = np.zeros(1)
             # `weight = 0.0` means data is meaningless, shape=(1)
@@ -205,7 +205,7 @@ if __name__ == "__main__":  # a demo using LOBDataset
         assert ((g3_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g3 error !! ask 1 price not min !!"
         assert ((g4_data[:, :, 0].max(axis=1) - g5_data[:, :, 0].max(axis=1)) < 1e-3).all(), f"g4 error !! bid 1 price not max !!"
         assert ((g4_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g4 error !! ask 1 price not min !!"
-        print(g1_data, g2_data, g3_data, g4_data, g5_data)
+        # print(g1_data, g2_data, g3_data, g4_data, g5_data)
         # print(item_data["label"])
         break
 
@@ -217,6 +217,5 @@ if __name__ == "__main__":  # a demo using LOBDataset
         g3_data = item_data["mg_features"]["g3"]
         g4_data = item_data["mg_features"]["g4"]
         g5_data = item_data["mg_features"]["g5"]
-        print(g1_data, g2_data, g3_data, g4_data, g5_data)
+        print(g1_data.shape, g2_data.shape, g3_data.shape, g4_data.shape, g5_data.shape)
         print(item_data["label"])
-        break
