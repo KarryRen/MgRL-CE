@@ -33,14 +33,20 @@ from models.metrics import r2_score, corr_score, rmse_score, mae_score
 
 # ---- Init the args parser ---- #
 parser = argparse.ArgumentParser()
-parser.add_argument("--dataset", type=str, default="elect", help="the dataset name")
-parser.add_argument("--method", type=str, default="gru", help="the comparison method name")
+parser.add_argument("--dataset", type=str, default="elect",
+                    help="The dataset name. You have only 3 choices: `elect`, `lob`, `index`.")
+parser.add_argument("--method", type=str, default="gru",
+                    help="The dataset name. You have only 3 choices: `elect`.")
 args = parser.parse_args()
 
 # ---- Based on the args adjust the settings ---- #
 # dataset name
-if args.dataset == "elect":  # The UCI electricity dataset.
+if args.dataset == "elect":  # the UCI electricity dataset.
     import configs.elect_config as config
+elif args.dataset == "lob":  # the Future LOB dataset
+    import configs.lob_config as config
+elif args.dataset == "lob":  # the CSI300 index dataset
+    import configs.index_config as config
 else:
     raise TypeError(args.dataset)
 # method name
