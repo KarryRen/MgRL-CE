@@ -35,7 +35,7 @@ LR = 0.01  # the learning rate
 # ********************************* FOR NET TRAINING ********************************* #
 # ************************************************************************************ #
 # ---- Train Model ---- #
-EPOCHS = 2
+EPOCHS = 20
 
 # ---- Main metric using to select models ---- #
 MAIN_METRIC = "valid_CORR"

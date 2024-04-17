@@ -104,7 +104,7 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
   
 - **CSI300 index dataset (INDEX)**.
   
-  > The training, validation, and test sets span 6 years (2016 to 2021), 1 year (2022), and 1 year (2023), respectively, in chronological order.  **Six commonly used market factors** are extracted as feature inputs, including high price, opening price, low price, closing price, volume and turnover, and all features are normalized by Z-Score method before inputting into the model. This paper also **chooses the daily return of the stock as the prediction target**, i.e., $y=P_{T+2}/P_{T+1}-1$ where $P_t$ stands for the closing price of the CSI 300 stock index on the $t$-th day. This dataset also has **5 feature granularities**: 1 day (coarsest), 1 hour, 15 minutes, 5 minutes, and 1 minute (finest).
+  > The training, validation, and test sets span 6 years (2016 to 2021), 1 year (2022), and 1 year (2023), respectively, in chronological order.  **Six commonly used market factors** are extracted as feature inputs, including high price, opening price, low price, closing price, volume and turnover, and all features are normalized by Z-Score method before inputting into the model. This paper also **chooses the daily return of the stock as the prediction target**, i.e., $y=(P_{T+2}/P_{T+1}-1)\times100$ where $P_t$ stands for the closing price of the CSI 300 stock index on the $t$-th day. This dataset also has **5 feature granularities**: 1 day (coarsest), 1 hour, 15 minutes, 5 minutes, and 1 minute (finest).
   
   - The preprocess code is in `index_preprocess.py`, HERE ! You can **RUN** it by:
   
