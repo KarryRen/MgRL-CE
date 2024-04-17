@@ -23,7 +23,7 @@ BATCH_SIZE = 2048
 # ************************************************************************************ #
 # ******************************* FOR NET CONSTRUCTING ******************************* #
 # ************************************************************************************ #
-ELECT_GRANULARITY_DICT = {"g1": 1, "g2": 2, "g3": 6, "g4": 24, "g5": 96}  # the granularity dict
+GRANULARITY_DICT = {"g1": 1, "g2": 2, "g3": 6, "g4": 24, "g5": 96}  # the granularity dict
 GA_K, INPUT_SIZE = 1, 1  # the alignment granularity K & the input size
 ENCODING_INPUT_SIZE, ENCODING_HIDDEN_SIZE = 1 * GA_K, 64  # the input and hidden size
 NEGATIVE_SAMPLE_NUM = 5  # the negative sample number (only work when use `MgRL_CE_Net`)
