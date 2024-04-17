@@ -60,8 +60,8 @@ class ELECTDataset(data.Dataset):
 
         # ---- Step 1. Read some params from 1-day feature ---- #
         self.client_list = feature_1_day.columns  # each column represents a client
-        self.total_day_nums = len(feature_1_day)  # the total number of days
-        self.total_client_nums = len(self.client_list)  # the total number of clients
+        self.total_day_num = len(feature_1_day)  # the total number of days
+        self.total_client_num = len(self.client_list)  # the total number of clients
 
         # ---- Step 3. Read all `.csv` files of multi-granularity data to memory. ---- #
         self.label_list = []  # label list, each item is a daily label array (T, 1) for one client
@@ -83,7 +83,7 @@ class ELECTDataset(data.Dataset):
     def __len__(self):
         """ Get the length of dataset. """
 
-        return self.total_client_nums * self.total_day_nums
+        return self.total_client_num * self.total_day_num
 
     def __getitem__(self, idx: int):
         """ Get the item based on idx, and lag the item.
@@ -97,14 +97,14 @@ class ELECTDataset(data.Dataset):
                     "g4": , shape=(time_steps, 24, 1), # feature_1_hour
                     "g5": , shape=(time_steps, 96, 1) # feature_15_minutes
                 } shape is (T, K^g, D), please make sure REMEMBER the true time period of each granularity !!!
-            - `label`: the return label, shape=(1)
-            - `weight`: the weight, shape=(1)
+            - `label`: the return label, shape=(1, )
+            - `weight`: the weight, shape=(1, )
 
         """
 
         # ---- Compute the index pair [client_idx, day_idx] to locate data ---- #
-        client_idx = idx // self.total_day_nums  # get the client index to locate the client of data
-        day_idx = idx % self.total_day_nums  # get the day index to locate the day of daily data
+        client_idx = idx // self.total_day_num  # get the client index to locate the client of data
+        day_idx = idx % self.total_day_num  # get the day index to locate the day of daily data
         hour_12_idx = (day_idx + 1) * 2 - 1  # get the 12 hours index
         hour_4_idx = (day_idx + 1) * 6 - 1  # get the 4 hours index
         hour_1_idx = (day_idx + 1) * 24 - 1  # get the 1-hour index
@@ -114,7 +114,7 @@ class ELECTDataset(data.Dataset):
         # feature dict, each item is a list of ndarray with shape=(time_steps, feature_shape)
         mg_features_dict = {"g1": None, "g2": None, "g3": None, "g4": None, "g5": None}
         # meaningless data, features are made to all zeros, erasing the front and tail data
-        if day_idx < self.T - 1 or day_idx >= self.total_day_nums - 1:
+        if day_idx < self.T - 1 or day_idx >= self.total_day_num - 1:
             # set features, all zeros, shape is different from granularity to granularity
             mg_features_dict["g1"] = np.zeros((self.T, 1, 1))  # 1_day granularity
             mg_features_dict["g2"] = np.zeros((self.T, 2, 1))  # 12_hours granularity
@@ -167,5 +167,3 @@ if __name__ == "__main__":  # a demo using UCIDataset
         assert (g2_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g2 error !! {g2_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
         assert (g3_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g3 error !! {g3_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
         assert (g4_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g4 error !! {g4_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
-        print("g1 data: ", g1_data)
-        print("label: ", data_set[i]["label"])

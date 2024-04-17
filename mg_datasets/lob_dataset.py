@@ -118,8 +118,8 @@ class LOBDataset(data.Dataset):
                     "g4": , shape=(time_steps, 60, 1), # feature_1_second
                     "g5": , shape=(time_steps, 120, 1) # feature_0.5_seconds
                 } shape is (T, K^g, D), please make sure REMEMBER the true time period of each granularity !!!
-            - `label`: the return label, shape=(1)
-            - `weight`: the weight, shape=(1)
+            - `label`: the return label, shape=(1, )
+            - `weight`: the weight, shape=(1, )
 
         """
 
@@ -191,4 +191,6 @@ if __name__ == "__main__":  # a demo using LOBDataset
         assert ((g3_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g3 error !! ask 1 price not min !!"
         assert ((g4_data[:, :, 0].max(axis=1) - g5_data[:, :, 0].max(axis=1)) < 1e-3).all(), f"g4 error !! bid 1 price not max !!"
         assert ((g4_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g4 error !! ask 1 price not min !!"
+        print(data_set[i]["label"].shape)
+        break
     print(data_set[-3])
