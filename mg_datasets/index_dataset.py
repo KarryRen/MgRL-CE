@@ -19,7 +19,7 @@ After the preprocessing raw CSI300 index dataset (download from web) by
 
 In this dataset:
     - during `__init__()`, we will READ all `.csv` files of multi-granularity data to memory.
-    - during `__getitem__()`, we will READ 1 item with multi-granularity data and lag it by `DAY`.
+    - during `__getitem__()`, we will READ 1 item with multi-granularity data and lag it by `DAY` and do the Z-Score normalization.
 
 """
 
@@ -124,6 +124,8 @@ class INDEXDataset(data.Dataset):
             label = self.label[day_idx]
             # set `the weight = 1`, shape=(1, )
             weight = np.ones(1)
+
+        # ---- Do the Z-Score Normalization  ---- #
 
         # ---- Construct item data ---- #
         item_data = {
