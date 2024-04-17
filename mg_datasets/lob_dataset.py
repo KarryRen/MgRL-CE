@@ -48,7 +48,7 @@ import numpy as np
 class LOBDataset(data.Dataset):
     """ The torch.Dataset of Future LOB dataset. """
 
-    def __init__(self, root_path: str, start_date: str, end_date: str, time_steps: int = 2):
+    def __init__(self, root_path: str, start_date: str, end_date: str, time_steps: int = 2, need_norm: bool = True):
         """ The init function of LOBDataset. Will READ target `.csv` files of multi-granularity data to memory.
         For this dataset, the task is predicting the 1-minute return, so let the 1-minute data be core !!
 
@@ -56,6 +56,7 @@ class LOBDataset(data.Dataset):
         :param start_date: the start date, format should be "yyyymmdd"
         :param end_date: the end date, format should be "yyyymmdd"
         :param time_steps: the time steps (lag steps)
+        :param need_norm: whether to normalize the data
 
         NOTE:
             - the start_date and end_date will be [start_date, end_date] meaning start close and end close.
@@ -70,6 +71,7 @@ class LOBDataset(data.Dataset):
         # ---- Step 0. Set the params ---- #
         self.T = time_steps  # time steps (seq len)
         self.date_num, self.total_minute_num = 0, 240  # the date_num and tick_num
+        self.need_norm = need_norm  # whether to need normalize the lob data
 
         # ---- Step 1. Define the feature and label list ---- #
         self.label_list = []  # label list, each item is a daily label array (T, 1) for one date
@@ -165,6 +167,14 @@ class LOBDataset(data.Dataset):
             weight = np.ones(1)
 
         # ---- Do the Z-Score Normalization ---- #
+        if self.need_norm:
+            for g in ["g1", "g2", "g3", "g4", "g5"]:
+                k_g = mg_features_dict[g].shape[1]
+                mg_feature = mg_features_dict[g].reshape(self.T, k_g, 5, 2, 2)
+                mean = mg_feature.mean(axis=(0, 1, 2, 3), keepdims=True)  # compute the mean, shape=(1, 1, 1, 1, 2)
+                std = mg_feature.std(axis=(0, 1, 2, 3), keepdims=True)  # compute the std, shape=(1, 1, 1, 1, 2)
+                normed_mg_feature = (mg_feature - mean) / (std + 1e-5)  # Z-Score norm
+                mg_features_dict[g] = normed_mg_feature.reshape(self.T, k_g, 20)  # reshape back
 
         # ---- Construct item data ---- #
         item_data = {
@@ -178,13 +188,14 @@ class LOBDataset(data.Dataset):
 
 if __name__ == "__main__":  # a demo using LOBDataset
     LOB_DATASET_PATH = "../../Data/Future_LOB_dataset/IF_M0"
-    data_set = LOBDataset(LOB_DATASET_PATH, start_date="20220901", end_date="20221031", time_steps=2)
+    data_set = LOBDataset(LOB_DATASET_PATH, start_date="20220901", end_date="20221031", time_steps=2, need_norm=False)
     for i in range(1, len(data_set) - 1):
-        g1_data = data_set[i]["mg_features"]["g1"]
-        g2_data = data_set[i]["mg_features"]["g2"]
-        g3_data = data_set[i]["mg_features"]["g3"]
-        g4_data = data_set[i]["mg_features"]["g4"]
-        g5_data = data_set[i]["mg_features"]["g5"]
+        item_data = data_set[i]
+        g1_data = item_data["mg_features"]["g1"]
+        g2_data = item_data["mg_features"]["g2"]
+        g3_data = item_data["mg_features"]["g3"]
+        g4_data = item_data["mg_features"]["g4"]
+        g5_data = item_data["mg_features"]["g5"]
         assert ((g1_data[:, :, 0].max(axis=1) - g5_data[:, :, 0].max(axis=1)) < 1e-3).all(), f"g1 error !! bid 1 price not max !!"
         assert ((g1_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g1 error !! ask 1 price not min !!"
         assert ((g2_data[:, :, 0].max(axis=1) - g5_data[:, :, 0].max(axis=1)) < 1e-3).all(), f"g2 error !! bid 1 price not max !!"
@@ -193,6 +204,18 @@ if __name__ == "__main__":  # a demo using LOBDataset
         assert ((g3_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g3 error !! ask 1 price not min !!"
         assert ((g4_data[:, :, 0].max(axis=1) - g5_data[:, :, 0].max(axis=1)) < 1e-3).all(), f"g4 error !! bid 1 price not max !!"
         assert ((g4_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g4 error !! ask 1 price not min !!"
+        print(g1_data, g2_data, g3_data, g4_data, g5_data)
+        # print(data_set[i]["label"])
+        break
+
+    data_set = LOBDataset(LOB_DATASET_PATH, start_date="20220901", end_date="20221031", time_steps=2, need_norm=True)
+    for i in range(1, len(data_set) - 1):
+        item_data = data_set[i]
+        g1_data = item_data["mg_features"]["g1"]
+        g2_data = item_data["mg_features"]["g2"]
+        g3_data = item_data["mg_features"]["g3"]
+        g4_data = item_data["mg_features"]["g4"]
+        g5_data = item_data["mg_features"]["g5"]
         print(g1_data, g2_data, g3_data, g4_data, g5_data)
         print(data_set[i]["label"])
         break
