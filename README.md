@@ -17,10 +17,13 @@ MgRL-CE/
             ├── price_alignment_features # The paf algorithm.
             └── lob_preprocess.py # The preprocess code of Future LOB dataset.
         └── index_preprocess.py # The preprocess code of CSI300 index dataset.
-    ├── elect_dataset # The torch.Dataset of UCI electricity dataset (after preprocessing).
-    ├── lob_dataset # The torch.Dataset of Future LOB dataset (after preprocessing).
+    ├── elect_dataset.py # The torch.Dataset of UCI electricity dataset (after preprocessing).
+    ├── lob_dataset.py # The torch.Dataset of Future LOB dataset (after preprocessing).
+    └── index_dataset.py # The torch.Dataset of CSI300 index dataset (after preprocessing).
 ├── configs # The train&prediction config files of 3 datasets.
     ├── elect_config.py # Config file of UCI electricity dataset.
+    ├── lob_config.py # Config file of UCI electricity dataset.
+    └── index_config.py # Config file of CSI300 index dataset.
 ├── models # The MgRL-CE models and Comparison Methods.
     ├── MgRL.py # The Multi-Granularity Residual Learning Net: `MgRLNet` and `MgRL_CE_Net`.
     ├── comparison_methods # All comparison methods.
