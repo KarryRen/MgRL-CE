@@ -23,14 +23,22 @@ Because I want to make the code clear and beautiful, so I need you to do some di
 
 During the preprocessing, we wil do operations by the following steps:
     1. Change the `PATH` based on your situation.
+    2. Run this file by `python index_preprocess.py` and you will ge the following directory structure:
+        INDEX_DATASET_PATH/
+            ├── Train
+               ├── 1_day_label.csv
+               ├── 1_minute.csv
+               ├── 5_minutes.csv
+               ├── 15_minutes.csv
+               ├── 1_hour.csv
+               └── 1_day.csv
+            ├── Valid
+            └── Test
 
 """
 
 import pandas as pd
-import numpy as np
 import os
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # ---- Define the PARAMS ---- #
 TRAIN_DAYS = 244 + 244 + 243 + 244 + 243 + 243  # 2016-244, 2017-244, 2018-243, 2019-244, 2020-243, 2021-243 (1461 days)
@@ -98,7 +106,7 @@ for data_type in ["Train", "Valid", "Test"]:
     index_label_1_day["TRADING_DATE"] = index_data_1_day["TRADING_DATE"]
     index_label_1_day["TRADING_TIME"] = index_data_1_day["TRADING_TIME"]
     index_label_1_day = index_label_1_day.reindex(columns=["SYMBOL", "TRADING_DATE", "TRADING_TIME", "LABEL"])
-    index_label_1_day.to_csv(f"{INDEX_DATASET_PATH}/{data_type}/label_1_day.csv", index=False)
+    index_label_1_day.to_csv(f"{INDEX_DATASET_PATH}/{data_type}/1_day_label.csv", index=False)
     # Assert for detection
     if data_type == "Train":
         DAYS = TRAIN_DAYS

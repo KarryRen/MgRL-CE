@@ -15,6 +15,11 @@ All in all, after downloading the file from the web, you need:
     1. Change and Create the `PATH` based on your situation.
     2. Run this file by `python lob_preprocess.py` and you will ge the following directory structure:
         FUTURE_LOB_DATASET_PATH/
+            ├── 1_day_label
+                ├── 1_minute_label_20220104.csv
+                ├── 1_minute_label_20220105.csv
+                ├── ...
+                └── 1_minute_label_20221230.csv
             ├── 0.5_seconds
                 ├── 05_seconds_20220104.csv
                 ├── 05_seconds_20220105.csv

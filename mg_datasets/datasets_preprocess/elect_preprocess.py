@@ -46,6 +46,7 @@ All in all, after downloading the file from the web, you need:
     3. Run this file by `python elect_preprocess.py` and you will ge the following directory structure:
         UCI_ELECT_DATASET_PATH/
             ├── Train
+                ├── 1_day_label.csv
                 ├── 15_minutes.csv
                 ├── 1_hour.csv
                 ├── 4_hours.csv
