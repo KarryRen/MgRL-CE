@@ -115,7 +115,7 @@ for file_idx, lob_file in enumerate(lob_file_list):  # Computing other granulari
     lob_data_05_second[:, :, 1, 1] = ask_volume[:, :, 0]  # ask volume
     lob_data_05_second = lob_data_05_second.reshape(TICK_NUM, -1)  # reshape to (28800, 20)
     lob_data_05_second_df = pd.DataFrame(lob_data_05_second, columns=LOB_COLUMNS)  # construct the df
-    lob_data_05_second_df.to_csv(f"{LOB_05_SECOND_FILE_PATH}/05_seconds_{lob_file}", index=False)  # save the df
+    lob_data_05_second_df.to_csv(f"{LOB_05_SECOND_FILE_PATH}/0.5_seconds_{lob_file}", index=False)  # save the df
     print(f"   - 1. FINISH 0.5 SECONDS !!!")
 
     # - 2.2 compute the 1 seconds lob data, align by price during 2 ticks and sum volume
