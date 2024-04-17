@@ -34,7 +34,7 @@ class ELECTDataset(data.Dataset):
         """ The init function of UCIDataset. Will READ all `.csv` files of multi-granularity data to memory.
         For this dataset, the task is predicting the daily consumption of each client, so let the daily data be core !!
 
-        :param root_path: the root path of UCI electricity dataset.
+        :param root_path: the root path of UCI electricity dataset
         :param data_type: the data_type of dataset, you have 3 choices now:
             - "Train" for train dataset
             - "Valid" for valid dataset
@@ -88,7 +88,7 @@ class ELECTDataset(data.Dataset):
     def __getitem__(self, idx: int):
         """ Get the item based on idx, and lag the item.
 
-        return: item_data (one day of one client)
+        return: item_data (one lagged day sample of one client)
             - `mg_features`: the multi-granularity (5 kinds of granularity) features of UCI electricity dataset, the format is:
                 {
                     "g1": , shape=(time_steps, 1, 1), # feature_1_day
@@ -107,12 +107,12 @@ class ELECTDataset(data.Dataset):
         day_idx = idx % self.total_day_nums  # get the day index to locate the day of daily data
         hour_12_idx = (day_idx + 1) * 2 - 1  # get the 12 hours index
         hour_4_idx = (day_idx + 1) * 6 - 1  # get the 4 hours index
-        hour_1_idx = (day_idx + 1) * 24 - 1  # get the 1 hour idx
-        minute_15_idx = (day_idx + 1) * 96 - 1  # get the 15 minutes idx
+        hour_1_idx = (day_idx + 1) * 24 - 1  # get the 1-hour index
+        minute_15_idx = (day_idx + 1) * 96 - 1  # get the 15 minutes index
 
         # ---- Get the multi-granularity features, label and weight ---- #
         # feature dict, each item is a list of ndarray with shape=(time_steps, feature_shape)
-        mg_features_dict = {"g1": [], "g2": [], "g3": [], "g4": [], "g5": []}
+        mg_features_dict = {"g1": None, "g2": None, "g3": None, "g4": None, "g5": None}
         # meaningless data, features are made to all zeros, erasing the front and tail data
         if day_idx < self.T - 1 or day_idx >= self.total_day_nums - 1:
             # set features, all zeros, shape is different from granularity to granularity
