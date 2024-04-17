@@ -112,7 +112,7 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
     python3 index_preprocess.py
     ```
   
-  - The `torch.Dataset` code is in `index_dataset.py`, HERE !
+  - The `torch.Dataset` code is in `index_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/mg_datasets/index_dataset.py) !
 
 
 
