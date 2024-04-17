@@ -23,6 +23,11 @@ Because I want to make the code clear and beautiful, so I need you to do some di
 
 During the preprocessing, we wil do operations by the following steps:
     1. Change the `PATH` based on your situation.
+    2. Split to Train & Valid & Test, and save the 1_minute.csv.
+    3. Down-granularity algorithm (5-minutes, 15-minutes, 1-hour and 1-day) csi300 index data.
+
+All in all, after downloading the file from the web, you need:
+    1. Change and Create the `PATH` based on your situation.
     2. Run this file by `python index_preprocess.py` and you will ge the following directory structure:
         INDEX_DATASET_PATH/
             ├── Train
