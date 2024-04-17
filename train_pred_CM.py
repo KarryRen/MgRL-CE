@@ -27,6 +27,8 @@ import argparse
 
 from utils import fix_random_seed, load_best_model
 from mg_datasets.elect_dataset import ELECTDataset
+from mg_datasets.lob_dataset import LOBDataset
+from mg_datasets.index_dataset import INDEXDataset
 from models.comparison_methods.gru import GRUNet
 from models.loss import MSE_Loss
 from models.metrics import r2_score, corr_score, rmse_score, mae_score
@@ -45,7 +47,7 @@ if args.dataset == "elect":  # the UCI electricity dataset.
     import configs.elect_config as config
 elif args.dataset == "lob":  # the Future LOB dataset
     import configs.lob_config as config
-elif args.dataset == "lob":  # the CSI300 index dataset
+elif args.dataset == "index":  # the CSI300 index dataset
     import configs.index_config as config
 else:
     raise TypeError(args.dataset)
@@ -75,14 +77,24 @@ def train_valid_model() -> None:
     logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
     # make the dataset and dataloader of training
     logging.info(f"**** TRAINING DATASET & DATALOADER ****")
-    if args.dataset == "elect":  # The UCI electricity dataset.
+    if args.dataset == "elect":  # the UCI electricity dataset.
         train_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=config.TIME_STEPS)
+    elif args.dataset == "lob":  # the Future LOB dataset
+        train_dataset = LOBDataset(root_path=config.LOB_DATASET_PATH,
+                                   start_date=config.TRAIN_START_DATE, end_date=config.TRAIN_END_DATE, need_norm=config.NEED_NORM)
+    elif args.dataset == "index":  # the CSI300 index dataset
+        train_dataset = INDEXDataset(root_path=config.INDEX_DATASET_PATH, data_type="Train", need_norm=config.NEED_NORM)
     else:
         raise TypeError(args.dataset)
     train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)  # the train dataloader
     logging.info(f"**** VALID DATASET & DATALOADER ****")
-    if args.dataset == "elect":  # The UCI electricity dataset.
+    if args.dataset == "elect":  # the UCI electricity dataset.
         valid_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=config.TIME_STEPS)
+    elif args.dataset == "lob":  # the Future LOB dataset
+        valid_dataset = LOBDataset(root_path=config.LOB_DATASET_PATH,
+                                   start_date=config.VALID_START_DATE, end_date=config.VALID_END_DATE, need_norm=config.NEED_NORM)
+    elif args.dataset == "index":  # the CSI300 index dataset
+        valid_dataset = INDEXDataset(root_path=config.INDEX_DATASET_PATH, data_type="Valid", need_norm=config.NEED_NORM)
     else:
         raise TypeError(args.dataset)
     valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the valid dataloader
@@ -262,8 +274,13 @@ def pred_model(verbose: bool = False) -> None:
     logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
     # make the dataset and dataloader of test
     logging.info(f"**** TEST DATASET & DATALOADER ****")
-    if args.dataset == "elect":  # The UCI electricity dataset.
+    if args.dataset == "elect":  # the UCI electricity dataset.
         test_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=config.TIME_STEPS)
+    elif args.dataset == "lob":  # the Future LOB dataset
+        test_dataset = LOBDataset(root_path=config.LOB_DATASET_PATH,
+                                  start_date=config.TEST_START_DATE, end_date=config.TEST_END_DATE, need_norm=config.NEED_NORM)
+    elif args.dataset == "index":  # the CSI300 index dataset
+        test_dataset = INDEXDataset(root_path=config.INDEX_DATASET_PATH, data_type="Test", need_norm=config.NEED_NORM)
     else:
         raise TypeError(args.dataset)
     test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
@@ -311,7 +328,7 @@ def pred_model(verbose: bool = False) -> None:
         # build up the images save directory
         if not os.path.exists(config.IMAGE_SAVE_PATH):
             os.makedirs(config.IMAGE_SAVE_PATH)
-        client_num, day_num = test_dataset.total_client_nums, test_dataset.total_day_nums  # get the client num & day_num
+        client_num, day_num = test_dataset.total_client_num, test_dataset.total_day_nums  # get the client num & day_num
         scale_adj_df = test_dataset.elect_data_scale_adj_df  # get the scale adjustment dataframe
         client_labels_array = labels_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
         client_predictions_array = predictions_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
