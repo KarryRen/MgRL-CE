@@ -35,7 +35,7 @@ After the preprocessing raw Future LOB dataset (download from Qlib following `RE
 
 In this dataset:
     - during `__init__()`, we will READ target `.csv` files of multi-granularity data to memory.
-    - during `__getitem__()`, we will READ 1 item with multi-granularity data and lag it by `MINUTE`.
+    - during `__getitem__()`, we will READ 1 item with multi-granularity data and lag it by `MINUTE` and do the Z-Score normalization.
 
 """
 import os
@@ -163,6 +163,8 @@ class LOBDataset(data.Dataset):
             label = self.label_list[date_idx][minute_idx].reshape(1)
             # set `the weight = 1`, shape=(1, )
             weight = np.ones(1)
+
+        # ---- Do the Z-Score Normalization ---- #
 
         # ---- Construct item data ---- #
         item_data = {
