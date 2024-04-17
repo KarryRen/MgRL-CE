@@ -92,7 +92,7 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
     # ---- Step 1. Build up the Cython file ---- #
     sh build_cython.sh
     # ---- Step 2. Preprocess the LOB dataset ---- #
-    python3.8 lob_preprocess.py
+    python lob_preprocess.py
     ```
     
   - The `torch.Dataset` code is in `lob_dataset.py`, HERE !
@@ -104,7 +104,7 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
   - The preprocess code is in `index_preprocess.py`, HERE ! You can **RUN** it by:
   
     ```python
-    
+    python3 index_preprocess.py
     ```
   
   - The `torch.Dataset` code is in `index_dataset.py`, HERE !

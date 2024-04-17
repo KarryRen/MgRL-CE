@@ -113,4 +113,4 @@ for data_type in ["Train", "Valid", "Test"]:
     assert len(index_data_1_min) == DAYS * 240, f"{data_type} 1 minute error !!"
     assert len(index_label_1_day) == DAYS, f"{data_type} 1 day labels error !!"
 
-print("************************** FINISH UCI ELECTRICITY DATASET PREPROCESSING **************************")
+print("************************** FINISH CSI300 INDEX DATASET PREPROCESSING **************************")

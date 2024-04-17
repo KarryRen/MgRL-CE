@@ -231,3 +231,5 @@ for file_idx, lob_file in enumerate(lob_file_list):  # Computing other granulari
     lob_label_1_minute_df = pd.DataFrame(lob_label_1_minute, columns=["1_minute_label"]).fillna(0)  # construct the df
     lob_label_1_minute_df.to_csv(f"{LOB_1_MINUTE_LABEL_PATH}/1_minute_label_{lob_file}", index=False)
     print(f"   - 6. FINISH 1 MINUTE LABEL !!!")
+
+print("************************** FINISH CSI300 INDEX DATASET PREPROCESSING **************************")

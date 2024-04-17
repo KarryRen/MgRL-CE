@@ -13,3 +13,4 @@
 - Finish MgRL and separate the `FeatureEncoder`. 
 - Add the comparison method: GRU.
 - Finish the MgRL_CE and separate the `FeatureEncoderCE`.
+- Finish all preprocess code for 3 Datasets.
