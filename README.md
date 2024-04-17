@@ -97,7 +97,7 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
     python lob_preprocess.py
     ```
     
-  - The `torch.Dataset` code is in `lob_dataset.py`, HERE !
+  - The `torch.Dataset` code is in `lob_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/mg_datasets/lob_dataset.py) !
   
 - **CSI300 index dataset (INDEX)**.
   
