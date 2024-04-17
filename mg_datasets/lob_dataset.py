@@ -189,6 +189,7 @@ class LOBDataset(data.Dataset):
 if __name__ == "__main__":  # a demo using LOBDataset
     LOB_DATASET_PATH = "../../Data/Future_LOB_dataset/IF_M0"
     data_set = LOBDataset(LOB_DATASET_PATH, start_date="20220901", end_date="20221031", time_steps=2, need_norm=False)
+
     for i in range(1, len(data_set) - 1):
         item_data = data_set[i]
         g1_data = item_data["mg_features"]["g1"]

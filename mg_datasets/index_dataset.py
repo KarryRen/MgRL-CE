@@ -31,7 +31,7 @@ import numpy as np
 class INDEXDataset(data.Dataset):
     """ The torch.Dataset of CSI300 index dataset. """
 
-    def __init__(self, root_path: str, data_type: str = "Train", time_steps: int = 2):
+    def __init__(self, root_path: str, data_type: str = "Train", time_steps: int = 2, need_norm: bool = True):
         """ The init function of INDEXDataset. Will READ all `.csv` files of multi-granularity data to memory.
         For this dataset, the task is predicting the next day index return, so let the daily data be core !!
 
@@ -41,6 +41,7 @@ class INDEXDataset(data.Dataset):
             - "Valid" for valid dataset
             - "Test" for test dataset
         :param time_steps: the time steps (lag steps)
+        :param need_norm: whether to normalize the data
 
         """
 
@@ -49,6 +50,7 @@ class INDEXDataset(data.Dataset):
         # ---- Step 0. Set the params ---- #
         self.T = time_steps  # time steps (seq len)
         needed_features = ["OPEN", "HIGH", "LOW", "CLOSE", "VOLUME", "AMT"]
+        self.need_norm = need_norm  # whether to normalize the lob data
 
         # ---- Step 2. Read the label and feature ---- #
         self.label = pd.read_csv(f"{root_path}/{data_type}/1_day_label.csv")[["LABEL"]].values  # label, shape=(T, 1)
@@ -126,6 +128,20 @@ class INDEXDataset(data.Dataset):
             weight = np.ones(1)
 
         # ---- Do the Z-Score Normalization  ---- #
+        if self.need_norm:
+            for g in ["g1", "g2", "g3", "g4", "g5"]:
+                k_g = mg_features_dict[g].shape[1]  # get the k^g
+                mg_feature = mg_features_dict[g]  # get feature
+                # norm the price
+                price_mean = mg_feature[:, :, :4].mean()  # compute the mean, shape=(1)
+                price_std = mg_feature[:, :, :4].std()  # compute the std, shape=(1)
+                mg_feature[:, :, :4] = (mg_feature[:, :, :4] - price_mean) / (price_std + 1e-5)
+                # norm the volume & amt
+                va_mean = mg_feature[:, :, 4:].mean(axis=(0, 1), keepdims=True)  # compute the mean, shape=(1, 1, 2)
+                va_std = mg_feature[:, :, 4:].std(axis=(0, 1), keepdims=True)  # compute the mean, shape=(1, 1, 2)
+                mg_feature[:, :, 4:] = (mg_feature[:, :, 4:] - va_mean) / (va_std + 1e-5)
+                # set back
+                mg_features_dict[g] = mg_feature
 
         # ---- Construct item data ---- #
         item_data = {
@@ -139,13 +155,15 @@ class INDEXDataset(data.Dataset):
 
 if __name__ == "__main__":  # a demo using INDEXDataset
     INDEX_DATASET_PATH = "../../Data/CSI300_index_dataset/dataset"
-    data_set = INDEXDataset(INDEX_DATASET_PATH, data_type="Train", time_steps=2)
+
+    data_set = INDEXDataset(INDEX_DATASET_PATH, data_type="Train", time_steps=2, need_norm=False)
     for i in range(1, len(data_set) - 2):
-        g1_data = data_set[i]["mg_features"]["g1"]
-        g2_data = data_set[i]["mg_features"]["g2"]
-        g3_data = data_set[i]["mg_features"]["g3"]
-        g4_data = data_set[i]["mg_features"]["g4"]
-        g5_data = data_set[i]["mg_features"]["g5"]
+        item_data = data_set[i]
+        g1_data = item_data["mg_features"]["g1"]
+        g2_data = item_data["mg_features"]["g2"]
+        g3_data = item_data["mg_features"]["g3"]
+        g4_data = item_data["mg_features"]["g4"]
+        g5_data = item_data["mg_features"]["g5"]
         g_data_list = [g1_data, g2_data, g3_data, g4_data]
         for g_idx, g_data in enumerate(g_data_list):
             assert (g_data[:, 0, 0] == g5_data[:, 0, 0]).all(), f"g{(g_idx + 1)} error !! OPEN error !!"
@@ -157,5 +175,17 @@ if __name__ == "__main__":  # a demo using INDEXDataset
             assert ((g_data[:, :, 5].sum(axis=1) - g5_data[:, :, 5].sum(axis=1)) / g5_data[:, :, 5].sum(
                 axis=1) < 1e-3).all(), f"g{g_idx + 1} error !! AMT error !!"
         print(g1_data, g2_data, g3_data, g4_data, g5_data)
-        print(data_set[i]["label"])
+        print(item_data["label"])
+        break
+
+    data_set = INDEXDataset(INDEX_DATASET_PATH, data_type="Train", time_steps=2)
+    for i in range(1, len(data_set) - 2):
+        item_data = data_set[i]
+        g1_data = item_data["mg_features"]["g1"]
+        g2_data = item_data["mg_features"]["g2"]
+        g3_data = item_data["mg_features"]["g3"]
+        g4_data = item_data["mg_features"]["g4"]
+        g5_data = item_data["mg_features"]["g5"]
+        print(g1_data, g2_data, g3_data, g4_data, g5_data)
+        print(item_data["label"])
         break
