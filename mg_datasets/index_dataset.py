@@ -5,7 +5,7 @@
 """ The torch.Dataset of CSI300 index dataset.
 
 After the preprocessing raw CSI300 index dataset (download from web) by
-    run `python index_preprocess.py` you will get the following UCI electricity dataset directory:
+    run `python index_preprocess.py` you will get the following CSI300 index dataset directory:
         INDEX_DATASET_PATH/
             ├── Train
                ├── 1_day_label.csv
@@ -32,7 +32,7 @@ class INDEXDataset(data.Dataset):
     """ The torch.Dataset of CSI300 index dataset. """
 
     def __init__(self, root_path: str, data_type: str = "Train", time_steps: int = 2):
-        """ The init function of ELECTDataset. Will READ all `.csv` files of multi-granularity data to memory.
+        """ The init function of INDEXDataset. Will READ all `.csv` files of multi-granularity data to memory.
         For this dataset, the task is predicting the next day index return, so let the daily data be core !!
 
         :param root_path: the root path of CSI300 index dataset
