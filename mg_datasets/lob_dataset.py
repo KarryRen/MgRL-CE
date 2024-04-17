@@ -159,9 +159,9 @@ class LOBDataset(data.Dataset):
                                          "feature_1_second"][date_idx][second_1_idx - self.T * 60 + 1:second_1_idx + 1].reshape(self.T, 60, 20)
             mg_features_dict["g5"] = self.mg_features_list_dict[
                                          "feature_0.5_seconds"][date_idx][second_05_idx - self.T * 120 + 1:second_05_idx + 1].reshape(self.T, 120, 20)
-            # get the label, shape=(1)
+            # get the label, shape=(1, )
             label = self.label_list[date_idx][minute_idx].reshape(1)
-            # set `the weight = 1`, shape=(1)
+            # set `the weight = 1`, shape=(1, )
             weight = np.ones(1)
 
         # ---- Construct item data ---- #
@@ -177,7 +177,7 @@ class LOBDataset(data.Dataset):
 if __name__ == "__main__":  # a demo using LOBDataset
     LOB_DATASET_PATH = "../../Data/Future_LOB_dataset/IF_M0"
     data_set = LOBDataset(LOB_DATASET_PATH, start_date="20220901", end_date="20221031", time_steps=2)
-    for i in range(len(data_set)):
+    for i in range(1, len(data_set) - 1):
         g1_data = data_set[i]["mg_features"]["g1"]
         g2_data = data_set[i]["mg_features"]["g2"]
         g3_data = data_set[i]["mg_features"]["g3"]
@@ -191,6 +191,6 @@ if __name__ == "__main__":  # a demo using LOBDataset
         assert ((g3_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g3 error !! ask 1 price not min !!"
         assert ((g4_data[:, :, 0].max(axis=1) - g5_data[:, :, 0].max(axis=1)) < 1e-3).all(), f"g4 error !! bid 1 price not max !!"
         assert ((g4_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g4 error !! ask 1 price not min !!"
-        print(data_set[i]["label"].shape)
+        print(g1_data, g2_data, g3_data, g4_data, g5_data)
+        print(data_set[i]["label"])
         break
-    print(data_set[-3])

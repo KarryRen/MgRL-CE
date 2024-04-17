@@ -62,7 +62,6 @@ class INDEXDataset(data.Dataset):
 
         # ---- Step 3. Get the total num of date
         self.total_day_num = len(self.label)  # the total number of days
-        print(self.mg_features_list_dict)
 
     def __len__(self):
         """ Get the length of dataset. """
@@ -97,13 +96,13 @@ class INDEXDataset(data.Dataset):
         # feature dict, each item is a list of ndarray with shape=(time_steps, feature_shape)
         mg_features_dict = {"g1": None, "g2": None, "g3": None, "g4": None, "g5": None}
         # meaningless data, features are made to all zeros, erasing the front and tail data
-        if day_idx < self.T - 1 or day_idx >= self.total_day_num - 1:
+        if day_idx < self.T - 1 or day_idx >= self.total_day_num - 2:
             # set features, all zeros, shape is different from granularity to granularity
-            mg_features_dict["g1"] = np.zeros((self.T, 1, 1))  # 1_day granularity
-            mg_features_dict["g2"] = np.zeros((self.T, 2, 1))  # 12_hours granularity
-            mg_features_dict["g3"] = np.zeros((self.T, 6, 1))  # 4_hours granularity
-            mg_features_dict["g4"] = np.zeros((self.T, 24, 1))  # 1_hour granularity
-            mg_features_dict["g5"] = np.zeros((self.T, 96, 1))  # 15_minutes granularity
+            mg_features_dict["g1"] = np.zeros((self.T, 1, 6))  # 1_day granularity
+            mg_features_dict["g2"] = np.zeros((self.T, 4, 6))  # 1_hour granularity
+            mg_features_dict["g3"] = np.zeros((self.T, 16, 6))  # 15_minutes granularity
+            mg_features_dict["g4"] = np.zeros((self.T, 48, 6))  # 5_minutes granularity
+            mg_features_dict["g5"] = np.zeros((self.T, 240, 6))  # 1_minute granularity
             # `label = 0.0` for loss computation, shape=(1)
             label = np.zeros(1)
             # `weight = 0.0` means data is meaningless, shape=(1)
@@ -111,19 +110,19 @@ class INDEXDataset(data.Dataset):
         # meaningful data, load the true feature and label
         else:
             # load features, shape is based on granularity, (T, K^g, D)
-            mg_features_dict["g1"] = self.mg_features_list_dict["feature_1_day"][client_idx][day_idx - self.T + 1:
-                                                                                             day_idx + 1].reshape(self.T, 1, 1)
-            mg_features_dict["g2"] = self.mg_features_list_dict["feature_12_hours"][client_idx][hour_12_idx - self.T * 2 + 1:
-                                                                                                hour_12_idx + 1].reshape(self.T, 2, 1)
-            mg_features_dict["g3"] = self.mg_features_list_dict["feature_4_hours"][client_idx][hour_4_idx - self.T * 6 + 1:
-                                                                                               hour_4_idx + 1].reshape(self.T, 6, 1)
-            mg_features_dict["g4"] = self.mg_features_list_dict["feature_1_hour"][client_idx][hour_1_idx - self.T * 24 + 1:
-                                                                                              hour_1_idx + 1].reshape(self.T, 24, 1)
-            mg_features_dict["g5"] = self.mg_features_list_dict["feature_15_minutes"][client_idx][minute_15_idx - self.T * 96 + 1:
-                                                                                                  minute_15_idx + 1].reshape(self.T, 96, 1)
-            # get the label, shape=(1)
-            label = self.label_list[client_idx][day_idx].reshape(1)
-            # set `the weight = 1`, shape=(1)
+            mg_features_dict["g1"] = self.mg_features_list_dict[
+                                         "feature_1_day"][day_idx - self.T + 1:day_idx + 1].reshape(self.T, 1, 6)
+            mg_features_dict["g2"] = self.mg_features_list_dict[
+                                         "feature_1_hour"][hour_1_idx - self.T * 4 + 1:hour_1_idx + 1].reshape(self.T, 4, 6)
+            mg_features_dict["g3"] = self.mg_features_list_dict[
+                                         "feature_15_minutes"][minute_15_idx - self.T * 16 + 1:minute_15_idx + 1].reshape(self.T, 16, 6)
+            mg_features_dict["g4"] = self.mg_features_list_dict[
+                                         "feature_5_minute"][minute_5_idx - self.T * 48 + 1:minute_5_idx + 1].reshape(self.T, 48, 6)
+            mg_features_dict["g5"] = self.mg_features_list_dict[
+                                         "feature_1_minute"][minute_1_idx - self.T * 240 + 1:minute_1_idx + 1].reshape(self.T, 240, 6)
+            # get the label, shape=(1, )
+            label = self.label[day_idx]
+            # set `the weight = 1`, shape=(1, )
             weight = np.ones(1)
 
         # ---- Construct item data ---- #
@@ -138,5 +137,23 @@ class INDEXDataset(data.Dataset):
 
 if __name__ == "__main__":  # a demo using INDEXDataset
     INDEX_DATASET_PATH = "../../Data/CSI300_index_dataset/dataset"
-    data_set = INDEXDataset(INDEX_DATASET_PATH, data_type="Test", time_steps=7)
-    print(len(data_set))
+    data_set = INDEXDataset(INDEX_DATASET_PATH, data_type="Train", time_steps=2)
+    for i in range(1, len(data_set) - 2):
+        g1_data = data_set[i]["mg_features"]["g1"]
+        g2_data = data_set[i]["mg_features"]["g2"]
+        g3_data = data_set[i]["mg_features"]["g3"]
+        g4_data = data_set[i]["mg_features"]["g4"]
+        g5_data = data_set[i]["mg_features"]["g5"]
+        g_data_list = [g1_data, g2_data, g3_data, g4_data]
+        for g_idx, g_data in enumerate(g_data_list):
+            assert (g_data[:, 0, 0] == g5_data[:, 0, 0]).all(), f"g{(g_idx + 1)} error !! OPEN error !!"
+            assert (g_data[:, :, 1].max(axis=1) == g5_data[:, :, 1].max(axis=1)).all(), f"g{(g_idx + 1)} error !! HIGH error !!"
+            assert (g_data[:, :, 2].min(axis=1) == g5_data[:, :, 2].min(axis=1)).all(), f"g{g_idx + 1} error !! LOW error !!"
+            assert (g_data[:, -1, 3] == g5_data[:, -1, 3]).all(), f"g{g_idx + 1} error !! CLOSE error !!"
+            assert ((g_data[:, :, 4].sum(axis=1) - g5_data[:, :, 4].sum(axis=1)) / g5_data[:, :, 4].sum(
+                axis=1) < 1e-3).all(), f"g{g_idx + 1} error !! VOLUME error !!"
+            assert ((g_data[:, :, 5].sum(axis=1) - g5_data[:, :, 5].sum(axis=1)) / g5_data[:, :, 5].sum(
+                axis=1) < 1e-3).all(), f"g{g_idx + 1} error !! AMT error !!"
+        print(g1_data, g2_data, g3_data, g4_data, g5_data)
+        print(data_set[i]["label"])
+        break

@@ -138,9 +138,9 @@ class ELECTDataset(data.Dataset):
                                                                                               hour_1_idx + 1].reshape(self.T, 24, 1)
             mg_features_dict["g5"] = self.mg_features_list_dict["feature_15_minutes"][client_idx][minute_15_idx - self.T * 96 + 1:
                                                                                                   minute_15_idx + 1].reshape(self.T, 96, 1)
-            # get the label, shape=(1)
+            # get the label, shape=(1, )
             label = self.label_list[client_idx][day_idx].reshape(1)
-            # set `the weight = 1`, shape=(1)
+            # set `the weight = 1`, shape=(1, )
             weight = np.ones(1)
 
         # ---- Construct item data ---- #
@@ -155,8 +155,8 @@ class ELECTDataset(data.Dataset):
 
 if __name__ == "__main__":  # a demo using UCIDataset
     UCI_ELECT_DATASET_PATH = "../../Data/UCI_electricity_dataset/dataset"
-    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=7)
-    for i in range(len(data_set)):
+    data_set = ELECTDataset(UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=2)
+    for i in range(1, len(data_set) - 1):
         print(i)
         g1_data = data_set[i]["mg_features"]["g1"]
         g2_data = data_set[i]["mg_features"]["g2"]
@@ -167,3 +167,6 @@ if __name__ == "__main__":  # a demo using UCIDataset
         assert (g2_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g2 error !! {g2_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
         assert (g3_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g3 error !! {g3_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
         assert (g4_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g4 error !! {g4_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
+        print(g1_data, g2_data, g3_data, g4_data, g5_data)
+        print(data_set[i]["label"])
+        break
