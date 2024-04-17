@@ -79,19 +79,19 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
   >
   > ATTENTION: During the preprocessing I have also **changed the unit of data from kW*15min to kWh** and **adjusted the scale of data distribution by dividing each client data by their daily electricity consumption on the first day**.
   
-  - The preprocess code is in `elect_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/mg_datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
+  - The preprocess code is in `elect_preprocess.py`, [**HERE**](mg_datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
   
     ```shell
     python3 elect_preprocess.py
     ```
   
-  - The  `torch.Dataset` code is in `elect_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/mg_datasets/elect_dataset.py) ! 
+  - The  `torch.Dataset` code is in `elect_dataset.py`, [**HERE**](mg_datasets/elect_dataset.py) ! 
   
 - **Future Limit Order Book dataset (LOB)**. 
   
   > Similarly, the LOB dataset is divided in chronological order: the training, validation, and test sets cover 8, 2, and 2 months, respectively. In this study, the original LOB data is modeled directly, i.e., only the **20 basic features of price and volume** from 1 to 5 ticks in both ask and bid directions are used, and no other factors are constructed manually. The objective is to **predict the minute frequency return of future**, i.e., $y=log(MidPrice_{T+1}/MidPrice_{T})*10^{4}$,  where $MidPrice_{t} = (Price_t^{ask} + Price_t^{bid}) / 2$ denotes the average of the 1 level ask price and bid price in the minute $t$. There are **5 types of input feature granularity**: 1 minute (coarsest), 30 seconds, 10 seconds, 1 second and 0.5 seconds (finest). All feature data were normalized by the Z-Score method.
   
-  - The preprocess code is in `lob_preprocess.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/tree/main/mg_datasets/datasets_preprocess/lob_preprocess) ! You can **RUN** it by：
+  - The preprocess code is in `lob_preprocess.py`, [**HERE**](mg_datasets/datasets_preprocess/lob_preprocess) ! You can **RUN** it by：
   
     ```shell
     # ---- Step 1. Build up the Cython file ---- #
@@ -100,19 +100,19 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
     python lob_preprocess.py
     ```
     
-  - The `torch.Dataset` code is in `lob_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/mg_datasets/lob_dataset.py) !
+  - The `torch.Dataset` code is in `lob_dataset.py`, [**HERE**](mg_datasets/lob_dataset.py) !
   
 - **CSI300 index dataset (INDEX)**.
   
   > The training, validation, and test sets span 6 years (2016 to 2021), 1 year (2022), and 1 year (2023), respectively, in chronological order.  **Six commonly used market factors** are extracted as feature inputs, including high price, opening price, low price, closing price, volume and turnover, and all features are normalized by Z-Score method before inputting into the model. This paper also **chooses the daily return of the stock as the prediction target**, i.e., $y=(P_{T+2}/P_{T+1}-1)\times100$ where $P_t$ stands for the closing price of the CSI 300 stock index on the $t$-th day. This dataset also has **5 feature granularities**: 1 day (coarsest), 1 hour, 15 minutes, 5 minutes, and 1 minute (finest).
   
-  - The preprocess code is in `index_preprocess.py`, HERE ! You can **RUN** it by:
+  - The preprocess code is in `index_preprocess.py`, [**HERE**](mg_datasets/datasets_preprocess/index_preprocess) ! You can **RUN** it by:
   
     ```python
     python3 index_preprocess.py
     ```
   
-  - The `torch.Dataset` code is in `index_dataset.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/mg_datasets/index_dataset.py) !
+  - The `torch.Dataset` code is in `index_dataset.py`, [**HERE**](mg_datasets/index_dataset.py) !
 
 
 
@@ -122,9 +122,9 @@ There are some **differences** between the different datasets **during Training 
 
 - **UCI electricity dataset**. 
   
-  - You should firstly set the config file of UCI electricity dataset in `elect_config.py`, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/configs/elect_config.py) !
+  - You should firstly set the config file of UCI electricity dataset in `elect_config.py`, [**HERE**](configs/elect_config.py) !
   
-  - The Training and Prediction code is in ` train_pred_MgRL.py `, [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/train_pred_MgRL.py) !  You can **RUN** it by:
+  - The Training and Prediction code is in ` train_pred_MgRL.py `, [**HERE**](main/train_pred_MgRL.py) !  You can **RUN** it by:
   
      ```shell
      # Run the basic Multi-Granularity Residual Learning Net: MgRLNet.
@@ -144,8 +144,8 @@ This study compares the proposed method with numerous other methods. The competi
 
 **GROUP 1. General Time Series Forecasting Models (using single granularity)**
 
-- GRU: [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/models/comparison_methods/gru.py). [**Kyunghyun Cho, et al. 2014**](https://arxiv.org/pdf/1406.1078.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_gru.py#L294).
-- LSTM: [**HERE**](https://github.com/KarryRen/MgRL-CE/blob/main/models/comparison_methods/lstm.py). [**Sepp Hochreiter, et al. Neural computation 1997**](https://blog.xpgreat.com/file/lstm.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_lstm.py#L286).
+- GRU: [**HERE**](models/comparison_methods/gru.py). [**Kyunghyun Cho, et al. 2014**](https://arxiv.org/pdf/1406.1078.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_gru.py#L294).
+- LSTM: [**HERE**](models/comparison_methods/lstm.py). [**Sepp Hochreiter, et al. Neural computation 1997**](https://blog.xpgreat.com/file/lstm.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_lstm.py#L286).
 - Transformer, [**Ashish Vaswani, et al. NeurIPS 2017**](https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_transformer.py#L258).
 - DeepAR, [**Salinas D, et al. Int. J. Forecasting 2020**](http://162.14.120.130/机器学习-时间序列分析/deepAR.pdf), [**Ref. Code**](https://github.com/husnejahan/DeepAR-pytorch/tree/master).
 - Informer, [**Zhou H, et al. AAAI 2021**](https://www.researchgate.net/publication/347125466_Informer_Beyond_Efficient_Transformer_for_Long_Sequence_Time-Series_Forecasting), [**Ref. Code**](https://github.com/zhouhaoyi/Informer2020/tree/main).
