@@ -71,7 +71,7 @@ class LOBDataset(data.Dataset):
         # ---- Step 0. Set the params ---- #
         self.T = time_steps  # time steps (seq len)
         self.date_num, self.total_minute_num = 0, 240  # the date_num and tick_num
-        self.need_norm = need_norm  # whether to need normalize the lob data
+        self.need_norm = need_norm  # whether to normalize the lob data
 
         # ---- Step 1. Define the feature and label list ---- #
         self.label_list = []  # label list, each item is a daily label array (T, 1) for one date
@@ -205,7 +205,7 @@ if __name__ == "__main__":  # a demo using LOBDataset
         assert ((g4_data[:, :, 0].max(axis=1) - g5_data[:, :, 0].max(axis=1)) < 1e-3).all(), f"g4 error !! bid 1 price not max !!"
         assert ((g4_data[:, :, 2].min(axis=1) - g5_data[:, :, 2].min(axis=1)) < 1e-3).all(), f"g4 error !! ask 1 price not min !!"
         print(g1_data, g2_data, g3_data, g4_data, g5_data)
-        # print(data_set[i]["label"])
+        # print(item_data["label"])
         break
 
     data_set = LOBDataset(LOB_DATASET_PATH, start_date="20220901", end_date="20221031", time_steps=2, need_norm=True)
@@ -217,5 +217,5 @@ if __name__ == "__main__":  # a demo using LOBDataset
         g4_data = item_data["mg_features"]["g4"]
         g5_data = item_data["mg_features"]["g5"]
         print(g1_data, g2_data, g3_data, g4_data, g5_data)
-        print(data_set[i]["label"])
+        print(item_data["label"])
         break
