@@ -102,9 +102,9 @@ for data_type in ["Train", "Valid", "Test"]:
     })
     index_data_1_day.to_csv(f"{INDEX_DATASET_PATH}/{data_type}/1_day.csv", index=False)
     # Compute 1-day label
-    close_price = index_data_1_day["CLOSE"]
+    mid_price = (index_data_1_day["HIGH"] + index_data_1_day["LOW"]) / 2.0
     # set the label
-    index_label_1_day_data = ((close_price.shift(-2) / close_price.shift(-1)).values - 1) * 100.0
+    index_label_1_day_data = ((mid_price.shift(-2) / mid_price.shift(-1)).values - 1) * 100.0
     # construct the df
     index_label_1_day = pd.DataFrame(index_label_1_day_data, columns=["LABEL"]).fillna(0)  # construct the df
     index_label_1_day["SYMBOL"] = index_data_1_day["SYMBOL"]

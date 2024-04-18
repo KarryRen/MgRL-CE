@@ -105,7 +105,7 @@ def train_valid_model() -> None:
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     # the model
     if METHOD_NAME == "gru":
-        model = GRUNet(input_size=config.INPUT_SIZE, device=device)
+        model = GRUNet(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, device=device)
     else:
         raise TypeError(METHOD_NAME)
     # the loss function
