@@ -7,7 +7,7 @@
 # ************************************************************************************ #
 # ********************************** BASIC SETTINGS ********************************** #
 # ************************************************************************************ #
-RANDOM_SEED = [0, 42, 913, 3407][2]  # the random seed
+RANDOM_SEED = [0, 42, 913][0]  # the random seed
 SAVE_PATH = f"exp_index/rs_{RANDOM_SEED}/"  # the save path of CSI300 index experiments
 LOG_FILE = SAVE_PATH + "log.log"  # the log file path
 MODEL_SAVE_PATH = SAVE_PATH + "trained_models/"  # the saving path of models

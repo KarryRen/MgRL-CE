@@ -3,7 +3,11 @@
 # @Author  : Karry Ren
 
 """ Training and Prediction code of the following comparison methods for 3 datasets:
-    - 2 Layer GRU
+    - GRU
+    - LSTM
+    - Transformer
+    - SFM
+    - ALSTM
 
 Training, Validation and Prediction be together !
     Here are two functions:
@@ -29,16 +33,29 @@ from utils import fix_random_seed, load_best_model
 from mg_datasets.elect_dataset import ELECTDataset
 from mg_datasets.lob_dataset import LOBDataset
 from mg_datasets.index_dataset import INDEXDataset
-from models.comparison_methods.gru import GRUNet
+from models.comparison_methods.gru import GRU_Net
+from models.comparison_methods.lstm import LSTM_Net
+from models.comparison_methods.sfm import SFM_Net
+from models.comparison_methods.alstm import ALSTM_Net
+from models.comparison_methods.transformer import Transformer_Net
 from models.loss import MSE_Loss
 from models.metrics import r2_score, corr_score, rmse_score, mae_score
 
 # ---- Init the args parser ---- #
 parser = argparse.ArgumentParser()
-parser.add_argument("--dataset", type=str, default="elect",
-                    help="The dataset name. You have only 3 choices: `elect`, `lob`, `index`.")
-parser.add_argument("--method", type=str, default="gru",
-                    help="The dataset name. You have only 3 choices: `elect`.")
+parser.add_argument(
+    "--dataset", type=str, default="elect",
+    help="The dataset name. You have only 3 choices: `elect`, `lob`, `index`."
+)
+parser.add_argument(
+    "--method", type=str, default="gru",
+    help="The dataset name. You have only 3 choices now: \n"
+         "- `gru` for the Comparison Methods 1: GRU, \n"
+         "- `lstm` for the Comparison Methods 2: LSTM, \n"
+         "- `transformer` for the Comparison Methods 3: Transformer.\n"
+         "- `sfm` for the Comparison Methods 6: SFM. "
+         "- `alstm` for the Comparison Methods 7: ALSTM."
+)
 args = parser.parse_args()
 
 # ---- Based on the args adjust the settings ---- #
@@ -80,8 +97,10 @@ def train_valid_model() -> None:
     if args.dataset == "elect":  # the UCI electricity dataset.
         train_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=config.TIME_STEPS)
     elif args.dataset == "lob":  # the Future LOB dataset
-        train_dataset = LOBDataset(root_path=config.LOB_DATASET_PATH,
-                                   start_date=config.TRAIN_START_DATE, end_date=config.TRAIN_END_DATE, need_norm=config.NEED_NORM)
+        train_dataset = LOBDataset(
+            root_path=config.LOB_DATASET_PATH,
+            start_date=config.TRAIN_START_DATE, end_date=config.TRAIN_END_DATE, need_norm=config.NEED_NORM
+        )
     elif args.dataset == "index":  # the CSI300 index dataset
         train_dataset = INDEXDataset(root_path=config.INDEX_DATASET_PATH, data_type="Train", need_norm=config.NEED_NORM)
     else:
@@ -91,8 +110,10 @@ def train_valid_model() -> None:
     if args.dataset == "elect":  # the UCI electricity dataset.
         valid_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=config.TIME_STEPS)
     elif args.dataset == "lob":  # the Future LOB dataset
-        valid_dataset = LOBDataset(root_path=config.LOB_DATASET_PATH,
-                                   start_date=config.VALID_START_DATE, end_date=config.VALID_END_DATE, need_norm=config.NEED_NORM)
+        valid_dataset = LOBDataset(
+            root_path=config.LOB_DATASET_PATH,
+            start_date=config.VALID_START_DATE, end_date=config.VALID_END_DATE, need_norm=config.NEED_NORM
+        )
     elif args.dataset == "index":  # the CSI300 index dataset
         valid_dataset = INDEXDataset(root_path=config.INDEX_DATASET_PATH, data_type="Valid", need_norm=config.NEED_NORM)
     else:
@@ -105,7 +126,18 @@ def train_valid_model() -> None:
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     # the model
     if METHOD_NAME == "gru":
-        model = GRUNet(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, device=device)
+        model = GRU_Net(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
+    elif METHOD_NAME == "lstm":
+        model = LSTM_Net(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
+    elif METHOD_NAME == "transformer":
+        model = Transformer_Net(d_feat=config.INPUT_SIZE, d_model=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
+    elif METHOD_NAME == "sfm":
+        model = SFM_Net(
+            input_dim=config.INPUT_SIZE, hidden_dim=config.ENCODING_HIDDEN_SIZE,
+            dropout_U=config.DROPOUT_RATIO, dropout_W=config.DROPOUT_RATIO, device=device
+        )
+    elif METHOD_NAME == "alstm":
+        model = ALSTM_Net(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
     else:
         raise TypeError(METHOD_NAME)
     # the loss function
@@ -117,20 +149,15 @@ def train_valid_model() -> None:
     # init the metric dict of all epochs
     epoch_metric = {
         # train & valid loss
-        "train_loss": np.zeros(config.EPOCHS),
-        "valid_loss": np.zeros(config.EPOCHS),
+        "train_loss": np.zeros(config.EPOCHS), "valid_loss": np.zeros(config.EPOCHS),
         # train & valid r2
-        "train_R2": np.zeros(config.EPOCHS),
-        "valid_R2": np.zeros(config.EPOCHS),
+        "train_R2": np.zeros(config.EPOCHS), "valid_R2": np.zeros(config.EPOCHS),
         # train & valid CORR
-        "train_CORR": np.zeros(config.EPOCHS),
-        "valid_CORR": np.zeros(config.EPOCHS),
+        "train_CORR": np.zeros(config.EPOCHS), "valid_CORR": np.zeros(config.EPOCHS),
         # train & valid RMSE
-        "train_RMSE": np.zeros(config.EPOCHS),
-        "valid_RMSE": np.zeros(config.EPOCHS),
+        "train_RMSE": np.zeros(config.EPOCHS), "valid_RMSE": np.zeros(config.EPOCHS),
         # train & valid MAE
-        "train_MAE": np.zeros(config.EPOCHS),
-        "valid_MAE": np.zeros(config.EPOCHS)
+        "train_MAE": np.zeros(config.EPOCHS), "valid_MAE": np.zeros(config.EPOCHS)
     }
     # train model epoch by epoch
     logging.info(f"***************** BEGIN TRAINING `{METHOD_NAME}` ! *****************")
@@ -172,18 +199,18 @@ def train_valid_model() -> None:
             last_step = now_step
         # note the loss and metrics for one epoch of TRAINING
         epoch_metric["train_loss"][epoch] = np.mean(train_loss_one_epoch)
-        epoch_metric["train_R2"][epoch] = r2_score(y_true=train_labels_one_epoch.cpu().numpy(),
-                                                   y_pred=train_preds_one_epoch.cpu().numpy(),
-                                                   weight=train_weights_one_epoch.cpu().numpy())
-        epoch_metric["train_CORR"][epoch] = corr_score(y_true=train_labels_one_epoch.cpu().numpy(),
-                                                       y_pred=train_preds_one_epoch.cpu().numpy(),
-                                                       weight=train_weights_one_epoch.cpu().numpy())
-        epoch_metric["train_RMSE"][epoch] = rmse_score(y_true=train_labels_one_epoch.cpu().numpy(),
-                                                       y_pred=train_preds_one_epoch.cpu().numpy(),
-                                                       weight=train_weights_one_epoch.cpu().numpy())
-        epoch_metric["train_MAE"][epoch] = mae_score(y_true=train_labels_one_epoch.cpu().numpy(),
-                                                     y_pred=train_preds_one_epoch.cpu().numpy(),
-                                                     weight=train_weights_one_epoch.cpu().numpy())
+        epoch_metric["train_R2"][epoch] = r2_score(
+            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), weight=train_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["train_CORR"][epoch] = corr_score(
+            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), weight=train_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["train_RMSE"][epoch] = rmse_score(
+            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), weight=train_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["train_MAE"][epoch] = mae_score(
+            y_true=train_labels_one_epoch.cpu().numpy(), y_pred=train_preds_one_epoch.cpu().numpy(), weight=train_weights_one_epoch.cpu().numpy()
+        )
         # - valid model
         last_step = 0
         model.eval()
@@ -207,18 +234,18 @@ def train_valid_model() -> None:
                 last_step = now_step
         # note the loss and all metrics for one epoch of VALID
         epoch_metric["valid_loss"][epoch] = np.mean(valid_loss_one_epoch)
-        epoch_metric["valid_R2"][epoch] = r2_score(y_true=valid_labels_one_epoch.cpu().numpy(),
-                                                   y_pred=valid_preds_one_epoch.cpu().numpy(),
-                                                   weight=valid_weights_one_epoch.cpu().numpy())
-        epoch_metric["valid_CORR"][epoch] = corr_score(y_true=valid_labels_one_epoch.cpu().numpy(),
-                                                       y_pred=valid_preds_one_epoch.cpu().numpy(),
-                                                       weight=valid_weights_one_epoch.cpu().numpy())
-        epoch_metric["valid_RMSE"][epoch] = rmse_score(y_true=valid_labels_one_epoch.cpu().numpy(),
-                                                       y_pred=valid_preds_one_epoch.cpu().numpy(),
-                                                       weight=valid_weights_one_epoch.cpu().numpy())
-        epoch_metric["valid_MAE"][epoch] = mae_score(y_true=valid_labels_one_epoch.cpu().numpy(),
-                                                     y_pred=valid_preds_one_epoch.cpu().numpy(),
-                                                     weight=valid_weights_one_epoch.cpu().numpy())
+        epoch_metric["valid_R2"][epoch] = r2_score(
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), weight=valid_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["valid_CORR"][epoch] = corr_score(
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), weight=valid_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["valid_RMSE"][epoch] = rmse_score(
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), weight=valid_weights_one_epoch.cpu().numpy()
+        )
+        epoch_metric["valid_MAE"][epoch] = mae_score(
+            y_true=valid_labels_one_epoch.cpu().numpy(), y_pred=valid_preds_one_epoch.cpu().numpy(), weight=valid_weights_one_epoch.cpu().numpy()
+        )
 
         # save model&model_config and metrics
         torch.save(model, config.MODEL_SAVE_PATH + f"{METHOD_NAME}_model_pytorch_epoch_{epoch}")
@@ -277,8 +304,9 @@ def pred_model(verbose: bool = False) -> None:
     if args.dataset == "elect":  # the UCI electricity dataset.
         test_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=config.TIME_STEPS)
     elif args.dataset == "lob":  # the Future LOB dataset
-        test_dataset = LOBDataset(root_path=config.LOB_DATASET_PATH,
-                                  start_date=config.TEST_START_DATE, end_date=config.TEST_END_DATE, need_norm=config.NEED_NORM)
+        test_dataset = LOBDataset(
+            root_path=config.LOB_DATASET_PATH, start_date=config.TEST_START_DATE, end_date=config.TEST_END_DATE, need_norm=config.NEED_NORM
+        )
     elif args.dataset == "index":  # the CSI300 index dataset
         test_dataset = INDEXDataset(root_path=config.INDEX_DATASET_PATH, data_type="Test", need_norm=config.NEED_NORM)
     else:
@@ -328,7 +356,7 @@ def pred_model(verbose: bool = False) -> None:
         # build up the images save directory
         if not os.path.exists(config.IMAGE_SAVE_PATH):
             os.makedirs(config.IMAGE_SAVE_PATH)
-        client_num, day_num = test_dataset.total_client_num, test_dataset.total_day_nums  # get the client num & day_num
+        client_num, day_num = test_dataset.total_client_num, test_dataset.total_day_num  # get the client num & day_num
         scale_adj_df = test_dataset.elect_data_scale_adj_df  # get the scale adjustment dataframe
         client_labels_array = labels_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
         client_predictions_array = predictions_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)

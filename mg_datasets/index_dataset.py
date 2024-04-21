@@ -130,7 +130,6 @@ class INDEXDataset(data.Dataset):
         # ---- Do the Z-Score Normalization  ---- #
         if self.need_norm:
             for g in ["g1", "g2", "g3", "g4", "g5"]:
-                k_g = mg_features_dict[g].shape[1]  # get the k^g
                 mg_feature = mg_features_dict[g]  # get feature
                 # norm the price
                 price_mean = mg_feature[:, :, :4].mean()  # compute the mean, shape=(1)

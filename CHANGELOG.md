@@ -14,5 +14,4 @@
 - Add the comparison method: GRU.
 - Finish the MgRL_CE and separate the `FeatureEncoderCE`.
 - Finish all preprocess and dataset code for 3 Datasets.
-- Finish the paper draft.
-- Finish GRU, LSTM, Transformer.
+- Finish the comparison_methods: `gru`, `lstm`, `transformer`, `sfm`, `alstm`

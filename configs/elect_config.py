@@ -7,7 +7,7 @@
 # ************************************************************************************ #
 # ********************************** BASIC SETTINGS ********************************** #
 # ************************************************************************************ #
-RANDOM_SEED = [0, 42, 3407, 114514][0]  # the random seed
+RANDOM_SEED = [0, 42, 913][0]  # the random seed
 SAVE_PATH = f"exp_elect/rs_{RANDOM_SEED}/"  # the save path of UCI electricity experiments
 LOG_FILE = SAVE_PATH + "log.log"  # the log file path
 MODEL_SAVE_PATH = SAVE_PATH + "trained_models/"  # the saving path of models
@@ -26,6 +26,7 @@ BATCH_SIZE = 2048
 GRANULARITY_DICT = {"g1": 1, "g2": 2, "g3": 6, "g4": 24, "g5": 96}  # the granularity dict
 GA_K, INPUT_SIZE = 1, 1  # the alignment granularity K & the input size
 ENCODING_INPUT_SIZE, ENCODING_HIDDEN_SIZE = 1 * GA_K, 64  # the input and hidden size
+DROPOUT_RATIO = 0.0  # the dropout ratio
 NEGATIVE_SAMPLE_NUM = 5  # the negative sample number (only work when use `MgRL_CE_Net`)
 LOSS_REDUCTION, LAMBDA_1, LAMBDA_2, LAMBDA_THETA = "mean", 1.0, 2.0, 0.001  # loss parameter
 LR = 0.01  # the learning rate
@@ -34,7 +35,7 @@ LR = 0.01  # the learning rate
 # ********************************* FOR NET TRAINING ********************************* #
 # ************************************************************************************ #
 # ---- Train Model ---- #
-EPOCHS = 2
+EPOCHS = 20
 
 # ---- Main metric using to select models ---- #
 MAIN_METRIC = "valid_CORR"

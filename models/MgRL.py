@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from models.modules import FeatureEncoder, FeatureEncoderCE
 
 
-class MgRLNet(nn.Module):
+class MgRL_Net(nn.Module):
     """ The basic Multi-Granularity Residual Learning Net. """
 
     def __init__(
@@ -38,7 +38,7 @@ class MgRLNet(nn.Module):
 
         """
 
-        super(MgRLNet, self).__init__()
+        super(MgRL_Net, self).__init__()
         self.device = device
 
         # ---- Part 1. Granularity Alignment Module (Each Module includes 1 Linear Layer) ---- #
