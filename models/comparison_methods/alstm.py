@@ -6,6 +6,8 @@
 
 Ref. https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_alstm.py#L294
 
+NOTE: Current version of implementation is just a simplified version of ALSTM. It is an LSTM with attention.
+
 """
 
 import logging
@@ -15,6 +17,8 @@ from typing import Dict
 
 
 class ALSTM_Net(nn.Module):
+    """ The 2 Layer ALSTM. hidden_size=64. """
+
     def __init__(
             self, input_size: int, hidden_size: int = 64, num_layers: int = 2,
             dropout: float = 0.0, device: torch.device = torch.device("cpu")

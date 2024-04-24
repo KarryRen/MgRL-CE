@@ -13,11 +13,12 @@ import torch
 
 class MSE_Loss:
     """ Compute the MSE loss.
+
     loss = reduction((y_true - y_pred)^2)
 
     """
 
-    def __init__(self, reduction: str = "mean", lambda_1: float = 1.0):
+    def __init__(self, reduction: str = "mean"):
         """ Init function of the MSE Loss.
 
         :param reduction: the reduction way of this loss, you have only 2 choices now:
@@ -62,6 +63,64 @@ class MSE_Loss:
         return batch_loss
 
 
+class DeepAR_Loss:
+    """ Compute using gaussian the log-likelihood which needs to be maximized.
+
+    TODO: only likelihood is not work !
+
+    """
+
+    def __init__(self, reduction: str = "mean"):
+        """ Init function of the MSE Loss.
+
+        :param reduction: the reduction way of this loss, you have only 2 choices now:
+            - `sum` for sum reduction
+            - `mean` for mean reduction
+
+        """
+
+        assert reduction in ["sum", "mean"], f"Reduction in MgRL_Loss ERROR !! `{reduction}` is not allowed !!"
+        self.reduction = reduction  # the reduction way
+        self.mse = MSE_Loss(reduction=reduction)  # get the mse loss
+
+    def __call__(self, y_true: torch.Tensor, mu: torch.Tensor, sigma: torch.Tensor, weight: torch.Tensor):
+        """ Call function of the DeepAR Loss.
+
+        :param y_true: the true label of time series prediction, shape=(bs, 1)
+        :param mu: the prediction mu, shape=(bs, 1)
+        :param sigma: the prediction sigma, shape=(bs, 1)
+        :param weight: the weight indicates item meaningful or meaningless, shape=(bs, 1)
+
+        return:
+            - batch_loss: a Tensor number, shape=([])
+
+        """
+
+        # ---- Step 0. Test the weight shape & make the default weight ---- #
+        assert weight.shape[0] == y_true.shape[0], "Weight should have the same length with y_true&y_pred !"
+
+        # ---- Step 1. Get the meaningful data index ---- #
+        meaningful_index = (weight != 0.0)
+
+        # ---- Step 2. Compute the distribution loss ---- #
+        distribution = torch.distributions.normal.Normal(mu[meaningful_index], sigma[meaningful_index])
+        likelihood = distribution.log_prob(y_true[meaningful_index])
+        if self.reduction == "mean":
+            # compute likelihood mean
+            likelihood_loss = -torch.mean(likelihood)
+        elif self.reduction == "sum":
+            # compute likelihood std
+            likelihood_loss = -torch.sum(likelihood)
+        else:
+            raise TypeError(self.reduction)
+
+        # ---- Step 3. Add the mse loss ---- #
+        batch_loss = likelihood_loss + self.mse(y_true=y_true, y_pred=mu, weight=weight)
+
+        # ---- Step 4. Return loss ---- #
+        return batch_loss
+
+
 class MgRL_Loss:
     """ Compute the loss of MgRLNet, which has two parts:
         - part 1. MSE Loss
@@ -98,6 +157,7 @@ class MgRL_Loss:
 
         return:
             - batch_loss: a Tensor number, shape=([])
+
         """
 
         # ---- Step 0. Test the weight shape & make the default weight ---- #

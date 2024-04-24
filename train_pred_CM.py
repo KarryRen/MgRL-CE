@@ -6,6 +6,7 @@
     - GRU
     - LSTM
     - Transformer
+    - DeepAR
     - SFM
     - ALSTM
 
@@ -35,10 +36,11 @@ from mg_datasets.lob_dataset import LOBDataset
 from mg_datasets.index_dataset import INDEXDataset
 from models.comparison_methods.gru import GRU_Net
 from models.comparison_methods.lstm import LSTM_Net
+from models.comparison_methods.transformer import Transformer_Net
+from models.comparison_methods.deepar import DeepAR_Net
 from models.comparison_methods.sfm import SFM_Net
 from models.comparison_methods.alstm import ALSTM_Net
-from models.comparison_methods.transformer import Transformer_Net
-from models.loss import MSE_Loss
+from models.loss import MSE_Loss, DeepAR_Loss
 from models.metrics import r2_score, corr_score, rmse_score, mae_score
 
 # ---- Init the args parser ---- #
@@ -53,7 +55,8 @@ parser.add_argument(
          "- `gru` for the Comparison Methods 1: GRU, \n"
          "- `lstm` for the Comparison Methods 2: LSTM, \n"
          "- `transformer` for the Comparison Methods 3: Transformer.\n"
-         "- `sfm` for the Comparison Methods 6: SFM. "
+         "- `deepar` for the Comparison Methods 4: DeepAR.\n"
+         "- `sfm` for the Comparison Methods 6: SFM. \n"
          "- `alstm` for the Comparison Methods 7: ALSTM."
 )
 args = parser.parse_args()
@@ -131,6 +134,8 @@ def train_valid_model() -> None:
         model = LSTM_Net(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
     elif METHOD_NAME == "transformer":
         model = Transformer_Net(d_feat=config.INPUT_SIZE, d_model=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
+    elif METHOD_NAME == "deepar":
+        model = DeepAR_Net(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
     elif METHOD_NAME == "sfm":
         model = SFM_Net(
             input_dim=config.INPUT_SIZE, hidden_dim=config.ENCODING_HIDDEN_SIZE,
@@ -141,7 +146,10 @@ def train_valid_model() -> None:
     else:
         raise TypeError(METHOD_NAME)
     # the loss function
-    criterion = MSE_Loss(reduction=config.LOSS_REDUCTION)
+    if METHOD_NAME == "deepar":
+        criterion = DeepAR_Loss(reduction=config.LOSS_REDUCTION)
+    else:
+        criterion = MSE_Loss(reduction=config.LOSS_REDUCTION)
     # the optimizer
     optimizer = torch.optim.Adam(model.parameters(), lr=config.LR, weight_decay=config.LAMBDA_THETA)
 
@@ -182,11 +190,15 @@ def train_valid_model() -> None:
             mg_features = batch_data["mg_features"]
             labels = batch_data["label"].to(device=device, dtype=torch.float32)
             weights = batch_data["weight"].to(device=device, dtype=torch.float32)
-            # zero_grad, forward, compute loss, backward and optimize
+            # zero_grad, forward, compute loss, backward and optimize, different model have different loss
             optimizer.zero_grad()
             outputs = model(mg_features)
-            preds = outputs["pred"]
-            loss = criterion(y_true=labels, y_pred=preds, weight=weights)
+            if METHOD_NAME == "deepar":
+                preds = outputs["mu"]
+                loss = criterion(y_true=labels, mu=outputs["mu"], sigma=outputs["sigma"], weight=weights)
+            else:
+                preds = outputs["pred"]
+                loss = criterion(y_true=labels, y_pred=preds, weight=weights)
             loss.backward()
             optimizer.step()
             # note the loss of training in one iter
@@ -220,10 +232,14 @@ def train_valid_model() -> None:
                 mg_features = batch_data["mg_features"]
                 labels = batch_data["label"].to(device=device, dtype=torch.float32)
                 weights = batch_data["weight"].to(device=device, dtype=torch.float32)
-                # forward to compute outputs
+                # forward to compute outputs, different model have different loss
                 outputs = model(mg_features)
-                preds = outputs["pred"]
-                loss = criterion(y_true=labels, y_pred=preds, weight=weights)
+                if METHOD_NAME == "deepar":
+                    preds = outputs["mu"]
+                    loss = criterion(y_true=labels, mu=outputs["mu"], sigma=outputs["sigma"], weight=weights)
+                else:
+                    preds = outputs["pred"]
+                    loss = criterion(y_true=labels, y_pred=preds, weight=weights)
                 # note the loss of valid in one iter
                 valid_loss_one_epoch.append(loss.item())
                 # doc the result in one iter, no matter what label_len is, just get the last one
@@ -281,12 +297,8 @@ def train_valid_model() -> None:
     logging.info("***************** TRAINING OVER ! *****************")
 
 
-def pred_model(verbose: bool = False) -> None:
-    """ Test Model.
-
-    :param verbose: show image or not
-
-    """
+def pred_model() -> None:
+    """ Test Model. """
 
     # ---- Construct the test log file (might be same with train&valid) ---- #
     logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -331,9 +343,12 @@ def pred_model(verbose: bool = False) -> None:
             mg_features = batch_data["mg_features"]
             labels = batch_data["label"].to(device=device, dtype=torch.float32)
             weights = batch_data["weight"].to(device=device, dtype=torch.float32)
-            # forward
+            # forward to compute outputs, different model have different loss
             outputs = model(mg_features)
-            preds = outputs["pred"]
+            if METHOD_NAME == "deepar":
+                preds = outputs["mu"]
+            else:
+                preds = outputs["pred"]
             # doc the result
             now_step = last_step + preds.shape[0]
             labels_array[last_step:now_step] = labels[:, 0].detach()
@@ -351,26 +366,6 @@ def pred_model(verbose: bool = False) -> None:
     logging.info(f"******** test_RMSE : {test_RMSE} **********")
     logging.info(f"******** test_MAE : {test_MAE} **********")
 
-    # ---- Plt the pred ---- #
-    if verbose:
-        # build up the images save directory
-        if not os.path.exists(config.IMAGE_SAVE_PATH):
-            os.makedirs(config.IMAGE_SAVE_PATH)
-        client_num, day_num = test_dataset.total_client_num, test_dataset.total_day_num  # get the client num & day_num
-        scale_adj_df = test_dataset.elect_data_scale_adj_df  # get the scale adjustment dataframe
-        client_labels_array = labels_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
-        client_predictions_array = predictions_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
-        client_weights_array = weight_array.cpu().numpy().reshape(client_num, day_num)  # shape=(320, day_num)
-        for client_idx, client in enumerate(test_dataset.client_list):
-            scale_adj_array = np.repeat(scale_adj_df[client].values, np.sum(client_weights_array[client_idx]))  # (day_num)
-            plt.figure(figsize=(15, 6))
-            plt.plot(client_labels_array[client_idx][client_weights_array[client_idx] == 1] * scale_adj_array, label="label", color="g")
-            plt.plot(client_predictions_array[client_idx][client_weights_array[client_idx] == 1] * scale_adj_array, label="pred", color="b")
-            plt.legend()
-            plt.savefig(f"{config.IMAGE_SAVE_PATH}{client}.png", dpi=200, bbox_inches="tight")
-            print(f"|| Plot Prediction {client_idx}: {client} !! ||")
-            break
-
     # ---- Finish Pred ---- #
     logging.info("***************** TEST OVER ! *****************")
     logging.info("")
@@ -384,4 +379,4 @@ if __name__ == "__main__":
     train_valid_model()
 
     # ---- Step 2. Pred Model ---- #
-    pred_model(verbose=False)
+    pred_model()

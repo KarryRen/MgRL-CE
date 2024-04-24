@@ -16,7 +16,7 @@ import math
 
 
 class PositionalEncoding(nn.Module):
-    """ The Positional Encoding of Transformer, """
+    """ The Positional Encoding of Transformer. """
 
     def __init__(self, d_model: int, max_len: int = 1000):
         """ The init function of PositionalEncoding.
@@ -54,7 +54,7 @@ class PositionalEncoding(nn.Module):
 
 
 class Transformer_Net(nn.Module):
-    """ The 2 Layer Transformer. model dimension = 64. """
+    """ The 2 Layer Transformer. model dimension=64. """
 
     def __init__(
             self, d_feat: int, d_model: int = 64, n_head: int = 2, num_layers: int = 2,
