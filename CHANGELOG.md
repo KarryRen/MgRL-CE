@@ -15,3 +15,4 @@
 - Finish the MgRL_CE and separate the `FeatureEncoderCE`.
 - Finish all preprocess and dataset code for 3 Datasets.
 - Finish the comparison_methods: `gru`, `lstm`, `transformer`, `sfm`, `alstm`
+- Finish the comparison_methods: `deepar`, `informer`
