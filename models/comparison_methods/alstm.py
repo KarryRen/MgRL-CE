@@ -8,6 +8,8 @@ Ref. https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_alst
 
 NOTE: Current version of implementation is just a simplified version of ALSTM. It is an LSTM with attention.
 
+TODO: Will be updated 🔥.
+
 """
 
 import logging
@@ -40,9 +42,9 @@ class ALSTM_Net(nn.Module):
         logging.info(f"|||| Using ALSTM Now ! input_size={input_size}, hidden_size={hidden_size}, num_layers={num_layers}, dropout_ratio={dropout}||||")
 
         # ---- Part 1. Feature Encoding Net ---- #
-        self.feature_encoding_net = nn.Sequential().to(device=device)
-        self.feature_encoding_net.add_module("fc_in", nn.Linear(in_features=input_size, out_features=hidden_size).to(device=device))
-        self.feature_encoding_net.add_module("act", nn.Tanh().to(device=device))
+        self.feature_mapping_net = nn.Sequential().to(device=device)
+        self.feature_mapping_net.add_module("fc_in", nn.Linear(in_features=input_size, out_features=hidden_size).to(device=device))
+        self.feature_mapping_net.add_module("act", nn.Tanh().to(device=device))
 
         # ---- Part 2. LSTM module ---- #
         self.lstm = nn.LSTM(
@@ -86,20 +88,21 @@ class ALSTM_Net(nn.Module):
         feature_g1 = feature_g1.reshape(bs, T, K_g1 * d)  # reshape, shape=(bs, T, K^g1*D)
 
         # ---- Step 3. Encoding the feature ---- #
-        x = self.feature_encoding_net(feature_g1)  # shape=(bs, T, hidden_size)
+        mapping_feature_g1 = self.feature_mapping_net(feature_g1)  # shape=(bs, T, hidden_size)
 
         # ---- Step 4. Using the lstm to do the sequence encoding ---- #
-        lstm_out, _ = self.lstm(x)  # (bs, T, hidden_size)
+        lstm_out_g1, _ = self.lstm(mapping_feature_g1)  # (bs, T, hidden_size)
 
         # ---- Step 5. Computing the attention score and weighting ---- #
-        attention_score = self.attention_net(lstm_out)  # shape=(bs, T, 1)
-        lstm_out_att = torch.mul(lstm_out, attention_score)  # use the attention score to weight, shape=(bs, T, hidden_size)
-        lstm_out_att = torch.sum(lstm_out_att, dim=1)  # sum the hidden feature of each step, shape=(bs, 1, hidden_size)
+        attention_score_g1 = self.attention_net(lstm_out_g1)  # shape=(bs, T, 1)
+        lstm_out_att_g1 = torch.mul(lstm_out_g1, attention_score_g1)  # use the attention score to weight, shape=(bs, T, hidden_size)
+        lstm_out_att_g1 = torch.sum(lstm_out_att_g1, dim=1)  # sum the hidden feature of each step, shape=(bs, 1, hidden_size)
 
         # ---- Step 6. FC to get the prediction ---- #
         # get the last step hidden g1
-        last_step_hidden_g1 = lstm_out[:, -1, :]  # shape=(bs, hidden_size)
-        y = self.fc_out(torch.cat((last_step_hidden_g1, lstm_out_att), dim=1))  # shape=(bs, 1)
+        last_step_hidden_g1 = lstm_out_g1[:, -1, :]  # shape=(bs, hidden_size)
+        # cat the hidden state and attention feature and get the final prediction
+        y = self.fc_out(torch.cat((last_step_hidden_g1, lstm_out_att_g1), dim=1))  # shape=(bs, 1)
 
         # ---- Step 7. Return the output ---- #
         output = {"pred": y}

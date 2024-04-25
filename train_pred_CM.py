@@ -3,12 +3,18 @@
 # @Author  : Karry Ren
 
 """ Training and Prediction code of the following comparison methods for 3 datasets:
-    - GRU
-    - LSTM
-    - Transformer
-    - DeepAR
-    - SFM
-    - ALSTM
+        - GRU
+        - LSTM
+        - Transformer
+        - DeepAR
+        - SFM
+        - ALSTM
+        - ADV-ALSTM
+        - Fine-Grained GRU
+        - Multi-Grained GRU
+    Also for some ablation methods for 3 dataset:
+        - Mg_Add
+        - Mg_Cat
 
 Training, Validation and Prediction be together !
     Here are two functions:
@@ -34,12 +40,15 @@ from utils import fix_random_seed, load_best_model
 from mg_datasets.elect_dataset import ELECTDataset
 from mg_datasets.lob_dataset import LOBDataset
 from mg_datasets.index_dataset import INDEXDataset
-from models.comparison_methods.gru import GRU_Net
+from models.comparison_methods.gru import GRU_Net, Multi_Grained_GRU_Net
 from models.comparison_methods.lstm import LSTM_Net
 from models.comparison_methods.transformer import Transformer_Net
 from models.comparison_methods.deepar import DeepAR_Net
 from models.comparison_methods.sfm import SFM_Net
 from models.comparison_methods.alstm import ALSTM_Net
+from models.comparison_methods.adv_alstm import ALSTM_Net as ADV_ALSTM_Net
+from models.ablation_methods.mg_add import Mg_Add_Net
+from models.ablation_methods.mg_cat import Mg_Cat_Net
 from models.loss import MSE_Loss, DeepAR_Loss
 from models.metrics import r2_score, corr_score, rmse_score, mae_score
 
@@ -51,13 +60,17 @@ parser.add_argument(
 )
 parser.add_argument(
     "--method", type=str, default="gru",
-    help="The dataset name. You have only 3 choices now: \n"
-         "- `gru` for the Comparison Methods 1: GRU, \n"
+    help="The dataset name. You have 8 choices now: \n"
+         "- `gru` for the Comparison Methods 1&9: GRU, \n"
          "- `lstm` for the Comparison Methods 2: LSTM, \n"
          "- `transformer` for the Comparison Methods 3: Transformer.\n"
          "- `deepar` for the Comparison Methods 4: DeepAR.\n"
          "- `sfm` for the Comparison Methods 6: SFM. \n"
-         "- `alstm` for the Comparison Methods 7: ALSTM."
+         "- `alstm` for the Comparison Methods 7: ALSTM.\n"
+         "- `adv-alstm` for the Comparison Methods 8: ADV-ALSTM.\n"
+         "- `mg-gru` for the Comparison Methods 10: Multi-Grained GRU.\n"
+         "- `Mg_Add` for the Ablation Method 1: Mg_Add. \n"
+         "- `Mg_Cat` for the Ablation Method 2: Mg_Cat."
 )
 args = parser.parse_args()
 
@@ -78,15 +91,7 @@ METHOD_NAME = args.method
 def train_valid_model() -> None:
     """ Train & Valid Model. """
 
-    # ---- Build up the save directory ---- #
-    if not os.path.exists(config.SAVE_PATH):
-        os.makedirs(config.SAVE_PATH)
-    if not os.path.exists(config.MODEL_SAVE_PATH):
-        os.makedirs(config.MODEL_SAVE_PATH)
-
-    # ---- Construct the train&valid log file (might be same as prediction) ---- #
-    logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
-    logging.info(f"***************** RUN TRAIN&VALID `{METHOD_NAME}` ! *****************")
+    logging.info(f"***************** RUN TRAIN&VALID MODEL: `{METHOD_NAME}`, DATASET: `{args.dataset}` ! *****************")
 
     # ---- Get the device ---- #
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -129,7 +134,10 @@ def train_valid_model() -> None:
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
     # the model
     if METHOD_NAME == "gru":
-        model = GRU_Net(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
+        model = GRU_Net(
+            input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE,
+            dropout=config.DROPOUT_RATIO, device=device, use_g=config.USE_G
+        )
     elif METHOD_NAME == "lstm":
         model = LSTM_Net(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
     elif METHOD_NAME == "transformer":
@@ -141,8 +149,27 @@ def train_valid_model() -> None:
             input_dim=config.INPUT_SIZE, hidden_dim=config.ENCODING_HIDDEN_SIZE,
             dropout_U=config.DROPOUT_RATIO, dropout_W=config.DROPOUT_RATIO, device=device
         )
-    elif METHOD_NAME == "alstm":
+    elif METHOD_NAME in "alstm":
         model = ALSTM_Net(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
+    elif METHOD_NAME in "adv-alstm":
+        model = ADV_ALSTM_Net(input_size=config.INPUT_SIZE, hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device)
+    elif METHOD_NAME in "mg-gru":
+        model = Multi_Grained_GRU_Net(
+            input_size=config.GRANULARITY_DICT["g1"] * config.FEATURE_DIM + config.GRANULARITY_DICT["g5"] * config.FEATURE_DIM,
+            hidden_size=config.ENCODING_HIDDEN_SIZE, dropout=config.DROPOUT_RATIO, device=device
+        )
+    elif METHOD_NAME in "Mg_Add":
+        model = Mg_Add_Net(
+            granularity_dict=config.GRANULARITY_DICT, ga_K=config.GA_K,
+            encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
+            device=device
+        )
+    elif METHOD_NAME in "Mg_Cat":
+        model = Mg_Cat_Net(
+            granularity_dict=config.GRANULARITY_DICT, ga_K=config.GA_K,
+            encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
+            device=device
+        )
     else:
         raise TypeError(METHOD_NAME)
     # the loss function
@@ -194,8 +221,14 @@ def train_valid_model() -> None:
             optimizer.zero_grad()
             outputs = model(mg_features)
             if METHOD_NAME == "deepar":
-                preds = outputs["mu"]
+                preds = outputs["mu"]  # for deepar the `mu` is pred
                 loss = criterion(y_true=labels, mu=outputs["mu"], sigma=outputs["sigma"], weight=weights)
+            elif METHOD_NAME == "adv-alstm":
+                preds, e = outputs["pred"], outputs["e"]  # for adv-alstm should get e
+                preds_adv = model.get_adv(e=e, y_true=labels, weight=weights, criterion=criterion)  # get adv
+                loss_raw = criterion(y_true=labels, y_pred=preds, weight=weights)  # loss for raw prediction
+                loss_adv = criterion(y_true=labels, y_pred=preds_adv, weight=weights)  # loss for adv prediction
+                loss = loss_raw + loss_adv  # final loss
             else:
                 preds = outputs["pred"]
                 loss = criterion(y_true=labels, y_pred=preds, weight=weights)
@@ -237,7 +270,7 @@ def train_valid_model() -> None:
                 if METHOD_NAME == "deepar":
                     preds = outputs["mu"]
                     loss = criterion(y_true=labels, mu=outputs["mu"], sigma=outputs["sigma"], weight=weights)
-                else:
+                else:  # during valid and test the adv-lstm has no differences
                     preds = outputs["pred"]
                     loss = criterion(y_true=labels, y_pred=preds, weight=weights)
                 # note the loss of valid in one iter
@@ -300,8 +333,7 @@ def train_valid_model() -> None:
 def pred_model() -> None:
     """ Test Model. """
 
-    # ---- Construct the test log file (might be same with train&valid) ---- #
-    logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+    logging.info(f"***************** RUN PRED MODEL: `{METHOD_NAME}`, DATASET: `{args.dataset}` ! *****************")
 
     # ---- Get the computing device ---- #
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -372,8 +404,16 @@ def pred_model() -> None:
 
 
 if __name__ == "__main__":
-    # ---- Step 0. Fix the random seed ---- #
+    # ---- Step 0. Prepare some environments for training and prediction ---- #
+    # fix the random seed
     fix_random_seed(seed=config.RANDOM_SEED)
+    # build up the save directory
+    if not os.path.exists(config.SAVE_PATH):
+        os.makedirs(config.SAVE_PATH)
+    if not os.path.exists(config.MODEL_SAVE_PATH):
+        os.makedirs(config.MODEL_SAVE_PATH)
+    # construct the train&valid log file
+    logging.basicConfig(filename=config.LOG_FILE, format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
     # ---- Step 1. Train & Valid model ---- #
     train_valid_model()

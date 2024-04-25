@@ -25,15 +25,20 @@ MgRL-CE/
     ├── lob_config.py # Config file of UCI electricity dataset.
     └── index_config.py # Config file of CSI300 index dataset.
 ├── models # The MgRL-CE models and Comparison Methods.
-    ├── MgRL.py # The Multi-Granularity Residual Learning Net: `MgRL_Net` and `MgRL_CE_Net`.
+    ├── MgRL.py # The Multi-Granularity Residual Learning Net: `MgRL_Net` and `MgRL_CE_Net` & `MgRL_Attention_Net`.
     ├── comparison_methods # All comparison methods.
-        ├── gru.py # The Comparison Methods 1: GRU.
+        ├── gru.py # The Comparison Methods 1: GRU(when `use_g=g1`) & 9: Fine-Grained GRU(when `use_g=g5`) & 10 & 11
         ├── lstm.py # The Comparison Methods 2: LSTM.
         ├── transformer.py # The Comparison Methods 3: Transformer.
-        ├── deepar.py # The Comparison Methods 4: DeepAR (To be Updated 🔥 !).
+        ├── deepar.py # The Comparison Methods 4: DeepAR (Will be Updated 🔥 !).
         ├── informer.py # The Comparison Methods 5: Informer (Updating 🔥 !).
         ├── sfm.py # The Comparison Methods 6: SFM.
-        ├── alstm.py #  The Comparison Methods 7: ALSTM (To be Updated 🔥 !)..
+        ├── alstm.py # The Comparison Methods 7: ALSTM (Will be Updated 🔥 !).
+        ├── adv_alstm.py # The Comparison Methods 8: ADV-ALSTM (Will be Updated 🔥 !).
+    ├── ablation_methods # All ablation methods.
+        ├── mg_add.py # The Ablation Method 1: Mg_Add.
+        ├── mg_cat.py # The Ablation Method 2: Mg_Cat.
+        └── modules.py # The modules of ablation models.
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
     ├── metric.py # The metrics of y_ture and y_pred.
     ├── modules.py # The modules of model.
@@ -87,7 +92,7 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
   - The preprocess code is in `elect_preprocess.py`, [**HERE**](mg_datasets/datasets_preprocess/elect_preprocess.py) ! You can **RUN** it by：
 
     ```shell
-    python3 elect_preprocess.py
+    python elect_preprocess.py
     ```
 
   - The  `torch.Dataset` code is in `elect_dataset.py`, [**HERE**](mg_datasets/elect_dataset.py) ! 
@@ -123,20 +128,36 @@ After downloading the datasets following the **Dataset Acquisition**, data prepr
 
 ## Training & Prediction
 
-There are some **differences** between the different datasets **during Training and Prediction**. Please carefully set the config files of different datasets following the example.
+There are some **differences** between the different datasets **during Training and Prediction**. Please carefully set the config files of different datasets following my example.
 
-- **UCI electricity dataset**. 
+- **UCI electricity dataset (ELECT)**. 
 
-  - You should firstly set the config file of UCI electricity dataset in `elect_config.py`, [**HERE**](configs/elect_config.py) !
+  - You should firstly set the config file of elect dataset in `elect_config.py`, [**HERE**](configs/elect_config.py) !
+
+  - The Training and Prediction code is in ` train_pred_MgRL.py `, [**HERE**](main/train_pred_MgRL.py) !  You can **RUN** it by:
+
+    ```shell 
+    python3 train_pred_MgRL.py --model MgRL_CE_Net --dataset elect
+    ```
+
+- **Future Limit Order Book dataset (LOB)**. 
+
+  - You should firstly set the config file of LOB dataset in `lob_config.py`, [**HERE**](configs/lob_config.py) !
 
   - The Training and Prediction code is in ` train_pred_MgRL.py `, [**HERE**](main/train_pred_MgRL.py) !  You can **RUN** it by:
 
     ```shell
-    # Run the basic Multi-Granularity Residual Learning Net: MgRLNet.
-    python3 train_pred_MgRL.py --model MgRLNet --dataset elect
-    
-    # Run the Multi-granularity Residual Learning Framework with Confidence Estimation: MgRL_CE_Net.
-    python3 train_pred_MgRL.py --model MgRL_CE_Net --dataset elect
+    python3 train_pred_MgRL.py --model MgRL_CE_Net --dataset lob
+    ```
+
+- **CSI300 index dataset (INDEX)**.
+
+  - You should firstly set the config file of index dataset in `index_config.py`, [**HERE**](configs/index_config.py) !
+
+  - The Training and Prediction code is in ` train_pred_MgRL.py `, [**HERE**](main/train_pred_MgRL.py) !  You can **RUN** it by:
+
+    ```shell
+    python3 train_pred_MgRL.py --model MgRL_CE_Net --dataset index
     ```
 
 
@@ -152,25 +173,25 @@ This study compares the proposed method with numerous other methods. The competi
 - GRU, [**HERE**](models/comparison_methods/gru.py). [Kyunghyun Cho, et al. 2014](https://arxiv.org/pdf/1406.1078.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_gru.py#L294).
 - LSTM, [**HERE**](models/comparison_methods/lstm.py). [Sepp Hochreiter, et al. Neural computation 1997](https://blog.xpgreat.com/file/lstm.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_lstm.py#L286).
 - Transformer, [**HERE**](models/comparison_methods/transformer.py). [Ashish Vaswani, et al. NeurIPS 2017](https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_transformer.py#L258).
-- DeepAR, [**HERE** (To be Updated :fire:)](models/comparison_methods/deep_ar.py). [Salinas D, et al. Int. J. Forecasting 2020](http://162.14.120.130/机器学习-时间序列分析/deepAR.pdf), [Ref. Code](https://github.com/jingw2/demand_forecast/blob/master/deepar.py), [Ref. Video](https://www.bilibili.com/video/BV1iS4y1j7Za/?spm_id_from=333.337.search-card.all.click&vd_source=66823c3216b82637e31f708a5e627a0b). 
+- DeepAR, [**HERE** (Will be Updated :fire:)](models/comparison_methods/deep_ar.py). [Salinas D, et al. Int. J. Forecasting 2020](http://162.14.120.130/机器学习-时间序列分析/deepAR.pdf), [Ref. Code](https://github.com/jingw2/demand_forecast/blob/master/deepar.py), [Ref. Video](https://www.bilibili.com/video/BV1iS4y1j7Za/?spm_id_from=333.337.search-card.all.click&vd_source=66823c3216b82637e31f708a5e627a0b). 
 - Informer, [**HERE** (Updating :fire:)](models/comparison_methods/informer). [Zhou H, et al. AAAI 2021](https://www.researchgate.net/publication/347125466_Informer_Beyond_Efficient_Transformer_for_Long_Sequence_Time-Series_Forecasting), [Ref. Code](https://github.com/zhouhaoyi/Informer2020/tree/main), [Ref. Video](https://www.bilibili.com/video/BV1AG4y1z7bW/?spm_id_from=333.337.search-card.all.click&vd_source=66823c3216b82637e31f708a5e627a0b)
 
 **GROUP 2. Current TOP Models for Stock Trend Prediction (using single granularity)**
 
 - SFM, [**HERE**](models/comparison_methods/sfm.py). [Liheng Zhang, et al. KDD 2017](https://userpages.umbc.edu/~nroy/courses/fall2018/cmisr/papers/stock_price.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_sfm.py#L25).
-- ALSTM, [**HERE** (To be Updated :fire:)](models/comparison_methods/alstm.py). [Yao Qin, et al. IJCAI 2017](https://arxiv.org/pdf/1704.02971.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_alstm.py#L294).
-- ADV-ALSTM, [**Feng F, et al. IJCAI 2019**](https://www.ijcai.org/proceedings/2019/0810.pdf), [**Ref. Code**](https://zhuanlan.zhihu.com/p/566172868).
+- ALSTM, [**HERE** (Will be Updated :fire:)](models/comparison_methods/alstm.py). [Yao Qin, et al. IJCAI 2017](https://arxiv.org/pdf/1704.02971.pdf), [Ref. Code](https://github.com/microsoft/qlib/blob/main/qlib/contrib/model/pytorch_alstm.py#L294).
+- ADV-ALSTM, [**HERE** (Will be Updated :fire:)](models/comparison_methods/adv_alstm.py). [Feng F, et al. IJCAI 2019](https://www.ijcai.org/proceedings/2019/0810.pdf), [Ref. Code](https://zhuanlan.zhihu.com/p/566172868).
 
 **GROUP 3. Model Variants (using different granularity of data)**
 
-- Fine-Grained GRU, using only finest-grained data.
-- Multi-Grained GRU, using the concatenation of two granularity data.
-- Ensemble, ensembleing result for five independent training models with different granularity data.
+- Fine-Grained GRU, [**HERE**](models/comparison_methods/gru.py). using only finest-grained data.
+- Multi-Grained GRU, [**HERE**](models/comparison_methods/gru.py). using the concatenation of two granularity data.
+- Ensemble, [**HERE** (Updating :fire:)](train_pred_Ensemble.py). ensemble result for five independent training models with different granularity data.
 
 **GROUP 4. Two Ablation Models for MgRL_CE  (using different granularity of data)**
 
-- MgRL [**HERE**](models/MgRL.py), not containing the confidence estimation mechanism in MgRL_CE.
-- MgRL_Attention, replacing the confidence estimation mechanism in MgRL_CE with the classical [**soft attention mechanism**](https://arxiv.org/pdf/1409.0473.pdf?utm_source=ColumnsChannel).
+- MgRL, [**HERE**](models/MgRL.py), not containing the confidence estimation mechanism in MgRL_CE.
+- MgRL_Attention, [**HERE**](models/MgRL.py), replacing the confidence estimation mechanism in MgRL_CE with the classical [**soft attention mechanism**](https://arxiv.org/pdf/1409.0473.pdf?utm_source=ColumnsChannel).
 
 ### Run the comparison methods training and prediction
 

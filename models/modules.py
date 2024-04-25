@@ -3,7 +3,8 @@
 # @Author  : Karry Ren
 
 """ The modules of model, including 2 core modules:
-        - FeatureEncoder: The basic block of feature encoder of each granularity for MgRLNet.
+        - FeatureEncoder: The basic block of feature encoder of each granularity for MgRL_Net.
+        - No_Pred_FeatureEncoder: The basic block of feature encoder of each granularity for MgRL_Attention_Net.
         - FeatureEncoderCE: The block of feature encoder with confidence estimating (CE) of each granularity for MgRL_CE_Net.
 
 """
@@ -12,10 +13,11 @@ from typing import Tuple
 import torch
 from torch import nn
 import torch.nn.functional as F
+import math
 
 
 class FeatureEncoder(nn.Module):
-    """ The basic block of feature encoder of each granularity for MgRLNet.
+    """ The basic block of feature encoder of each granularity for MgRL_Net.
 
     Including 3 parts:
         - F_{TEnc}: Temporal Feature Encoder (2 Layer GRU), extracting the temporal feature `H`.
@@ -75,6 +77,57 @@ class FeatureEncoder(nn.Module):
 
         # ---- Step 4. Return ---- #
         return H, y, R
+
+
+class NoPred_FeatureEncoder(nn.Module):
+    """ The basic block of feature encoder of each granularity for MgRL_Attention_Net.
+
+    Including 2 parts:
+        - F_{TEnc}: Temporal Feature Encoder (2 Layer GRU), extracting the temporal feature `H`.
+        - F_{Rec}: Reconstruction Net (2 Layer MLP), getting the reconstruction `R`.
+
+    """
+
+    def __init__(self, input_size: int, hidden_size: int):
+        """ The init function of FeatureEncoder.
+
+        :param input_size: the input size of encoding feature
+        :param hidden_size: the hidden size of encoding feature
+
+        """
+
+        super(NoPred_FeatureEncoder, self).__init__()
+
+        # ---- Part 1. F_{TEnc}: Temporal Feature Encoder ---- #
+        self.temporal_feature_encoder = nn.GRU(input_size=input_size, hidden_size=hidden_size, num_layers=2, batch_first=True)
+
+        # ---- Part 2. F_{Rec}: Reconstruction Net ---- #
+        self.reconstruction_net = nn.Sequential(
+            nn.Linear(in_features=hidden_size, out_features=hidden_size, bias=False),
+            nn.GELU(),
+            nn.Linear(in_features=hidden_size, out_features=input_size, bias=False)
+        )
+
+    def forward(self, P: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """ The forward function of FeatureEncoder.
+
+        :param P: the P of each granularity, shape=(bs, T, D*K), where D*K is the input_size
+                  :math: {P_1 = F_1 && P_other(g) = F_other(g) - R_(g-1)}
+
+        returns:
+            - H: the hidden state of each granularity, shape=(bs, T, hidden_size)
+            - R: the reconstruction of each granularity, shape=(bs, T, D*K|input_size)
+
+        """
+
+        # ---- Step 1. Use the temporal_feature_encoder to encode P ---- #
+        H, _ = self.temporal_feature_encoder(P)  # shape=(bs, T, hidden_size)
+
+        # ---- Step 2. Use the reconstruction_net to get the reconstruction ---- #
+        R = self.reconstruction_net(H)  # shape=(bs, T, D*K|input_size)
+
+        # ---- Step 3. Return ---- #
+        return H, R
 
 
 class FeatureEncoderCE(nn.Module):
@@ -146,12 +199,12 @@ class FeatureEncoderCE(nn.Module):
         # for loop to compute the loss
         for t in range(1, T):
             # slice the P in time_step t, p_t which represents the `current status` in my paper
-            p_t = P[:, t:t + 1, :]  # shape=(bs, 1, hidden_size)
+            p_t = P[:, t:t + 1, :]  # shape=(bs, 1, input_size)
             # slice the H in time_step t-1, C_t which represents the `history trend` in my paper
             C_t = H[:, t - 1:t, :]  # shape=(bs, 1, hidden_size)
             # random select the negative sample, the FIRST 1 is positive.
-            pos_neg_p_t = self._random_select_neg_sample(positive_p=p_t)  # (bs, 1+neg_sample_num, hidden_size)
-            # get the discriminator score, which is different from paper
+            pos_neg_p_t = self._random_select_neg_sample(positive_p=p_t)  # (bs, 1+neg_sample_num, input_size)
+            # get the discriminator score, use self.W(C_t) get shape=(bs, 1, input_size)
             D_p_c = torch.mean(self.W(C_t) * pos_neg_p_t, -1)  # broadcast, shape=(bs,  1+neg_sample_num)
             # compute the trend_contrastive_loss, shape=(bs, 1)
             pos_ce_loss = F.log_softmax(D_p_c, dim=1)[:, 0:1]  # only the get the cross entropy loss of the positive sample
@@ -159,7 +212,7 @@ class FeatureEncoderCE(nn.Module):
         # use the last step (p_T, C_T) to compute alpha
         p_last_step = P[:, -1:, :]  # last step P, shape=(bs, 1, hidden_size)
         C_last_step = H[:, -2:-1, :]  # last step C, shape=(bs, 1, hidden_size)
-        alpha = torch.mean(self.W(C_last_step) * p_last_step, -1)  # the alpha
+        alpha = torch.mean(self.W(C_last_step) * p_last_step, -1)  # the alpha in my paper
 
         # ---- Step 3. Use the prediction_net to get the prediction ---- #
         y = self.prediction_net(H[:, -1, :])  # shape=(bs, 1)
@@ -202,13 +255,57 @@ class FeatureEncoderCE(nn.Module):
                 else:  # negative_batch_idx_list[bi] == bi and bi != 0, then chose from [0, bi)
                     negative_batch_idx_list[bi] = torch.randint(0, bi, (1,))[0]
             # check the negative_batch_idx_list[bi] != bi
-            assert (negative_batch_idx_list - torch.arange(bs) != 0).all(), "negative_batch_idx_list ERROR !!!"
+            # assert (negative_batch_idx_list - torch.arange(bs) != 0).all(), "negative_batch_idx_list ERROR !!!"
             # select the negative samples
             negative_p = positive_p[negative_batch_idx_list]
             pos_neg_p = torch.cat((pos_neg_p, negative_p), 1)
 
         # ---- Return the positive and negative p ---- #
         return pos_neg_p
+
+
+class ScaledDotProductAttention(nn.Module):
+    """ Scaled dot product attention. """
+
+    def __init__(self, dropout: float = 0.0):
+        """Init the Module.
+
+        :param dropout: the dropout ratio
+
+        """
+
+        super().__init__()
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor):
+        """ Follow the equation of scaled dot production attention in paper.
+
+        :math:`softmax((QK^T) / sqrt(d_k))V`
+
+        :param queries: shape=(bs, seq, q_size)
+        :param keys: shape=(bs, seq, k_size=q_size)
+        :param values: shape=(bs, seq, v_size)
+
+        return:
+            - the attention_result (bs, seq, d_k)
+
+        """
+
+        # ---- Step 1. Get the d_k ---- #
+        d_k = keys.shape[-1]
+
+        # ---- Step 2. Compute the attention score ---- #
+        # attention_score = Q*K^T / sqrt(d_k), which are `MatMul` and `Scale` two steps
+        attention_scores = torch.bmm(queries, keys.transpose(1, 2)) / math.sqrt(d_k)  # shape=(bs, seq, seq)
+
+        # ---- Step 3. Compute the attention weights ---- #
+        # attention_weights = softmax(attention_scores)
+        attention_weights = F.softmax(attention_scores, dim=-1)  # shape=(bs, seq, seq)
+
+        # ---- Step 4. Compute the attention result ---- #
+        # use the dropout weight to cal weighted attention result, which is the `MatMul steps`
+        attention_result = torch.bmm(self.dropout(attention_weights), values)  # shape=(bs, seq, d_k)
+        return attention_result
 
 
 if __name__ == "__main__":

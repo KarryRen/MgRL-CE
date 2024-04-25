@@ -57,7 +57,7 @@ class Transformer_Net(nn.Module):
     """ The 2 Layer Transformer. model dimension=64. """
 
     def __init__(
-            self, d_feat: int, d_model: int = 64, n_head: int = 2, num_layers: int = 2,
+            self, d_feat: int, d_model: int = 64, n_head: int = 4, num_layers: int = 1,
             dropout: float = 0.0, device=torch.device("cpu")
     ):
         """ The init function of Transformer Net.

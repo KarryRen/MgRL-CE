@@ -169,4 +169,3 @@ if __name__ == "__main__":  # a demo using UCIDataset
         assert (g4_data.sum(axis=1) - g5_data.sum(axis=1) < 1e-3).all(), f"g4 error !! {g4_data.sum(axis=1)}, {g5_data.sum(axis=1)}"
         print(g1_data, g2_data, g3_data, g4_data, g5_data)
         print(item_data["label"])
-        break

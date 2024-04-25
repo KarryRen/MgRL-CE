@@ -1,0 +1,48 @@
+2024-04-25 16:26:36,388 - INFO - ***************** RUN TRAIN&VALID MODEL: `MgRL`, DATASET: `elect` ! *****************
+2024-04-25 16:26:36,388 - INFO - ***************** In device cuda   *****************
+2024-04-25 16:26:36,388 - INFO - ***************** BEGIN MAKE DATASET & DATALOADER of `elect` ! *****************
+2024-04-25 16:26:36,388 - INFO - ||| time_steps = 14, batch size = 2048 |||
+2024-04-25 16:26:36,389 - INFO - **** TRAINING DATASET & DATALOADER ****
+2024-04-25 16:26:36,389 - INFO - **** TRAINING DATASET & DATALOADER ****
+2024-04-25 16:26:40,031 - INFO - **** VALID DATASET & DATALOADER ****
+2024-04-25 16:26:40,874 - INFO - ***************** DATASET MAKE OVER ! *****************
+2024-04-25 16:26:40,874 - INFO - Train dataset: length = 233920
+2024-04-25 16:26:40,874 - INFO - Valid dataset: length = 57920
+2024-04-25 16:26:40,874 - INFO - ***************** BEGIN BUILD UP THE MODEL `MgRL`! *****************
+2024-04-25 16:26:42,398 - INFO - ***************** BEGIN TRAINING AND VALID THE MODEL `MgRL` ! *****************
+2024-04-25 16:26:53,551 - INFO - Epoch 1/20, Duration: 0:00:11.150046, ['train_loss:0.5002 ', 'valid_loss:0.0853 ', 'train_R2:0.8703 ', 'valid_R2:0.9756 ', 'train_CORR:0.9332 ', 'valid_CORR:0.9899 ', 'train_RMSE:0.5933 ', 'valid_RMSE:0.2453 ', 'train_MAE:0.1290 ', 'valid_MAE:0.1223 ']
+2024-04-25 16:27:04,509 - INFO - Epoch 2/20, Duration: 0:00:10.957412, ['train_loss:0.0845 ', 'valid_loss:0.0684 ', 'train_R2:0.9803 ', 'valid_R2:0.9783 ', 'train_CORR:0.9901 ', 'valid_CORR:0.9898 ', 'train_RMSE:0.2312 ', 'valid_RMSE:0.2313 ', 'train_MAE:0.0751 ', 'valid_MAE:0.0433 ']
+2024-04-25 16:27:15,498 - INFO - Epoch 3/20, Duration: 0:00:10.988954, ['train_loss:0.0745 ', 'valid_loss:0.0633 ', 'train_R2:0.9795 ', 'valid_R2:0.9774 ', 'train_CORR:0.9897 ', 'valid_CORR:0.9892 ', 'train_RMSE:0.2358 ', 'valid_RMSE:0.2361 ', 'train_MAE:0.0746 ', 'valid_MAE:0.0583 ']
+2024-04-25 16:27:26,469 - INFO - Epoch 4/20, Duration: 0:00:10.969985, ['train_loss:0.0633 ', 'valid_loss:0.0673 ', 'train_R2:0.9806 ', 'valid_R2:0.9741 ', 'train_CORR:0.9903 ', 'valid_CORR:0.9894 ', 'train_RMSE:0.2294 ', 'valid_RMSE:0.2527 ', 'train_MAE:0.0693 ', 'valid_MAE:0.1223 ']
+2024-04-25 16:27:37,397 - INFO - Epoch 5/20, Duration: 0:00:10.927136, ['train_loss:0.0543 ', 'valid_loss:0.0506 ', 'train_R2:0.9820 ', 'valid_R2:0.9800 ', 'train_CORR:0.9910 ', 'valid_CORR:0.9902 ', 'train_RMSE:0.2212 ', 'valid_RMSE:0.2223 ', 'train_MAE:0.0649 ', 'valid_MAE:0.0606 ']
+2024-04-25 16:27:48,272 - INFO - Epoch 6/20, Duration: 0:00:10.874790, ['train_loss:0.0575 ', 'valid_loss:0.0816 ', 'train_R2:0.9799 ', 'valid_R2:0.9666 ', 'train_CORR:0.9899 ', 'valid_CORR:0.9889 ', 'train_RMSE:0.2338 ', 'valid_RMSE:0.2869 ', 'train_MAE:0.0781 ', 'valid_MAE:0.0696 ']
+2024-04-25 16:27:59,025 - INFO - Epoch 7/20, Duration: 0:00:10.752014, ['train_loss:0.0542 ', 'valid_loss:0.0635 ', 'train_R2:0.9805 ', 'valid_R2:0.9739 ', 'train_CORR:0.9902 ', 'valid_CORR:0.9898 ', 'train_RMSE:0.2303 ', 'valid_RMSE:0.2538 ', 'train_MAE:0.0684 ', 'valid_MAE:0.0488 ']
+2024-04-25 16:28:09,740 - INFO - Epoch 8/20, Duration: 0:00:10.714664, ['train_loss:0.0560 ', 'valid_loss:0.0470 ', 'train_R2:0.9795 ', 'valid_R2:0.9806 ', 'train_CORR:0.9897 ', 'valid_CORR:0.9906 ', 'train_RMSE:0.2361 ', 'valid_RMSE:0.2186 ', 'train_MAE:0.0750 ', 'valid_MAE:0.0584 ']
+2024-04-25 16:28:20,463 - INFO - Epoch 9/20, Duration: 0:00:10.722531, ['train_loss:0.0602 ', 'valid_loss:0.0629 ', 'train_R2:0.9780 ', 'valid_R2:0.9740 ', 'train_CORR:0.9890 ', 'valid_CORR:0.9895 ', 'train_RMSE:0.2442 ', 'valid_RMSE:0.2533 ', 'train_MAE:0.0766 ', 'valid_MAE:0.0565 ']
+2024-04-25 16:28:31,199 - INFO - Epoch 10/20, Duration: 0:00:10.735631, ['train_loss:0.0526 ', 'valid_loss:0.0561 ', 'train_R2:0.9806 ', 'valid_R2:0.9769 ', 'train_CORR:0.9903 ', 'valid_CORR:0.9889 ', 'train_RMSE:0.2294 ', 'valid_RMSE:0.2390 ', 'train_MAE:0.0664 ', 'valid_MAE:0.0694 ']
+2024-04-25 16:28:42,005 - INFO - Epoch 11/20, Duration: 0:00:10.805201, ['train_loss:0.0497 ', 'valid_loss:0.0515 ', 'train_R2:0.9817 ', 'valid_R2:0.9787 ', 'train_CORR:0.9908 ', 'valid_CORR:0.9902 ', 'train_RMSE:0.2231 ', 'valid_RMSE:0.2290 ', 'train_MAE:0.0617 ', 'valid_MAE:0.0854 ']
+2024-04-25 16:28:52,730 - INFO - Epoch 12/20, Duration: 0:00:10.725174, ['train_loss:0.0526 ', 'valid_loss:0.0600 ', 'train_R2:0.9806 ', 'valid_R2:0.9752 ', 'train_CORR:0.9903 ', 'valid_CORR:0.9878 ', 'train_RMSE:0.2293 ', 'valid_RMSE:0.2475 ', 'train_MAE:0.0672 ', 'valid_MAE:0.0577 ']
+2024-04-25 16:29:03,434 - INFO - Epoch 13/20, Duration: 0:00:10.703178, ['train_loss:0.0522 ', 'valid_loss:0.0497 ', 'train_R2:0.9808 ', 'valid_R2:0.9795 ', 'train_CORR:0.9904 ', 'valid_CORR:0.9898 ', 'train_RMSE:0.2282 ', 'valid_RMSE:0.2251 ', 'train_MAE:0.0637 ', 'valid_MAE:0.0515 ']
+2024-04-25 16:29:14,160 - INFO - Epoch 14/20, Duration: 0:00:10.725434, ['train_loss:0.0519 ', 'valid_loss:0.0716 ', 'train_R2:0.9809 ', 'valid_R2:0.9703 ', 'train_CORR:0.9904 ', 'valid_CORR:0.9895 ', 'train_RMSE:0.2276 ', 'valid_RMSE:0.2707 ', 'train_MAE:0.0615 ', 'valid_MAE:0.0706 ']
+2024-04-25 16:29:24,885 - INFO - Epoch 15/20, Duration: 0:00:10.724751, ['train_loss:0.0512 ', 'valid_loss:0.1377 ', 'train_R2:0.9812 ', 'valid_R2:0.9430 ', 'train_CORR:0.9905 ', 'valid_CORR:0.9896 ', 'train_RMSE:0.2260 ', 'valid_RMSE:0.3751 ', 'train_MAE:0.0580 ', 'valid_MAE:0.1388 ']
+2024-04-25 16:29:35,625 - INFO - Epoch 16/20, Duration: 0:00:10.740203, ['train_loss:0.0517 ', 'valid_loss:0.0673 ', 'train_R2:0.9809 ', 'valid_R2:0.9722 ', 'train_CORR:0.9904 ', 'valid_CORR:0.9863 ', 'train_RMSE:0.2279 ', 'valid_RMSE:0.2621 ', 'train_MAE:0.0713 ', 'valid_MAE:0.0701 ']
+2024-04-25 16:29:46,376 - INFO - Epoch 17/20, Duration: 0:00:10.750600, ['train_loss:0.0497 ', 'valid_loss:0.0574 ', 'train_R2:0.9816 ', 'valid_R2:0.9764 ', 'train_CORR:0.9908 ', 'valid_CORR:0.9898 ', 'train_RMSE:0.2232 ', 'valid_RMSE:0.2415 ', 'train_MAE:0.0606 ', 'valid_MAE:0.1095 ']
+2024-04-25 16:29:57,107 - INFO - Epoch 18/20, Duration: 0:00:10.730433, ['train_loss:0.0498 ', 'valid_loss:0.0853 ', 'train_R2:0.9818 ', 'valid_R2:0.9647 ', 'train_CORR:0.9909 ', 'valid_CORR:0.9900 ', 'train_RMSE:0.2222 ', 'valid_RMSE:0.2952 ', 'train_MAE:0.0634 ', 'valid_MAE:0.0985 ']
+2024-04-25 16:30:07,903 - INFO - Epoch 19/20, Duration: 0:00:10.796215, ['train_loss:0.0556 ', 'valid_loss:0.0683 ', 'train_R2:0.9796 ', 'valid_R2:0.9717 ', 'train_CORR:0.9897 ', 'valid_CORR:0.9905 ', 'train_RMSE:0.2353 ', 'valid_RMSE:0.2642 ', 'train_MAE:0.0696 ', 'valid_MAE:0.0659 ']
+2024-04-25 16:30:18,600 - INFO - Epoch 20/20, Duration: 0:00:10.696038, ['train_loss:0.0500 ', 'valid_loss:0.1179 ', 'train_R2:0.9817 ', 'valid_R2:0.9513 ', 'train_CORR:0.9908 ', 'valid_CORR:0.9895 ', 'train_RMSE:0.2229 ', 'valid_RMSE:0.3469 ', 'train_MAE:0.0633 ', 'valid_MAE:0.1233 ']
+2024-04-25 16:30:19,121 - INFO - ***************** TRAINING OVER ! *****************
+
+2024-04-25 16:30:19,124 - INFO - ***************** RUN PRED MODEL: `MgRL`, DATASET: `elect` ! *****************
+2024-04-25 16:30:19,124 - INFO - ***************** In device cuda   *****************
+2024-04-25 16:30:19,124 - INFO - ***************** BEGIN MAKE DATASET & DATALOADER of `elect` !! *****************
+2024-04-25 16:30:19,124 - INFO - ||| time_steps = 14, batch size = 2048 |||
+2024-04-25 16:30:19,124 - INFO - **** TEST DATASET & DATALOADER ****
+2024-04-25 16:30:20,106 - INFO - ***************** DATASET MAKE OVER ! *****************
+2024-04-25 16:30:20,106 - INFO - Test dataset: length = 58880
+2024-04-25 16:30:20,114 - INFO - ***************** LOAD BEST MODEL exp_elect/rs_42/trained_models/MgRL_model_pytorch_epoch_7 *****************
+2024-04-25 16:30:21,881 - INFO - ******** test_R2 : 0.9685759984812772 **********
+2024-04-25 16:30:21,881 - INFO - ******** test_CORR : 0.9848145183699264 **********
+2024-04-25 16:30:21,881 - INFO - ******** test_RMSE : 0.2828294336795807 **********
+2024-04-25 16:30:21,882 - INFO - ******** test_MAE : 0.06330778449773788 **********
+2024-04-25 16:30:21,882 - INFO - ***************** TEST OVER ! *****************
+

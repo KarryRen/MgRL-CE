@@ -2,19 +2,17 @@
 # @Time    : 2024/4/5 09:33
 # @Author  : Karry Ren
 
-""" Training and Prediction code of `MgRLNet` and `MgRL_CE_Net` for 3 datasets:
-    - UCI electricity dataset.
+""" Training and Prediction code of 3 Nets for 3 datasets:
+    - MgRL_Net
+    - MgRL_Attention_Net
+    - MgRL_CE_Net
 
 Training, Validation and Prediction be together !
     Here are two functions:
         - `train_valid_model()` => train and valid model, and save trained models of all epochs.
         - `pred_model()` => use the best model to do prediction (test model).
 
-You can run this python script by:
-    `python3 train_pred_MgRL.py --model model_name --dataset dataset_name`
-where:
-    - model: The model name. You have 2 choices: `MgRLNet` or `MgRL_CE_Net`.
-    - dataset: The dataset name. You have only 1 choice: `elect`.
+You can run this python script by: `python3 train_pred_MgRL.py --model model_name --dataset dataset_name`
 
 """
 
@@ -29,39 +27,56 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 
-from utils import fix_random_seed, load_best_model
 from mg_datasets.elect_dataset import ELECTDataset
+from mg_datasets.lob_dataset import LOBDataset
+from mg_datasets.index_dataset import INDEXDataset
+from utils import fix_random_seed, load_best_model
 from models.metrics import r2_score, corr_score, rmse_score, mae_score
 
 # ---- Init and parse the args parser ---- #
 parser = argparse.ArgumentParser()
-parser.add_argument("--model", type=str, default="MgRLNet",
-                    help="The model name. You have only 2 choices: `MgRLNet` or `MgRL_CE_Net`.")
-parser.add_argument("--dataset", type=str, default="elect",
-                    help="The dataset name. You have only 1 choice: `elect`.")
+parser.add_argument(
+    "--dataset", type=str, default="elect",
+    help="The dataset name. You have only 3 choices: `elect`, `lob`, `index`."
+)
+parser.add_argument(
+    "--method", type=str, default="MgRL",
+    help="The model name. You have 3 choices now: "
+         "- `MgRL` for MgRL,\n"
+         "- `MgRL_Attention` for MgRL_Attention, \n"
+         "- `MgRL_CE` for MgRL_CE"
+)
 args = parser.parse_args()
 
 # ---- Based on the args set the different params ---- #
-# - model
-if args.model == "MgRLNet":  # The MgRLNet
-    from models.MgRL import MgRLNet
+# dataset name
+if args.dataset == "elect":  # the UCI electricity dataset.
+    import configs.elect_config as config
+elif args.dataset == "lob":  # the Future LOB dataset
+    import configs.lob_config as config
+elif args.dataset == "index":  # the CSI300 index dataset
+    import configs.index_config as config
+else:
+    raise TypeError(args.dataset)
+# method name
+METHOD_NAME = args.method
+if METHOD_NAME == "MgRL":  # The MgRL_Net
+    from models.MgRL import MgRL_Net
     from models.loss import MgRL_Loss
-elif args.model == "MgRL_CE_Net":  # The MgRL_CE_Net
+elif METHOD_NAME == "MgRL_Attention":  # The MgRL_Net
+    from models.MgRL import MgRL_Attention_Net
+    from models.loss import MgRL_Loss
+elif METHOD_NAME == "MgRL_CE":  # The MgRL_CE_Net
     from models.MgRL import MgRL_CE_Net
     from models.loss import MgRL_CE_Loss
 else:
-    raise f"{args.model} is ERROR ! Please check your command of `--model` !"
-# - dataset
-if args.dataset == "elect":  # The UCI electricity dataset.
-    import configs.elect_config as config
-else:
-    raise f"{args.dataset} is ERROR ! Please check your command of `--dataset` !"
+    raise f"{METHOD_NAME} is ERROR ! Please check your command of `--method` !"
 
 
 def train_valid_model() -> None:
     """ Train & Valid Model. """
 
-    logging.info(f"***************** RUN TRAIN&VALID MODEL: `{args.model}`, DATASET: `{args.dataset}` ! *****************")
+    logging.info(f"***************** RUN TRAIN&VALID MODEL: `{METHOD_NAME}`, DATASET: `{args.dataset}` ! *****************")
 
     # ---- Get the train and valid device ---- #
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -71,40 +86,63 @@ def train_valid_model() -> None:
     logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER of `{args.dataset}` ! *****************")
     logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
     logging.info(f"**** TRAINING DATASET & DATALOADER ****")
-    if args.dataset == "elect":  # The UCI electricity dataset.
+    # make the dataset and dataloader of training
+    logging.info(f"**** TRAINING DATASET & DATALOADER ****")
+    if args.dataset == "elect":  # the UCI electricity dataset.
         train_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Train", time_steps=config.TIME_STEPS)
+    elif args.dataset == "lob":  # the Future LOB dataset
+        train_dataset = LOBDataset(
+            root_path=config.LOB_DATASET_PATH,
+            start_date=config.TRAIN_START_DATE, end_date=config.TRAIN_END_DATE, need_norm=config.NEED_NORM
+        )
+    elif args.dataset == "index":  # the CSI300 index dataset
+        train_dataset = INDEXDataset(root_path=config.INDEX_DATASET_PATH, data_type="Train", need_norm=config.NEED_NORM)
     else:
         raise TypeError(args.dataset)
-    train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)
+    train_loader = data.DataLoader(dataset=train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)  # the train dataloader
     logging.info(f"**** VALID DATASET & DATALOADER ****")
-    if args.dataset == "elect":  # The UCI electricity dataset.
+    if args.dataset == "elect":  # the UCI electricity dataset.
         valid_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Valid", time_steps=config.TIME_STEPS)
+    elif args.dataset == "lob":  # the Future LOB dataset
+        valid_dataset = LOBDataset(
+            root_path=config.LOB_DATASET_PATH,
+            start_date=config.VALID_START_DATE, end_date=config.VALID_END_DATE, need_norm=config.NEED_NORM
+        )
+    elif args.dataset == "index":  # the CSI300 index dataset
+        valid_dataset = INDEXDataset(root_path=config.INDEX_DATASET_PATH, data_type="Valid", need_norm=config.NEED_NORM)
     else:
         raise TypeError(args.dataset)
-    valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
+    valid_loader = data.DataLoader(dataset=valid_dataset, batch_size=config.BATCH_SIZE, shuffle=False)  # the valid dataloader
     logging.info("***************** DATASET MAKE OVER ! *****************")
     logging.info(f"Train dataset: length = {len(train_dataset)}")
     logging.info(f"Valid dataset: length = {len(valid_dataset)}")
 
     # ---- Construct the model and transfer device, while making loss and optimizer ---- #
-    logging.info(f"***************** BEGIN BUILD UP THE MODEL `{args.model}`! *****************")
-    if args.model == "MgRLNet":  # The MgRLNet and loss
-        model = MgRLNet(
-            granularity_dict=config.ELECT_GRANULARITY_DICT, ga_K=config.GA_K,
+    logging.info(f"***************** BEGIN BUILD UP THE MODEL `{METHOD_NAME}`! *****************")
+    if METHOD_NAME == "MgRL":  # The MgRL_Net and loss
+        model = MgRL_Net(
+            granularity_dict=config.GRANULARITY_DICT, ga_K=config.GA_K,
+            encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
+            device=device, use_g_list=config.USE_G_LIST
+        )
+        criterion = MgRL_Loss(reduction=config.LOSS_REDUCTION, lambda_1=config.LAMBDA_1)
+    elif METHOD_NAME == "MgRL_Attention":  # The MgRL_Attention_Net and loss
+        model = MgRL_Attention_Net(
+            granularity_dict=config.GRANULARITY_DICT, ga_K=config.GA_K,
             encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
             device=device
         )
         criterion = MgRL_Loss(reduction=config.LOSS_REDUCTION, lambda_1=config.LAMBDA_1)
-    elif args.model == "MgRL_CE_Net":  # The MgRL_CE_Net and loss
+    elif METHOD_NAME == "MgRL_CE":  # The MgRL_CE_Net and loss
         model = MgRL_CE_Net(
-            granularity_dict=config.ELECT_GRANULARITY_DICT, ga_K=config.GA_K,
+            granularity_dict=config.GRANULARITY_DICT, ga_K=config.GA_K,
             encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
             negative_sample_num=config.NEGATIVE_SAMPLE_NUM,
-            device=device
+            device=device, use_g_list=config.USE_G_LIST
         )
         criterion = MgRL_CE_Loss(reduction=config.LOSS_REDUCTION, lambda_1=config.LAMBDA_1)
     else:
-        raise TypeError(args.model)
+        raise TypeError(METHOD_NAME)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.LR, weight_decay=config.LAMBDA_THETA)  # the optimizer
 
     # ---- Start Train and Valid ---- #
@@ -123,7 +161,7 @@ def train_valid_model() -> None:
     }
 
     # train model epoch by epoch
-    logging.info(f"***************** BEGIN TRAINING AND VALID THE MODEL `{args.model}` ! *****************")
+    logging.info(f"***************** BEGIN TRAINING AND VALID THE MODEL `{METHOD_NAME}` ! *****************")
     # start train and valid during train
     for epoch in tqdm(range(config.EPOCHS)):
         # start timer for one epoch
@@ -148,15 +186,14 @@ def train_valid_model() -> None:
             # zero_grad, forward, compute loss, backward and optimize
             optimizer.zero_grad()
             outputs = model(mg_features)
-            if args.model == "MgRLNet":
+            if METHOD_NAME in ("MgRL", "MgRL_Attention"):
                 preds, rec_residuals = outputs["pred"], outputs["rec_residuals"]
                 loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals, weight=weights)
-            elif args.model == "MgRL_CE_Net":
+            elif METHOD_NAME == "MgRL_CE":
                 preds, rec_residuals, contrastive_loss = outputs["pred"], outputs["rec_residuals"], outputs["contrastive_loss"]
                 loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals, contrastive_loss=contrastive_loss, weight=weights)
             else:
-                raise TypeError(args.model)
-            print(loss.item())
+                raise TypeError(METHOD_NAME)
             loss.backward()
             optimizer.step()
             # note the loss of training in one iter
@@ -193,14 +230,14 @@ def train_valid_model() -> None:
                 weights = batch_data["weight"].to(device=device, dtype=torch.float32)
                 # forward to compute outputs
                 outputs = model(mg_features)
-                if args.model == "MgRLNet":
+                if METHOD_NAME in ("MgRL", "MgRL_Attention"):
                     preds, rec_residuals = outputs["pred"], outputs["rec_residuals"]
                     loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals, weight=weights)
-                elif args.model == "MgRL_CE_Net":
+                elif METHOD_NAME == "MgRL_CE":
                     preds, rec_residuals, contrastive_loss = outputs["pred"], outputs["rec_residuals"], outputs["contrastive_loss"]
                     loss = criterion(y_true=labels, y_pred=preds, rec_residuals=rec_residuals, contrastive_loss=contrastive_loss, weight=weights)
                 else:
-                    raise TypeError(args.model)
+                    raise TypeError(METHOD_NAME)
                 # note the loss of valid in one iter
                 valid_loss_one_epoch.append(loss.item())
                 # doc the result in one iter, no matter what label_len is, just get the last one
@@ -225,7 +262,7 @@ def train_valid_model() -> None:
         )
 
         # - save model&model_config and metrics
-        torch.save(model, config.MODEL_SAVE_PATH + f"{args.model}_model_pytorch_epoch_{epoch}")
+        torch.save(model, config.MODEL_SAVE_PATH + f"{METHOD_NAME}_model_pytorch_epoch_{epoch}")
         pd.DataFrame(epoch_metric).to_csv(config.MODEL_SAVE_PATH + "model_metric.csv")
 
         # write metric log
@@ -263,19 +300,25 @@ def train_valid_model() -> None:
 def pred_model() -> None:
     """ Test Model. """
 
-    logging.info(f"***************** RUN PRED MODEL: `{args.model}`, DATASET: `{args.dataset}` ! *****************")
+    logging.info(f"***************** RUN PRED MODEL: `{METHOD_NAME}`, DATASET: `{args.dataset}` ! *****************")
 
     # ---- Get the computing device ---- #
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logging.info(f"***************** In device {device}   *****************")
 
     # ---- Make the dataset and dataloader ---- #
-    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER of `{args.dataset}` ! *****************")
+    logging.info(f"***************** BEGIN MAKE DATASET & DATALOADER of `{args.dataset}` !! *****************")
     logging.info(f"||| time_steps = {config.TIME_STEPS}, batch size = {config.BATCH_SIZE} |||")
     # make the dataset and dataloader of test
     logging.info(f"**** TEST DATASET & DATALOADER ****")
-    if args.dataset == "elect":  # The UCI electricity dataset.
+    if args.dataset == "elect":  # the UCI electricity dataset.
         test_dataset = ELECTDataset(root_path=config.UCI_ELECT_DATASET_PATH, data_type="Test", time_steps=config.TIME_STEPS)
+    elif args.dataset == "lob":  # the Future LOB dataset
+        test_dataset = LOBDataset(
+            root_path=config.LOB_DATASET_PATH, start_date=config.TEST_START_DATE, end_date=config.TEST_END_DATE, need_norm=config.NEED_NORM
+        )
+    elif args.dataset == "index":  # the CSI300 index dataset
+        test_dataset = INDEXDataset(root_path=config.INDEX_DATASET_PATH, data_type="Test", need_norm=config.NEED_NORM)
     else:
         raise TypeError(args.dataset)
     test_loader = data.DataLoader(dataset=test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
@@ -283,7 +326,7 @@ def pred_model() -> None:
     logging.info(f"Test dataset: length = {len(test_dataset)}")
 
     # ---- Load model and test ---- #
-    model, model_path = load_best_model(config.MODEL_SAVE_PATH, args.model, config.MAIN_METRIC)
+    model, model_path = load_best_model(config.MODEL_SAVE_PATH, METHOD_NAME, config.MAIN_METRIC)
     logging.info(f"***************** LOAD BEST MODEL {model_path} *****************")
 
     # ---- Test Model ---- #
