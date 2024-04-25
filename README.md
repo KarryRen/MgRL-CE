@@ -9,13 +9,13 @@ MgRL-CE/
     ├── MgRL_Framework.png # The MgRL FrameWork (without CE).
     ├── CE.png # The Confidence Estimation Module.
     ├── Elect_Data_Distribution.png # The distribution of uci electricity dataset.
-    ├── MgRL_CE_Images.pptx # The raw images of MgRL_CE.
+    └── MgRL_CE_Images.pptx # The raw images of MgRL_CE.
 ├── datasets
     ├── datasets_preprocess
-        ├── elect_preprocess.py # The preprocess code of UCI electricity dataset (download from web).
+        ├── elect_preprocess.py # The preprocess code of UCI electricity dataset (download from Web).
         ├── lob_preprocess # The preprocess package of Future LOB dataset (downlaod from Qlib).
             ├── price_alignment_features # The paf algorithm.
-            └── lob_preprocess.py # The preprocess code of Future LOB dataset.
+            └── lob_preprocess.py # The preprocess code of Future LOB dataset (download using Akshare).
         └── index_preprocess.py # The preprocess code of CSI300 index dataset.
     ├── elect_dataset.py # The torch.Dataset of UCI electricity dataset (after preprocessing).
     ├── lob_dataset.py # The torch.Dataset of Future LOB dataset (after preprocessing).
@@ -25,9 +25,9 @@ MgRL-CE/
     ├── lob_config.py # Config file of UCI electricity dataset.
     └── index_config.py # Config file of CSI300 index dataset.
 ├── models # The MgRL-CE models and Comparison Methods.
-    ├── MgRL.py # The Multi-Granularity Residual Learning Net: `MgRL_Net` and `MgRL_CE_Net` & `MgRL_Attention_Net`.
+    ├── MgRL.py # The Multi-Granularity Residual Learning Net.
     ├── comparison_methods # All comparison methods.
-        ├── gru.py # The Comparison Methods 1: GRU(when `use_g=g1`) & 9: Fine-Grained GRU(when `use_g=g5`) & 10 & 11
+        ├── gru.py # The Comparison Methods 1 & 9 & 10 & 11: GRU Class
         ├── lstm.py # The Comparison Methods 2: LSTM.
         ├── transformer.py # The Comparison Methods 3: Transformer.
         ├── deepar.py # The Comparison Methods 4: DeepAR (Will be Updated 🔥 !).
@@ -41,7 +41,7 @@ MgRL-CE/
         └── modules.py # The modules of ablation models.
     ├── loss.py # The loss function of MgRLNet and MgRL_CE_Net.
     ├── metric.py # The metrics of y_ture and y_pred.
-    ├── modules.py # The modules of model.
+    └── modules.py # The modules of model.
 ├── train_pred_MgRL.py # Training and Prediction code of `MgRLNet` and `MgRL_CE_Net` for 3 datasets.
 ├── train_pred_CM.py # Training and Prediction code of Comparison Methods for 3 datasets.
 └── utils.py # Some util functions.
