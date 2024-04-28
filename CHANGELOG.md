@@ -17,4 +17,3 @@
 - Finish the comparison_methods: `gru`, `lstm`, `transformer`, `sfm`, `alstm`, `adv-alstm`.
 - Add the fake `deepar`, which will be updated in the further.
 - Finish draft.
-- 
