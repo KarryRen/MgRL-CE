@@ -123,7 +123,7 @@ def train_valid_model() -> None:
         model = MgRL_Net(
             granularity_dict=config.GRANULARITY_DICT, ga_K=config.GA_K,
             encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
-            device=device, use_g_list=config.USE_G_LIST
+            device=device
         )
         criterion = MgRL_Loss(reduction=config.LOSS_REDUCTION, lambda_1=config.LAMBDA_1)
     elif METHOD_NAME == "MgRL_Attention":  # The MgRL_Attention_Net and loss
@@ -138,7 +138,7 @@ def train_valid_model() -> None:
             granularity_dict=config.GRANULARITY_DICT, ga_K=config.GA_K,
             encoding_input_size=config.ENCODING_INPUT_SIZE, encoding_hidden_size=config.ENCODING_HIDDEN_SIZE,
             negative_sample_num=config.NEGATIVE_SAMPLE_NUM,
-            device=device, use_g_list=config.USE_G_LIST
+            device=device
         )
         criterion = MgRL_CE_Loss(reduction=config.LOSS_REDUCTION, lambda_1=config.LAMBDA_1)
     else:

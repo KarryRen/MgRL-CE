@@ -23,8 +23,7 @@ class MgRL_Net(nn.Module):
 
     def __init__(
             self, granularity_dict: Dict[str, int], ga_K: int,
-            encoding_input_size: int, encoding_hidden_size: int, device: torch.device,
-            use_g_list: List[str] = ["g1", "g2", "g3", "g4", "g5"]
+            encoding_input_size: int, encoding_hidden_size: int, device: torch.device
     ):
         """ The init function of MgRL Net.
 
@@ -37,13 +36,11 @@ class MgRL_Net(nn.Module):
         :param encoding_input_size: the input size of encoding feature
         :param encoding_hidden_size: the hidden size of encoding feature
         :param device: the computing device
-        :param use_g_list: the granularity to use
 
         """
 
         super(MgRL_Net, self).__init__()
         self.device = device
-        self.use_g_list = use_g_list
 
         # ---- Part 1. Granularity Alignment Module (Each Module includes 1 Linear Layer) ---- #
         self.granularity_alignment_dict = nn.ModuleDict({})  # must use nn.ModuleDict or backward wrong !
@@ -145,19 +142,8 @@ class MgRL_Net(nn.Module):
         H_g5, y_g5, R_g5_ = self.feature_encoder_dict["g5"](P_g5)
 
         # ---- Step 3. Return ---- #
-        # concat the prediction of all granularity in use_g_list
-        y_list = []
-        if "g1" in self.use_g_list:
-            y_list.append(y_g1)
-        if "g2" in self.use_g_list:
-            y_list.append(y_g2)
-        if "g3" in self.use_g_list:
-            y_list.append(y_g3)
-        if "g4" in self.use_g_list:
-            y_list.append(y_g4)
-        if "g5" in self.use_g_list:
-            y_list.append(y_g5)
-        y_all_g = torch.cat(y_list, dim=1)  # shape=(bs, 5)
+        # concat the prediction of all granularity
+        y_all_g = torch.cat([y_g1, y_g2, y_g3, y_g4, y_g5], dim=1)  # shape=(bs, 5)
         # construct the output and return
         output = {
             "pred": torch.mean(y_all_g, -1, keepdim=True),
@@ -334,8 +320,7 @@ class MgRL_CE_Net(nn.Module):
 
     def __init__(
             self, granularity_dict: Dict[str, int], ga_K: int,
-            encoding_input_size: int, encoding_hidden_size: int, negative_sample_num: int, device: torch.device,
-            use_g_list: List[str] = ["g1", "g2", "g3", "g4", "g5"]
+            encoding_input_size: int, encoding_hidden_size: int, negative_sample_num: int, device: torch.device
     ):
         """ The init function of MgRL_CE_Net.
 
@@ -349,13 +334,11 @@ class MgRL_CE_Net(nn.Module):
         :param encoding_hidden_size: the hidden size of encoding feature
         :param negative_sample_num: the number of negative samples
         :param device: the computing device
-        :param use_g_list: the granularity to use
 
         """
 
         super(MgRL_CE_Net, self).__init__()
         self.device = device
-        self.use_g_list = use_g_list
 
         # ---- Part 1. Granularity Alignment Module (Each Module includes 1 Linear Layer) ---- #
         self.granularity_alignment_dict = nn.ModuleDict({})  # must use nn.ModuleDict or backward wrong !
@@ -463,32 +446,10 @@ class MgRL_CE_Net(nn.Module):
         H_g5, y_g5, R_g5, alpha_g5, con_l_g5 = self.feature_encoder_ce_dict["g5"](P_g5)
 
         # ---- Step 3. Return ---- #
-        # concat the prediction of all granularity in use_g_list
-        y_list = []
-        if "g1" in self.use_g_list:
-            y_list.append(y_g1)
-        if "g2" in self.use_g_list:
-            y_list.append(y_g2)
-        if "g3" in self.use_g_list:
-            y_list.append(y_g3)
-        if "g4" in self.use_g_list:
-            y_list.append(y_g4)
-        if "g5" in self.use_g_list:
-            y_list.append(y_g5)
-        y_all_g = torch.cat(y_list, dim=1)  # shape=(bs, 5)
+        # concat the prediction of all granularity
+        y_all_g = torch.cat([y_g1, y_g2, y_g3, y_g4, y_g5], dim=1)  # shape=(bs, 5)
         # concat the alpha of all granularity
-        final_alpha_list = []
-        if "g1" in self.use_g_list:
-            final_alpha_list.append(alpha_g1)
-        if "g2" in self.use_g_list:
-            final_alpha_list.append(alpha_g2)
-        if "g3" in self.use_g_list:
-            final_alpha_list.append(alpha_g3)
-        if "g4" in self.use_g_list:
-            final_alpha_list.append(alpha_g4)
-        if "g5" in self.use_g_list:
-            final_alpha_list.append(alpha_g5)
-        alpha_all_g = torch.cat(final_alpha_list, dim=1)  # shape=(bs, 5)
+        alpha_all_g = torch.cat([alpha_g1, alpha_g2, alpha_g3, alpha_g4, alpha_g5], dim=1)  # shape=(bs, 5)
         alpha_all_g = F.softmax(alpha_all_g, dim=1)  # use the soft_max to weight, shape=(bs, 5)
         # use the alpha to weight the y
         y_all_g = y_all_g * alpha_all_g

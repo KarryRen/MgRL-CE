@@ -26,7 +26,6 @@ BATCH_SIZE = 4096
 GRANULARITY_DICT = {"g1": 1, "g2": 2, "g3": 6, "g4": 24, "g5": 96}  # the granularity dict
 FEATURE_DIM = 1  # the feature dim
 USE_G = "g1"  # select which G
-USE_G_LIST = ["g1", "g2", "g3", "g4", "g5"]  # select G list
 GA_K, INPUT_SIZE = 1, FEATURE_DIM * GRANULARITY_DICT[USE_G]  # the alignment granularity K & the input size
 ENCODING_INPUT_SIZE, ENCODING_HIDDEN_SIZE = FEATURE_DIM * GA_K, 64  # the input and hidden size
 DROPOUT_RATIO = 0.0  # the dropout ratio
