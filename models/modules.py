@@ -204,7 +204,7 @@ class FeatureEncoderCE(nn.Module):
             C_t = H[:, t - 1:t, :]  # shape=(bs, 1, hidden_size)
             # random select the negative sample, the FIRST 1 is positive.
             pos_neg_p_t = self._random_select_neg_sample(positive_p=p_t)  # (bs, 1+neg_sample_num, input_size)
-            # get the discriminator score, use self.W(C_t) get shape=(bs, 1, input_size)
+            # get the discriminator score, use self.W(C_t) get shape=(bs, 1, input_size) (a little different from my paper)
             D_p_c = torch.mean(self.W(C_t) * pos_neg_p_t, -1)  # broadcast, shape=(bs,  1+neg_sample_num)
             # compute the trend_contrastive_loss, shape=(bs, 1)
             pos_ce_loss = F.log_softmax(D_p_c, dim=1)[:, 0:1]  # only the get the cross entropy loss of the positive sample
@@ -212,7 +212,7 @@ class FeatureEncoderCE(nn.Module):
         # use the last step (p_T, C_T) to compute alpha
         p_last_step = P[:, -1:, :]  # last step P, shape=(bs, 1, hidden_size)
         C_last_step = H[:, -2:-1, :]  # last step C, shape=(bs, 1, hidden_size)
-        alpha = torch.mean(self.W(C_last_step) * p_last_step, -1)  # the alpha in my paper
+        alpha = torch.mean(self.W(C_last_step) * p_last_step, -1)  # the alpha
 
         # ---- Step 3. Use the prediction_net to get the prediction ---- #
         y = self.prediction_net(H[:, -1, :])  # shape=(bs, 1)
