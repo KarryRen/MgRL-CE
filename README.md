@@ -13,7 +13,7 @@ MgRL-CE/
 ├── datasets
     ├── datasets_preprocess
         ├── elect_preprocess.py # The preprocess code of UCI electricity dataset (download from Web).
-        ├── lob_preprocess # The preprocess package of Future LOB dataset (downlaod from Qlib).
+        ├── lob_preprocess # The preprocess package of Future LOB dataset (download from Qlib).
             ├── price_alignment_features # The paf algorithm.
             └── lob_preprocess.py # The preprocess code of Future LOB dataset (download using Akshare).
         └── index_preprocess.py # The preprocess code of CSI300 index dataset.
