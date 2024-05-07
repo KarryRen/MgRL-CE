@@ -34,7 +34,7 @@ MgRL-CE/
         ├── informer.py # The Comparison Methods 5: Informer (Updating 🔥 !).
         ├── sfm.py # The Comparison Methods 6: SFM.
         ├── alstm.py # The Comparison Methods 7: ALSTM (Will be Updated 🔥 !).
-        ├── adv_alstm.py # The Comparison Methods 8: ADV-ALSTM (Will be Updated 🔥 !).
+        └── adv_alstm.py # The Comparison Methods 8: ADV-ALSTM (Will be Updated 🔥 !).
     ├── ablation_methods # All ablation methods.
         ├── mg_add.py # The Ablation Method 1: Mg_Add.
         ├── mg_cat.py # The Ablation Method 2: Mg_Cat.
