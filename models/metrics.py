@@ -52,7 +52,7 @@ def corr_score(y_true: np.ndarray, y_pred: np.ndarray, weight: np.ndarray, epsil
     """ The Pearson correlation coefficients.
 
     :math:`CORR = E[(y_true - y_true_bar)(y_pred - y_pred_bar)] / (std(y_true)*std(y_pred))`
-    here we multiply `n - 1` in both numerator and denominator to get:
+    here we multiply `n - 1` in BOTH numerator and denominator to get:
         corr = sum((y_true - y_true_bar)(y_pred - y_pred_bar)) /
                 [sqrt(sum((y_true - y_true_bar) ** 2)) * sqrt(sum((y_pred - y_pred_bar) ** 2))]
 
