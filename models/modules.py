@@ -316,8 +316,8 @@ if __name__ == "__main__":
     P1[0, 1] = 3
 
     # ---- Test the feature encoder ---- #
-    feature_encoder = FeatureEncoder(input_size=input_size, hidden_size=hidden_size)
-    H, y, R = feature_encoder(P1)
+    # feature_encoder = FeatureEncoder(input_size=input_size, hidden_size=hidden_size)
+    # H, y, R = feature_encoder(P1)
 
     # ---- Test the feature encoder with Confidence Estimating (CE) ---- #
     feature_encoder_ce = FeatureEncoderCE(input_size=input_size, hidden_size=hidden_size, negative_sample_num=3)
