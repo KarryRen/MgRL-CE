@@ -323,3 +323,4 @@ if __name__ == "__main__":
     feature_encoder_ce = FeatureEncoderCE(input_size=input_size, hidden_size=hidden_size, negative_sample_num=3)
     H, y, R, alpha, c_loss = feature_encoder_ce(P1)
     print(c_loss.shape)
+
