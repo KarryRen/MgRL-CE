@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-# @author : RenKai (intern in HIGGS ASSET)
-# @time   : 4/25/24 1:08 PM
-#
-# pylint: disable=no-member
+# @Time    : 2024/4/25 09:55
+# @Author  : Karry Ren
 
 """ The Ablation Method 2: Mg_Cat. """
 

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-# @author : RenKai (intern in HIGGS ASSET)
-# @time   : 4/25/24 1:18 PM
-#
-# pylint: disable=no-member
+# @Time    : 2024/4/25 09:55
+# @Author  : Karry Ren
 
-""""""
+""" The modules of ablation methods. """
 
 from typing import Tuple
 import torch

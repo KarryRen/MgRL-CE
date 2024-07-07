@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-# @author : RenKai (intern in HIGGS ASSET)
-# @time   : 4/25/24 11:21 AM
-#
-# pylint: disable=no-member
+# @Time    : 2024/4/25 09:55
+# @Author  : Karry Ren
 
 """ Updating Going to do in 5.1 """
