@@ -2,9 +2,9 @@
 # @Time    : 2024/4/2 15:31
 # @Author  : Karry Ren
 
-""" Two models:
+""" Three models:
     - The basic Multi-Granularity Residual Learning Net: MgRLNet.
-    -
+    - The attention Multi-Granularity Residual Learning Net: MgRL_Attention_Net.
     - The Multi-granularity Residual Learning Framework with Confidence Estimation: MgRL_CE_Net.
 
 """
